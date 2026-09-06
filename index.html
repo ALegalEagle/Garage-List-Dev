@@ -5,17 +5,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <meta name="apple-mobile-web-app-title" content="Garage DEV" />
-  <title>Garage DEV</title>
 
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
 
-  <link id="dynamicFavicon" rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='512' height='512' rx='120' fill='%23075985'/%3E%3C/svg%3E" />
-  <link rel="apple-touch-icon" sizes="180x180" href="blueprint-icon.png?v=2" />
-  <link rel="manifest" href='data:application/manifest+json,{"name":"Garage DEV","short_name":"Garage DEV","start_url":"https://alegaleagle.github.io/Garage-List-Dev/","scope":"https://alegaleagle.github.io/Garage-List-Dev/","display":"standalone","background_color":"#075985","theme_color":"#075985","icons":[{"src":"blueprint-icon.png?v=2","sizes":"180x180","type":"image/png"}]}' />
-  
+  <!-- Universal Environment Auto-Detector -->
+  <script>
+    (function() {
+      const isDev = window.location.pathname.toLowerCase().includes('dev');
+      const appName = isDev ? "Garage DEV" : "Garage List";
+      const appIcon = isDev ? "blueprint-icon.png" : "apple-touch-icon.png";
+      const appScope = isDev ? "https://alegaleagle.github.io/Garage-List-Dev/" : "https://alegaleagle.github.io/Garage-List/";
+      const themeColor = isDev ? "#075985" : "#0f172a";
+
+      document.title = appName;
+
+      document.write(`
+        <meta name="apple-mobile-web-app-title" content="${appName}" />
+        <link id="dynamicFavicon" rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='120' fill='${encodeURIComponent(themeColor)}'/%3E%3C/svg%3E" />
+        <link rel="apple-touch-icon" sizes="180x180" href="${appIcon}?v=3" />
+        <link rel="manifest" href='data:application/manifest+json,{"name":"${appName}","short_name":"${appName}","start_url":"${appScope}","scope":"${appScope}","display":"standalone","background_color":"${themeColor}","theme_color":"${themeColor}","icons":[{"src":"${appIcon}?v=3","sizes":"180x180","type":"image/png"}]}' />
+      `);
+    })();
+  </script>
+
   <!-- HTML5 Barcode Scanner Engine -->
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 
@@ -64,7 +78,13 @@
       --speeddial-blur-bg: rgba(15, 23, 42, 0.76);
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
+    * { 
+      box-sizing: border-box; 
+      margin: 0; 
+      padding: 0; 
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+      -webkit-tap-highlight-color: transparent; 
+    }
     
     body { 
       background: var(--bg); 
@@ -96,8 +116,9 @@
       justify-content: center;
       box-shadow: 0 3px 8px rgba(0,0,0,0.12);
       flex-shrink: 0;
+      overflow: hidden;
     }
-    .brand-icon svg { width: 100%; height: 100%; border-radius: 9px; display: block; }
+    .brand-icon svg { width: 100%; height: 100%; display: block; }
 
     .title-row h1 { font-size: 24px; font-weight: 800; letter-spacing: -0.5px; }
 
@@ -234,7 +255,7 @@
     body.selection-active .stepper-btn { pointer-events: none; opacity: 0.2; }
 
     /* ========================================================
-       FLOATING ACTION BUTTON & SPEED DIAL OVERLAY
+       FAB & BLURRED SPEED DIAL OVERLAY
     ======================================================== */
     .fab-bottom {
       position: fixed;
@@ -265,7 +286,6 @@
       box-shadow: 0 10px 30px rgba(220, 38, 38, 0.45);
     }
 
-    /* Blurred Backdrop */
     .speeddial-overlay {
       position: fixed;
       inset: 0;
@@ -282,7 +302,6 @@
       pointer-events: auto;
     }
 
-    /* Speed Dial Options Container */
     .speeddial-menu {
       position: fixed;
       bottom: calc(env(safe-area-inset-bottom, 16px) + 90px);
@@ -298,7 +317,6 @@
       pointer-events: auto;
     }
 
-    /* Speed Dial Pill Item */
     .speeddial-item {
       display: inline-flex;
       align-items: center;
@@ -317,20 +335,13 @@
       transition: opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1), transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
       user-select: none;
     }
-    .speeddial-item:active {
-      transform: scale(0.95);
-    }
+    .speeddial-item:active { transform: scale(0.95); }
     .speeddial-menu.active .speeddial-item {
       opacity: 1;
       transform: translateY(0) scale(1);
     }
-    /* Staggered entry */
-    .speeddial-menu.active .speeddial-item:nth-child(1) {
-      transition-delay: 0.04s;
-    }
-    .speeddial-menu.active .speeddial-item:nth-child(2) {
-      transition-delay: 0.08s;
-    }
+    .speeddial-menu.active .speeddial-item:nth-child(1) { transition-delay: 0.04s; }
+    .speeddial-menu.active .speeddial-item:nth-child(2) { transition-delay: 0.08s; }
 
     .speeddial-icon-badge {
       width: 32px;
@@ -428,7 +439,7 @@
     .modal-step-btn:active { background: var(--border); }
     .modal-step-val { font-size: 20px; font-weight: 800; }
 
-    /* Scanner Viewport */
+    /* Barcode Scanner Viewport */
     #scannerRegion {
       position: relative;
       width: 100%;
@@ -481,7 +492,7 @@
     <header>
       <div class="title-row">
         <div class="brand-icon" id="brandIcon"></div>
-        <h1>Garage DEV</h1>
+        <h1 id="appHeaderTitle">Garage List</h1>
         <div class="sync-pill" id="syncStatus">
           <span class="sync-dot"></span>
           <span id="syncText">Connecting...</span>
@@ -523,21 +534,19 @@
     <div class="bento-grid" id="bentoGrid"></div>
   </div>
 
-  <!-- BLURRED BACKDROP FOR SPEED DIAL -->
+  <!-- SPEED DIAL BLURRED BACKDROP -->
   <div class="speeddial-overlay" id="speedDialOverlay" onclick="closeSpeedDialMenu()"></div>
 
-  <!-- SPEED DIAL EXPANDABLE OPTIONS -->
+  <!-- SPEED DIAL ACTION PILLS -->
   <div class="speeddial-menu" id="speedDialMenu">
-    <!-- Option 1: Barcode Scan with Exact Viewfinder Barcode Icon -->
+    <!-- Viewfinder Barcode Option -->
     <div class="speeddial-item" onclick="selectSpeedDialAction('scan')">
       <div class="speeddial-icon-badge">
         <svg viewBox="0 0 32 32" width="19" height="19" fill="currentColor">
-          <!-- 4 Corner Viewfinder Brackets -->
           <path d="M 4 11 V 4 H 11" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="square"/>
           <path d="M 21 4 H 28 V 11" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="square"/>
           <path d="M 4 21 V 28 H 11" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="square"/>
           <path d="M 21 28 H 28 V 21" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="square"/>
-          <!-- Central Barcode Slats -->
           <rect x="7" y="8" width="1.8" height="16"/>
           <rect x="10.2" y="8" width="2.8" height="16"/>
           <rect x="14.4" y="8" width="1.2" height="16"/>
@@ -549,7 +558,7 @@
       <span>Scan Barcode</span>
     </div>
 
-    <!-- Option 2: Add Manually -->
+    <!-- Manual Add Option -->
     <div class="speeddial-item" onclick="selectSpeedDialAction('manual')">
       <div class="speeddial-icon-badge">
         <span style="font-size: 18px; line-height: 1; font-weight: 800;">✎</span>
@@ -558,7 +567,7 @@
     </div>
   </div>
 
-  <!-- FLOATING ACTION BUTTON WITH PRESS & HOLD -->
+  <!-- FLOATING ACTION BUTTON (PRESS & HOLD) -->
   <button class="fab-bottom" id="fabAdd" title="Add or Scan Item">
     +
   </button>
@@ -582,7 +591,6 @@
         Point camera at product barcode
       </div>
 
-      <!-- Scanned Item Match or Add Box -->
       <div class="scanner-result-box" id="scannerResultBox"></div>
     </div>
   </div>
@@ -676,7 +684,10 @@
       serverTimestamp
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    const APP_VERSION = "4.7.0";
+    const APP_VERSION = "4.8.0";
+
+    // Detect Environment
+    const isDev = window.location.pathname.toLowerCase().includes('dev');
 
     const firebaseConfig = {
       apiKey: "AIzaSyAMznXG0OXHqMdfrmOGHK-g08TugsYfWw8",
@@ -721,6 +732,7 @@
     const dom = {
       body: document.body,
       brandIcon: document.getElementById('brandIcon'),
+      appHeaderTitle: document.getElementById('appHeaderTitle'),
       grid: document.getElementById('bentoGrid'),
       filterBar: document.getElementById('categoryFilters'),
       selBar: document.getElementById('selectionBar'),
@@ -760,63 +772,94 @@
       speedDialMenu: document.getElementById('speedDialMenu')
     };
 
-    // Staging Blueprint Schematic SVGs
+    // Update header dynamically to match environment
+    if (dom.appHeaderTitle) {
+      dom.appHeaderTitle.innerText = isDev ? "Garage DEV" : "Garage List";
+    }
+
+    // Adaptive SVGs (Blueprint for Staging / Dev; Shelves for Live / Production)
     const logoSVGs = {
-      dark: `<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <linearGradient id="bpGradDark" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stop-color="#075985"/>
-            <stop offset="100%" stop-color="#0c2d48"/>
-          </linearGradient>
-          <pattern id="bpGridDark" width="32" height="32" patternUnits="userSpaceOnUse">
-            <path d="M 32 0 L 0 0 0 32" fill="none" stroke="#38bdf8" stroke-width="1" stroke-opacity="0.18"/>
-          </pattern>
-        </defs>
-        <rect width="512" height="512" rx="120" fill="url(#bpGradDark)"/>
-        <rect width="512" height="512" rx="120" fill="url(#bpGridDark)"/>
-        <rect x="56" y="56" width="400" height="400" rx="32" fill="none" stroke="#38bdf8" stroke-width="6" stroke-dasharray="16 10" stroke-opacity="0.6"/>
-        <g transform="translate(256, 175)">
-          <circle cx="0" cy="0" r="46" fill="none" stroke="#facc15" stroke-width="16" stroke-dasharray="14 10"/>
-          <circle cx="0" cy="0" r="22" fill="#facc15"/>
-        </g>
-        <line x1="160" y1="260" x2="160" y2="380" stroke="#0284c7" stroke-width="8"/>
-        <line x1="352" y1="260" x2="352" y2="380" stroke="#0284c7" stroke-width="8"/>
-        <polygon points="256,215 384,275 256,335 128,275" fill="#0369a1" fill-opacity="0.35" stroke="#38bdf8" stroke-width="10" stroke-linejoin="round"/>
-        <polygon points="128,275 256,335 256,415 128,355" fill="#075985" fill-opacity="0.5" stroke="#38bdf8" stroke-width="10" stroke-linejoin="round"/>
-        <polygon points="256,335 384,275 384,355 256,415" fill="#0c4a6e" fill-opacity="0.5" stroke="#38bdf8" stroke-width="10" stroke-linejoin="round"/>
-        <circle cx="256" cy="215" r="7" fill="#facc15"/>
-        <circle cx="384" cy="275" r="7" fill="#facc15"/>
-        <circle cx="128" cy="275" r="7" fill="#facc15"/>
-        <circle cx="256" cy="415" r="7" fill="#facc15"/>
-      </svg>`,
-      light: `<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <linearGradient id="bpGradLight" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stop-color="#f0f9ff"/>
-            <stop offset="100%" stop-color="#e0f2fe"/>
-          </linearGradient>
-          <pattern id="bpGridLight" width="32" height="32" patternUnits="userSpaceOnUse">
-            <path d="M 32 0 L 0 0 0 32" fill="none" stroke="#0284c7" stroke-width="1" stroke-opacity="0.2"/>
-          </pattern>
-        </defs>
-        <rect width="512" height="512" rx="120" fill="url(#bpGradLight)" stroke="#bae6fd" stroke-width="12"/>
-        <rect width="512" height="512" rx="120" fill="url(#bpGridLight)"/>
-        <rect x="56" y="56" width="400" height="400" rx="32" fill="none" stroke="#0284c7" stroke-width="6" stroke-dasharray="16 10" stroke-opacity="0.7"/>
-        <g transform="translate(256, 175)">
-          <circle cx="0" cy="0" r="46" fill="none" stroke="#d97706" stroke-width="16" stroke-dasharray="14 10"/>
-          <circle cx="0" cy="0" r="22" fill="#d97706"/>
-        </g>
-        <line x1="160" y1="260" x2="160" y2="380" stroke="#93c5fd" stroke-width="8"/>
-        <line x1="352" y1="260" x2="352" y2="380" stroke="#93c5fd" stroke-width="8"/>
-        <polygon points="256,215 384,275 256,335 128,275" fill="#e0f2fe" fill-opacity="0.7" stroke="#0284c7" stroke-width="10" stroke-linejoin="round"/>
-        <polygon points="128,275 256,335 256,415 128,355" fill="#bae6fd" fill-opacity="0.6" stroke="#0284c7" stroke-width="10" stroke-linejoin="round"/>
-        <polygon points="256,335 384,275 384,355 256,415" fill="#7dd3fc" fill-opacity="0.6" stroke="#0284c7" stroke-width="10" stroke-linejoin="round"/>
-        <circle cx="256" cy="215" r="7" fill="#d97706"/>
-        <circle cx="384" cy="275" r="7" fill="#d97706"/>
-        <circle cx="128" cy="275" r="7" fill="#d97706"/>
-        <circle cx="256" cy="415" r="7" fill="#d97706"/>
-      </svg>`
+      blueprint: {
+        dark: `<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="bpGradDark" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#075985"/>
+              <stop offset="100%" stop-color="#0c2d48"/>
+            </linearGradient>
+            <pattern id="bpGridDark" width="32" height="32" patternUnits="userSpaceOnUse">
+              <path d="M 32 0 L 0 0 0 32" fill="none" stroke="#38bdf8" stroke-width="1" stroke-opacity="0.18"/>
+            </pattern>
+          </defs>
+          <rect width="512" height="512" rx="120" fill="url(#bpGradDark)"/>
+          <rect width="512" height="512" rx="120" fill="url(#bpGridDark)"/>
+          <rect x="56" y="56" width="400" height="400" rx="32" fill="none" stroke="#38bdf8" stroke-width="6" stroke-dasharray="16 10" stroke-opacity="0.6"/>
+          <g transform="translate(256, 175)">
+            <circle cx="0" cy="0" r="46" fill="none" stroke="#facc15" stroke-width="16" stroke-dasharray="14 10"/>
+            <circle cx="0" cy="0" r="22" fill="#facc15"/>
+          </g>
+          <line x1="160" y1="260" x2="160" y2="380" stroke="#0284c7" stroke-width="8"/>
+          <line x1="352" y1="260" x2="352" y2="380" stroke="#0284c7" stroke-width="8"/>
+          <polygon points="256,215 384,275 256,335 128,275" fill="#0369a1" fill-opacity="0.35" stroke="#38bdf8" stroke-width="10" stroke-linejoin="round"/>
+          <polygon points="128,275 256,335 256,415 128,355" fill="#075985" fill-opacity="0.5" stroke="#38bdf8" stroke-width="10" stroke-linejoin="round"/>
+          <polygon points="256,335 384,275 384,355 256,415" fill="#0c4a6e" fill-opacity="0.5" stroke="#38bdf8" stroke-width="10" stroke-linejoin="round"/>
+          <circle cx="256" cy="215" r="7" fill="#facc15"/>
+          <circle cx="384" cy="275" r="7" fill="#facc15"/>
+          <circle cx="128" cy="275" r="7" fill="#facc15"/>
+          <circle cx="256" cy="415" r="7" fill="#facc15"/>
+        </svg>`,
+        light: `<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="bpGradLight" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#f0f9ff"/>
+              <stop offset="100%" stop-color="#e0f2fe"/>
+            </linearGradient>
+            <pattern id="bpGridLight" width="32" height="32" patternUnits="userSpaceOnUse">
+              <path d="M 32 0 L 0 0 0 32" fill="none" stroke="#0284c7" stroke-width="1" stroke-opacity="0.2"/>
+            </pattern>
+          </defs>
+          <rect width="512" height="512" rx="120" fill="url(#bpGradLight)" stroke="#bae6fd" stroke-width="12"/>
+          <rect width="512" height="512" rx="120" fill="url(#bpGridLight)"/>
+          <rect x="56" y="56" width="400" height="400" rx="32" fill="none" stroke="#0284c7" stroke-width="6" stroke-dasharray="16 10" stroke-opacity="0.7"/>
+          <g transform="translate(256, 175)">
+            <circle cx="0" cy="0" r="46" fill="none" stroke="#d97706" stroke-width="16" stroke-dasharray="14 10"/>
+            <circle cx="0" cy="0" r="22" fill="#d97706"/>
+          </g>
+          <line x1="160" y1="260" x2="160" y2="380" stroke="#93c5fd" stroke-width="8"/>
+          <line x1="352" y1="260" x2="352" y2="380" stroke="#93c5fd" stroke-width="8"/>
+          <polygon points="256,215 384,275 256,335 128,275" fill="#e0f2fe" fill-opacity="0.7" stroke="#0284c7" stroke-width="10" stroke-linejoin="round"/>
+          <polygon points="128,275 256,335 256,415 128,355" fill="#bae6fd" fill-opacity="0.6" stroke="#0284c7" stroke-width="10" stroke-linejoin="round"/>
+          <polygon points="256,335 384,275 384,355 256,415" fill="#7dd3fc" fill-opacity="0.6" stroke="#0284c7" stroke-width="10" stroke-linejoin="round"/>
+          <circle cx="256" cy="215" r="7" fill="#d97706"/>
+          <circle cx="384" cy="275" r="7" fill="#d97706"/>
+          <circle cx="128" cy="275" r="7" fill="#d97706"/>
+          <circle cx="256" cy="415" r="7" fill="#d97706"/>
+        </svg>`
+      },
+      shelves: {
+        dark: `<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+          <rect width="512" height="512" rx="120" fill="#0f172a"/>
+          <rect x="76" y="76" width="360" height="360" rx="28" fill="none" stroke="#334155" stroke-width="20"/>
+          <line x1="76" y1="264" x2="436" y2="264" stroke="#475569" stroke-width="20" stroke-linecap="round"/>
+          <line x1="76" y1="358" x2="436" y2="358" stroke="#475569" stroke-width="20" stroke-linecap="round"/>
+          <rect x="130" y="296" width="46" height="62" rx="8" fill="#38bdf8"/>
+          <rect x="200" y="306" width="70" height="52" rx="8" fill="#64748b"/>
+          <rect x="294" y="286" width="98" height="72" rx="10" fill="#94a3b8"/>
+          <circle cx="340" cy="220" r="22" fill="#10b981"/>
+        </svg>`,
+        light: `<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+          <rect width="512" height="512" rx="120" fill="#ffffff" stroke="#e2e8f0" stroke-width="20"/>
+          <rect x="76" y="76" width="360" height="360" rx="28" fill="none" stroke="#94a3b8" stroke-width="20"/>
+          <line x1="76" y1="264" x2="436" y2="264" stroke="#64748b" stroke-width="20" stroke-linecap="round"/>
+          <line x1="76" y1="358" x2="436" y2="358" stroke="#64748b" stroke-width="20" stroke-linecap="round"/>
+          <rect x="130" y="296" width="46" height="62" rx="8" fill="#0284c7"/>
+          <rect x="200" y="306" width="70" height="52" rx="8" fill="#94a3b8"/>
+          <rect x="294" y="286" width="98" height="72" rx="10" fill="#64748b"/>
+          <circle cx="340" cy="220" r="22" fill="#059669"/>
+        </svg>`
+      }
     };
+
+    const activeLogos = isDev ? logoSVGs.blueprint : logoSVGs.shelves;
 
     window.setTheme = function(mode) {
       const fav = document.getElementById('dynamicFavicon');
@@ -824,14 +867,14 @@
         dom.body.classList.add('dark');
         dom.btnDark?.classList.add('active');
         dom.btnLight?.classList.remove('active');
-        if (dom.brandIcon) dom.brandIcon.innerHTML = logoSVGs.dark;
-        if (fav) fav.href = "data:image/svg+xml," + encodeURIComponent(logoSVGs.dark);
+        if (dom.brandIcon) dom.brandIcon.innerHTML = activeLogos.dark;
+        if (fav) fav.href = "data:image/svg+xml," + encodeURIComponent(activeLogos.dark);
       } else {
         dom.body.classList.remove('dark');
         dom.btnLight?.classList.add('active');
         dom.btnDark?.classList.remove('active');
-        if (dom.brandIcon) dom.brandIcon.innerHTML = logoSVGs.light;
-        if (fav) fav.href = "data:image/svg+xml," + encodeURIComponent(logoSVGs.light);
+        if (dom.brandIcon) dom.brandIcon.innerHTML = activeLogos.light;
+        if (fav) fav.href = "data:image/svg+xml," + encodeURIComponent(activeLogos.light);
       }
       localStorage.setItem('garage_theme', mode);
     };
@@ -1005,7 +1048,7 @@
         }
         render();
       }, (err) => {
-        console.error("Categories error:", err);
+        console.error("Categories snapshot error:", err);
         if (dom.summaryText) dom.summaryText.innerText = "Error: " + (err.message || err.code);
         updateSyncStatus(false);
       });
@@ -1075,7 +1118,7 @@
         render();
         updateSyncStatus(true);
       }, (err) => {
-        console.error("Inventory error:", err);
+        console.error("Inventory snapshot error:", err);
         if (dom.summaryText) dom.summaryText.innerText = "Error: " + (err.message || err.code);
         updateSyncStatus(false);
       });
@@ -1202,7 +1245,7 @@
     window.selectModalCategory = function(cat) {
       selectedModalCategory = cat;
       dom.inlineNewCategory.style.display = cat === '__new__' ? 'block' : 'none';
-      if (cat === '__new__') dom.inlineNewCategory.focus();
+      if (cat === '__new__' && dom.inlineNewCategory) dom.inlineNewCategory.focus();
       renderModalCategoryPills();
     };
 
@@ -1222,7 +1265,7 @@
     };
 
     // ==========================================
-    // BARCODE CAMERA SCANNER
+    // BARCODE SCANNER CAMERA LOGIC
     // ==========================================
     window.toggleScannerModal = async function(open) {
       if (open) {
@@ -1268,7 +1311,7 @@
           await html5QrScanner.stop();
           isScannerRunning = false;
         } catch (e) {
-          console.warn("Scanner stop:", e);
+          console.warn("Scanner stop issue:", e);
         }
       }
     }
@@ -1284,7 +1327,6 @@
 
       dom.scannerStatusText.innerText = `Scanned: ${decodedText}`;
 
-      // Check for catalog match
       const match = items.find(i => (i.barcode && i.barcode === decodedText) || i.id === decodedText);
 
       if (match) {
@@ -1494,10 +1536,12 @@
 
     function showLocalNotification(itemName) {
       if ('Notification' in window && Notification.permission === 'granted') {
-        new Notification(itemName === "Garage Alerts Enabled" ? "Garage List Active" : "Out of Stock ⚠️", {
+        const appTitle = isDev ? "Garage DEV" : "Garage List";
+        const touchIcon = isDev ? "blueprint-icon.png" : "apple-touch-icon.png";
+        new Notification(itemName === "Garage Alerts Enabled" ? `${appTitle} Active` : "Out of Stock ⚠️", {
           body: itemName === "Garage Alerts Enabled" ? "You will receive alerts here when items run out." : `${itemName} has run out in the garage!`,
-          icon: "apple-touch-icon-dev.png",
-          badge: "apple-touch-icon-dev.png"
+          icon: touchIcon,
+          badge: touchIcon
         });
       }
     }

@@ -91,6 +91,7 @@
       color: var(--text); 
       transition: background 0.15s ease, color 0.15s ease; 
       user-select: none;
+      -webkit-user-select: none;
       min-height: 100vh;
       -webkit-font-smoothing: antialiased;
     }
@@ -277,6 +278,9 @@
       z-index: 95;
       transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background 0.2s ease;
       touch-action: none;
+      -webkit-touch-callout: none !important;
+      -webkit-user-select: none !important;
+      user-select: none !important;
     }
     .fab-bottom:active { transform: scale(0.92); }
     .fab-bottom.is-open {
@@ -334,6 +338,8 @@
       transform: translateY(18px) scale(0.92);
       transition: opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1), transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
       user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
     }
     .speeddial-item:active { transform: scale(0.95); }
     .speeddial-menu.active .speeddial-item {
@@ -353,6 +359,7 @@
       justify-content: center;
       color: var(--text);
       flex-shrink: 0;
+      pointer-events: none;
     }
 
     .bulk-delete-bar { 
@@ -569,7 +576,7 @@
 
   <!-- FLOATING ACTION BUTTON (PRESS & HOLD) -->
   <button class="fab-bottom" id="fabAdd" title="Add or Scan Item">
-    +
+    <span style="pointer-events: none; -webkit-user-select: none; user-select: none; line-height: 1;">+</span>
   </button>
 
   <button class="bulk-delete-bar" id="bulkDeleteBar" onclick="openBulkDeleteSheet()">🗑️ Delete Selected Items</button>
@@ -684,7 +691,7 @@
       serverTimestamp
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    const APP_VERSION = "4.8.0";
+    const APP_VERSION = "4.9.0";
 
     // Detect Environment
     const isDev = window.location.pathname.toLowerCase().includes('dev');
@@ -772,12 +779,10 @@
       speedDialMenu: document.getElementById('speedDialMenu')
     };
 
-    // Update header dynamically to match environment
     if (dom.appHeaderTitle) {
       dom.appHeaderTitle.innerText = isDev ? "Garage DEV" : "Garage List";
     }
 
-    // Adaptive SVGs (Blueprint for Staging / Dev; Shelves for Live / Production)
     const logoSVGs = {
       blueprint: {
         dark: `<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
@@ -916,7 +921,7 @@
         const gain = audioCtx.createGain();
         osc.connect(gain);
         gain.connect(audioCtx.destination);
-        osc.frequency.value = 1046.5; // C6 chime
+        osc.frequency.value = 1046.5; 
         gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.14);
         osc.start();
@@ -958,6 +963,12 @@
 
     function setupFabPressAndHold() {
       const btn = dom.fabAdd;
+      if (!btn) return;
+
+      btn.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        return false;
+      });
 
       const handlePressStart = (clientX, clientY) => {
         if (isSpeedDialOpen) return;
@@ -966,14 +977,17 @@
         isLongPressTriggered = false;
         longPressTimer = setTimeout(() => {
           isLongPressTriggered = true;
+          if (window.getSelection) {
+            window.getSelection().removeAllRanges();
+          }
           openSpeedDialMenu();
-        }, 400); // 400ms threshold for press-and-hold
+        }, 400);
       };
 
       const handlePressEnd = (e) => {
         clearTimeout(longPressTimer);
         if (isLongPressTriggered) {
-          e.preventDefault();
+          if (e && e.cancelable) e.preventDefault();
           isLongPressTriggered = false;
           return;
         }
@@ -1319,7 +1333,7 @@
     async function onBarcodeScanned(decodedText) {
       const now = Date.now();
       if (decodedText === lastScannedBarcode && now - lastScanTime < 2500) {
-        return; // debounce 2.5s
+        return; 
       }
       lastScannedBarcode = decodedText;
       lastScanTime = now;

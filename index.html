@@ -965,49 +965,77 @@
       const btn = dom.fabAdd;
       if (!btn) return;
 
+      let touchStartX = 0;
+      let touchStartY = 0;
+      let longPressTimer = null;
+      let isLongPressTriggered = false;
+      let speedDialJustOpened = false;
+      let lastTouchTime = 0;
+
+      // Suppress iOS context menu & text callouts
       btn.addEventListener('contextmenu', (e) => {
         e.preventDefault();
         return false;
       });
 
       const handlePressStart = (clientX, clientY) => {
-        if (isSpeedDialOpen) return;
         touchStartX = clientX;
         touchStartY = clientY;
         isLongPressTriggered = false;
+
+        // If the speed dial is already open, do not start a new long press
+        if (isSpeedDialOpen) return;
+
+        clearTimeout(longPressTimer);
         longPressTimer = setTimeout(() => {
           isLongPressTriggered = true;
+          speedDialJustOpened = true;
+
           if (window.getSelection) {
             window.getSelection().removeAllRanges();
           }
+
           openSpeedDialMenu();
-        }, 400);
+
+          // 450ms cooldown prevents lifting your finger from immediately dismissing the menu
+          setTimeout(() => {
+            speedDialJustOpened = false;
+          }, 450);
+        }, 350); // 350ms standard iOS press-and-hold
       };
 
       const handlePressEnd = (e) => {
         clearTimeout(longPressTimer);
-        if (isLongPressTriggered) {
+
+        // If long press just triggered, keep the menu open
+        if (isLongPressTriggered || speedDialJustOpened) {
           if (e && e.cancelable) e.preventDefault();
           isLongPressTriggered = false;
           return;
         }
+
+        // If menu was already open and user intentionally tapped the 'X'
         if (isSpeedDialOpen) {
+          if (e && e.cancelable) e.preventDefault();
           closeSpeedDialMenu();
-        } else {
-          toggleAddModal(true);
+          return;
         }
+
+        // Quick tap: open the New Item modal
+        toggleAddModal(true);
       };
 
       const handlePressMove = (clientX, clientY) => {
         const deltaX = Math.abs(clientX - touchStartX);
         const deltaY = Math.abs(clientY - touchStartY);
-        if (deltaX > 12 || deltaY > 12) {
+        if (deltaX > 15 || deltaY > 15) {
           clearTimeout(longPressTimer);
         }
       };
 
-      // Touch Events
+      // --- TOUCH EVENTS ---
       btn.addEventListener('touchstart', (e) => {
+        lastTouchTime = Date.now();
         const t = e.touches[0];
         handlePressStart(t.clientX, t.clientY);
       }, { passive: true });
@@ -1018,33 +1046,43 @@
       }, { passive: true });
 
       btn.addEventListener('touchend', (e) => {
+        lastTouchTime = Date.now();
         handlePressEnd(e);
       });
 
       btn.addEventListener('touchcancel', () => {
         clearTimeout(longPressTimer);
+        isLongPressTriggered = false;
+        speedDialJustOpened = false;
       });
 
-      // Mouse Events (Desktop)
+      // --- MOUSE EVENTS (Ignored if triggered by touch emulation) ---
+      const isSynthetic = () => (Date.now() - lastTouchTime) < 800;
+
       btn.addEventListener('mousedown', (e) => {
-        if (e.button !== 0) return;
+        if (e.button !== 0 || isSynthetic()) return;
         handlePressStart(e.clientX, e.clientY);
       });
 
       btn.addEventListener('mousemove', (e) => {
+        if (isSynthetic()) return;
         handlePressMove(e.clientX, e.clientY);
       });
 
       btn.addEventListener('mouseup', (e) => {
-        if (e.button !== 0) return;
+        if (e.button !== 0 || isSynthetic()) return;
         handlePressEnd(e);
       });
 
       btn.addEventListener('mouseleave', () => {
+        if (isSynthetic()) return;
         clearTimeout(longPressTimer);
       });
-    }
 
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+      });
+    }
     // ==========================================
     // FIRESTORE SYNC & INVENTORY LOGIC
     // ==========================================

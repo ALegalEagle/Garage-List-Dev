@@ -24,8 +24,8 @@
       document.write(`
         <meta name="apple-mobile-web-app-title" content="${appName}" />
         <link id="dynamicFavicon" rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='120' fill='${encodeURIComponent(themeColor)}'/%3E%3C/svg%3E" />
-        <link rel="apple-touch-icon" sizes="180x180" href="${appIcon}?v=3" />
-        <link rel="manifest" href='data:application/manifest+json,{"name":"${appName}","short_name":"${appName}","start_url":"${appScope}","scope":"${appScope}","display":"standalone","background_color":"${themeColor}","theme_color":"${themeColor}","icons":[{"src":"${appIcon}?v=3","sizes":"180x180","type":"image/png"}]}' />
+        <link rel="apple-touch-icon" sizes="180x180" href="${appIcon}?v=4" />
+        <link rel="manifest" href='data:application/manifest+json,{"name":"${appName}","short_name":"${appName}","start_url":"${appScope}","scope":"${appScope}","display":"standalone","background_color":"${themeColor}","theme_color":"${themeColor}","icons":[{"src":"${appIcon}?v=4","sizes":"180x180","type":"image/png"}]}' />
       `);
     })();
   </script>
@@ -446,7 +446,7 @@
     .modal-step-btn:active { background: var(--border); }
     .modal-step-val { font-size: 20px; font-weight: 800; }
 
-    /* Barcode Scanner Viewport */
+    /* Barcode Scanner Viewport & Steppers */
     #scannerRegion {
       position: relative;
       width: 100%;
@@ -475,6 +475,15 @@
       padding: 14px;
       display: none;
       animation: cardSlideIn 0.2s ease forwards;
+    }
+
+    .scanner-stepper-btn {
+      transition: transform 0.08s ease, opacity 0.08s ease !important;
+      cursor: pointer;
+    }
+    .scanner-stepper-btn:active {
+      transform: scale(0.95) !important;
+      opacity: 0.75 !important;
     }
 
     .bulk-list-preview { max-height: 140px; overflow-y: auto; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 10px 14px; margin: 14px 0; }
@@ -691,9 +700,8 @@
       serverTimestamp
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    const APP_VERSION = "4.9.0";
+    const APP_VERSION = "4.9.1";
 
-    // Detect Environment
     const isDev = window.location.pathname.toLowerCase().includes('dev');
 
     const firebaseConfig = {
@@ -728,13 +736,10 @@
     let isScannerRunning = false;
     let lastScannedBarcode = null;
     let lastScanTime = 0;
+    let activeScannedItemId = null;
 
     // Speed Dial State
     let isSpeedDialOpen = false;
-    let longPressTimer = null;
-    let isLongPressTriggered = false;
-    let touchStartX = 0;
-    let touchStartY = 0;
 
     const dom = {
       body: document.body,
@@ -913,20 +918,41 @@
       return (str || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
     }
 
-    function playScanBeep() {
-      if (navigator.vibrate) navigator.vibrate(80);
+    // Audio Engine
+    let sharedAudioCtx = null;
+
+    function unlockAudio() {
       try {
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.frequency.value = 1046.5; 
-        gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.14);
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.14);
+        if (!sharedAudioCtx) {
+          sharedAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (sharedAudioCtx.state === 'suspended') {
+          sharedAudioCtx.resume();
+        }
       } catch (e) {}
+    }
+
+    function playScanBeep() {
+      try {
+        unlockAudio();
+        if (!sharedAudioCtx) return;
+
+        const osc = sharedAudioCtx.createOscillator();
+        const gain = sharedAudioCtx.createGain();
+
+        osc.connect(gain);
+        gain.connect(sharedAudioCtx.destination);
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(1760, sharedAudioCtx.currentTime); 
+        gain.gain.setValueAtTime(0.3, sharedAudioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, sharedAudioCtx.currentTime + 0.12);
+
+        osc.start(sharedAudioCtx.currentTime);
+        osc.stop(sharedAudioCtx.currentTime + 0.12);
+      } catch (e) {
+        console.warn("Scan beep error:", e);
+      }
     }
 
     // ==========================================
@@ -972,7 +998,6 @@
       let speedDialJustOpened = false;
       let lastTouchTime = 0;
 
-      // Suppress iOS context menu & text callouts
       btn.addEventListener('contextmenu', (e) => {
         e.preventDefault();
         return false;
@@ -983,7 +1008,6 @@
         touchStartY = clientY;
         isLongPressTriggered = false;
 
-        // If the speed dial is already open, do not start a new long press
         if (isSpeedDialOpen) return;
 
         clearTimeout(longPressTimer);
@@ -997,31 +1021,27 @@
 
           openSpeedDialMenu();
 
-          // 450ms cooldown prevents lifting your finger from immediately dismissing the menu
           setTimeout(() => {
             speedDialJustOpened = false;
           }, 450);
-        }, 350); // 350ms standard iOS press-and-hold
+        }, 350);
       };
 
       const handlePressEnd = (e) => {
         clearTimeout(longPressTimer);
 
-        // If long press just triggered, keep the menu open
         if (isLongPressTriggered || speedDialJustOpened) {
           if (e && e.cancelable) e.preventDefault();
           isLongPressTriggered = false;
           return;
         }
 
-        // If menu was already open and user intentionally tapped the 'X'
         if (isSpeedDialOpen) {
           if (e && e.cancelable) e.preventDefault();
           closeSpeedDialMenu();
           return;
         }
 
-        // Quick tap: open the New Item modal
         toggleAddModal(true);
       };
 
@@ -1033,7 +1053,6 @@
         }
       };
 
-      // --- TOUCH EVENTS ---
       btn.addEventListener('touchstart', (e) => {
         lastTouchTime = Date.now();
         const t = e.touches[0];
@@ -1056,7 +1075,6 @@
         speedDialJustOpened = false;
       });
 
-      // --- MOUSE EVENTS (Ignored if triggered by touch emulation) ---
       const isSynthetic = () => (Date.now() - lastTouchTime) < 800;
 
       btn.addEventListener('mousedown', (e) => {
@@ -1083,6 +1101,7 @@
         e.preventDefault();
       });
     }
+
     // ==========================================
     // FIRESTORE SYNC & INVENTORY LOGIC
     // ==========================================
@@ -1321,11 +1340,13 @@
     // ==========================================
     window.toggleScannerModal = async function(open) {
       if (open) {
+        unlockAudio();
         dom.scannerModalOverlay.classList.add('open');
         dom.scannerResultBox.style.display = 'none';
         dom.scannerStatusText.innerText = "Starting camera...";
         startCameraScanner();
       } else {
+        activeScannedItemId = null;
         stopCameraScanner();
         dom.scannerModalOverlay.classList.remove('open');
       }
@@ -1347,7 +1368,7 @@
           { facingMode: "environment" },
           config,
           onBarcodeScanned,
-          (err) => { /* ignore minor frame search misses */ }
+          (err) => { /* frame misses */ }
         );
         isScannerRunning = true;
         dom.scannerStatusText.innerText = "Point camera at a product barcode";
@@ -1403,27 +1424,46 @@
     }
 
     function renderMatchedScannerItem(item) {
+      if (!item) return;
+      activeScannedItemId = item.id;
       const box = dom.scannerResultBox;
       box.style.display = 'block';
+      const isOut = item.amount === 0;
+
       box.innerHTML = `
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
           <div>
             <span class="category-chip">${item.category}</span>
             <div style="font-size: 16px; font-weight: 800; margin-top: 4px;">${item.name}</div>
             <div style="font-size: 11px; color: var(--text-muted);">Barcode: ${item.barcode}</div>
           </div>
           <div style="text-align: right;">
-            <div style="font-size: 22px; font-weight: 800; color: ${item.amount === 0 ? 'var(--out-border)' : 'inherit'};">${item.amount} in stock</div>
+            <div id="scannerStockQty" style="font-size: 22px; font-weight: 800; color: ${isOut ? 'var(--out-border)' : 'inherit'};">
+              ${item.amount} in stock
+            </div>
           </div>
         </div>
         <div style="display: flex; gap: 8px; margin-top: 10px;">
-          <button class="action-btn" style="flex: 1; padding: 10px; font-weight: 800; background: var(--pill-bg);" onclick="updateStock('${item.id}', -1)">— Decrease</button>
-          <button class="action-btn" style="flex: 1; padding: 10px; font-weight: 800; background: var(--fab-bg); color: var(--fab-text);" onclick="updateStock('${item.id}', 1)">+ Add 1</button>
+          <button class="action-btn scanner-stepper-btn" style="flex: 1; padding: 12px; font-weight: 800; background: var(--pill-bg);" onclick="handleScannerStock('${item.id}', -1, event)">— Decrease</button>
+          <button class="action-btn scanner-stepper-btn" style="flex: 1; padding: 12px; font-weight: 800; background: var(--fab-bg); color: var(--fab-text);" onclick="handleScannerStock('${item.id}', 1, event)">+ Add 1</button>
         </div>
       `;
     }
 
+    window.handleScannerStock = async function(id, delta, event) {
+      if (event) event.stopPropagation();
+      await window.updateStock(id, delta, event);
+      
+      const updated = items.find(i => i.id === id);
+      const label = document.getElementById('scannerStockQty');
+      if (updated && label) {
+        label.innerText = `${updated.amount} in stock`;
+        label.style.color = updated.amount === 0 ? 'var(--out-border)' : 'inherit';
+      }
+    };
+
     function renderUnknownScannerProduct(barcode, suggestedTitle) {
+      activeScannedItemId = null;
       const box = dom.scannerResultBox;
       box.style.display = 'block';
       const titleEsc = escapeAttr(suggestedTitle);
@@ -1610,6 +1650,15 @@
     };
 
     function render() {
+      if (activeScannedItemId) {
+        const liveItem = items.find(i => i.id === activeScannedItemId);
+        const modalQty = document.getElementById('scannerStockQty');
+        if (liveItem && modalQty) {
+          modalQty.innerText = `${liveItem.amount} in stock`;
+          modalQty.style.color = liveItem.amount === 0 ? 'var(--out-border)' : 'inherit';
+        }
+      }
+
       const outCount = items.filter((i) => i.amount === 0).length;
       const lowCount = items.filter((i) => i.amount === 1).length;
       if (dom.outCount) dom.outCount.innerText = `${outCount} items`;

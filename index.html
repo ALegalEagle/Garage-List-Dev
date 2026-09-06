@@ -5,16 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <meta name="apple-mobile-web-app-title" content="Garage List" />
+  <meta name="apple-mobile-web-app-title" content="Garage List [DEV]" />
   <title>Garage List [DEV]</title>
 
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
 
-  <link id="dynamicFavicon" rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='512' height='512' rx='120' fill='%230f172a'/%3E%3Crect x='76' y='76' width='360' height='360' rx='28' fill='none' stroke='%23334155' stroke-width='20'/%3E%3Cline x1='76' y1='264' x2='436' y2='264' stroke='%23475569' stroke-width='20'/%3E%3Cline x1='76' y1='358' x2='436' y2='358' stroke='%23475569' stroke-width='20'/%3E%3Crect x='130' y='296' width='46' height='62' rx='8' fill='%2338bdf8'/%3E%3Crect x='200' y='306' width='70' height='52' rx='8' fill='%2364748b'/%3E%3Crect x='294' y='286' width='98' height='72' rx='10' fill='%2394a3b8'/%3E%3Ccircle cx='340' cy='220' r='22' fill='%2310b981'/%3E%3C/svg%3E" /><link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" /><link rel="manifest" href='data:application/manifest+json,{"name":"Garage List","short_name":"GarageList","start_url":".","display":"standalone","background_color":"#0f172a","theme_color":"#0f172a","icons":[{"src":"apple-touch-icon.png","sizes":"180x180","type":"image/png"}]}' />
-  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon-dev.png"/>
+  <link id="dynamicFavicon" rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='512' height='512' rx='120' fill='%23075985'/%3E%3C/svg%3E" />
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon-dev.png" />
   <link rel="manifest" href='data:application/manifest+json,{"name":"Garage List [DEV]","short_name":"GarageDev","start_url":".","display":"standalone","background_color":"#0f172a","theme_color":"#0f172a","icons":[{"src":"apple-touch-icon-dev.png","sizes":"180x180","type":"image/png"}]}' />
+
+  <!-- HTML5 Barcode Scanner Engine -->
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
   <style>
     :root {
       --bg: #fcfcfc;
@@ -35,6 +39,7 @@
       --low-bg: #fffbeb;
       --synced-color: #10b981;
       --card-selected-bg: #fef2f2;
+      --speeddial-blur-bg: rgba(255, 255, 255, 0.72);
     }
 
     body.dark {
@@ -56,6 +61,7 @@
       --low-bg: #451a03;
       --synced-color: #34d399;
       --card-selected-bg: #272042;
+      --speeddial-blur-bg: rgba(15, 23, 42, 0.76);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -215,7 +221,8 @@
     body.selection-active .status-badge { display: none; }
     .bento-card.is-selected .chk-circle { background: var(--out-border); border-color: var(--out-border); color: #fff; }
 
-    .card-title { font-size: 15px; font-weight: 700; line-height: 1.25; margin-bottom: 12px; word-break: break-word; }
+    .card-title { font-size: 15px; font-weight: 700; line-height: 1.25; margin-bottom: 6px; word-break: break-word; }
+    .card-barcode-tag { font-size: 10px; font-weight: 600; color: var(--text-muted); margin-bottom: 10px; }
 
     .stepper-pill { background: var(--stepper-bg); border-radius: 10px; display: flex; align-items: center; justify-content: space-between; padding: 4px 6px; height: 34px; border: 1px solid var(--border); }
     .stepper-btn { background: transparent; border: none; font-size: 18px; font-weight: 700; color: var(--text-muted); width: 28px; height: 28px; cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 6px; }
@@ -226,27 +233,116 @@
 
     body.selection-active .stepper-btn { pointer-events: none; opacity: 0.2; }
 
+    /* ========================================================
+       FLOATING ACTION BUTTON & SPEED DIAL OVERLAY
+    ======================================================== */
     .fab-bottom {
       position: fixed;
       bottom: calc(env(safe-area-inset-bottom, 16px) + 20px);
       right: clamp(20px, 4vw, 36px);
-      width: 56px;
-      height: 56px;
+      width: 58px;
+      height: 58px;
       background: var(--fab-bg);
       color: var(--fab-text);
       border: none;
-      border-radius: 16px;
-      font-size: 28px;
-      font-weight: 800;
+      border-radius: 20px;
+      font-size: 30px;
+      font-weight: 700;
       cursor: pointer;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 10;
-      transition: transform 0.15s ease;
+      z-index: 95;
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background 0.2s ease;
+      touch-action: none;
     }
-    .fab-bottom:active { transform: scale(0.95); }
+    .fab-bottom:active { transform: scale(0.92); }
+    .fab-bottom.is-open {
+      transform: rotate(45deg);
+      background: #dc2626 !important;
+      color: #ffffff !important;
+      box-shadow: 0 10px 30px rgba(220, 38, 38, 0.45);
+    }
+
+    /* Blurred Backdrop */
+    .speeddial-overlay {
+      position: fixed;
+      inset: 0;
+      background: var(--speeddial-blur-bg);
+      backdrop-filter: blur(22px);
+      -webkit-backdrop-filter: blur(22px);
+      z-index: 92;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .speeddial-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* Speed Dial Options Container */
+    .speeddial-menu {
+      position: fixed;
+      bottom: calc(env(safe-area-inset-bottom, 16px) + 90px);
+      right: clamp(20px, 4vw, 36px);
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 14px;
+      z-index: 95;
+      pointer-events: none;
+    }
+    .speeddial-menu.active {
+      pointer-events: auto;
+    }
+
+    /* Speed Dial Pill Item */
+    .speeddial-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--card-bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 12px 18px 12px 16px;
+      border-radius: 30px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      opacity: 0;
+      transform: translateY(18px) scale(0.92);
+      transition: opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1), transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+      user-select: none;
+    }
+    .speeddial-item:active {
+      transform: scale(0.95);
+    }
+    .speeddial-menu.active .speeddial-item {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+    /* Staggered entry */
+    .speeddial-menu.active .speeddial-item:nth-child(1) {
+      transition-delay: 0.04s;
+    }
+    .speeddial-menu.active .speeddial-item:nth-child(2) {
+      transition-delay: 0.08s;
+    }
+
+    .speeddial-icon-badge {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--pill-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text);
+      flex-shrink: 0;
+    }
 
     .bulk-delete-bar { 
       display: none; 
@@ -268,9 +364,12 @@
       text-align: center; 
       z-index: 10; 
     }
-    body.selection-active .fab-bottom { display: none !important; }
+    body.selection-active .fab-bottom,
+    body.selection-active .speeddial-menu,
+    body.selection-active .speeddial-overlay { display: none !important; }
     body.selection-active .bulk-delete-bar { display: block; }
 
+    /* Modals */
     .modal-overlay { 
       display: none; 
       position: fixed; 
@@ -328,6 +427,37 @@
     .modal-step-btn { background: var(--card-bg); border: 1px solid var(--border); font-size: 20px; font-weight: 800; color: var(--text); width: 40px; height: 40px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
     .modal-step-btn:active { background: var(--border); }
     .modal-step-val { font-size: 20px; font-weight: 800; }
+
+    /* Scanner Viewport */
+    #scannerRegion {
+      position: relative;
+      width: 100%;
+      min-height: 260px;
+      background: #000;
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    #scannerRegion video { object-fit: cover !important; border-radius: 18px; }
+
+    .scan-reticle {
+      position: absolute;
+      inset: 20px;
+      pointer-events: none;
+      border: 2px dashed rgba(56, 189, 248, 0.7);
+      border-radius: 12px;
+      box-shadow: inset 0 0 0 9999px rgba(0, 0, 0, 0.25);
+    }
+
+    .scanner-result-box {
+      margin-top: 14px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px;
+      display: none;
+      animation: cardSlideIn 0.2s ease forwards;
+    }
 
     .bulk-list-preview { max-height: 140px; overflow-y: auto; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 10px 14px; margin: 14px 0; }
     .bulk-item-line { font-size: 13px; font-weight: 600; padding: 4px 0; color: var(--out-border); }
@@ -393,12 +523,71 @@
     <div class="bento-grid" id="bentoGrid"></div>
   </div>
 
-  <button class="fab-bottom" id="fabAdd" onclick="toggleAddModal(true)" title="Add New Item">
+  <!-- BLURRED BACKDROP FOR SPEED DIAL -->
+  <div class="speeddial-overlay" id="speedDialOverlay" onclick="closeSpeedDialMenu()"></div>
+
+  <!-- SPEED DIAL EXPANDABLE OPTIONS -->
+  <div class="speeddial-menu" id="speedDialMenu">
+    <!-- Option 1: Barcode Scan with Exact Viewfinder Barcode Icon -->
+    <div class="speeddial-item" onclick="selectSpeedDialAction('scan')">
+      <div class="speeddial-icon-badge">
+        <svg viewBox="0 0 32 32" width="19" height="19" fill="currentColor">
+          <!-- 4 Corner Viewfinder Brackets -->
+          <path d="M 4 11 V 4 H 11" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="square"/>
+          <path d="M 21 4 H 28 V 11" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="square"/>
+          <path d="M 4 21 V 28 H 11" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="square"/>
+          <path d="M 21 28 H 28 V 21" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="square"/>
+          <!-- Central Barcode Slats -->
+          <rect x="7" y="8" width="1.8" height="16"/>
+          <rect x="10.2" y="8" width="2.8" height="16"/>
+          <rect x="14.4" y="8" width="1.2" height="16"/>
+          <rect x="17" y="8" width="1.8" height="16"/>
+          <rect x="20.2" y="8" width="3" height="16"/>
+          <rect x="24.4" y="8" width="1.6" height="16"/>
+        </svg>
+      </div>
+      <span>Scan Barcode</span>
+    </div>
+
+    <!-- Option 2: Add Manually -->
+    <div class="speeddial-item" onclick="selectSpeedDialAction('manual')">
+      <div class="speeddial-icon-badge">
+        <span style="font-size: 18px; line-height: 1; font-weight: 800;">✎</span>
+      </div>
+      <span>Add Manually</span>
+    </div>
+  </div>
+
+  <!-- FLOATING ACTION BUTTON WITH PRESS & HOLD -->
+  <button class="fab-bottom" id="fabAdd" title="Add or Scan Item">
     +
   </button>
 
   <button class="bulk-delete-bar" id="bulkDeleteBar" onclick="openBulkDeleteSheet()">🗑️ Delete Selected Items</button>
 
+  <!-- Live Barcode Scanner Modal Sheet -->
+  <div class="modal-overlay" id="scannerModalOverlay" onclick="if(event.target===this) toggleScannerModal(false)">
+    <div class="modal">
+      <div class="modal-top-bar">
+        <button class="modal-cancel-btn" onclick="toggleScannerModal(false)">Done</button>
+        <div class="modal-title-header">Barcode Scanner</div>
+        <div style="width: 48px;"></div>
+      </div>
+
+      <div id="scannerRegion">
+        <div class="scan-reticle"></div>
+      </div>
+
+      <div id="scannerStatusText" style="margin-top: 12px; font-size: 13px; color: var(--text-muted); text-align: center;">
+        Point camera at product barcode
+      </div>
+
+      <!-- Scanned Item Match or Add Box -->
+      <div class="scanner-result-box" id="scannerResultBox"></div>
+    </div>
+  </div>
+
+  <!-- New Item Modal -->
   <div class="modal-overlay" id="addModalOverlay" onclick="if(event.target===this) toggleAddModal(false)">
     <div class="modal">
       <div class="modal-top-bar">
@@ -410,6 +599,11 @@
       <div class="form-group">
         <label class="form-label">What's the item?</label>
         <input type="text" id="newItemName" class="input-field" placeholder="e.g. WD-40 Lubricant" autocomplete="off" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Barcode (Optional)</label>
+        <input type="text" id="newItemBarcode" class="input-field" placeholder="Scanned barcode will appear here" autocomplete="off" />
       </div>
 
       <div class="form-group">
@@ -482,7 +676,7 @@
       serverTimestamp
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    const APP_VERSION = "4.5.0";
+    const APP_VERSION = "4.7.0";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAMznXG0OXHqMdfrmOGHK-g08TugsYfWw8",
@@ -499,29 +693,6 @@
     const itemsCol = collection(db, "garage_items");
     const metaDoc = doc(db, "garage_meta", "categories");
 
-    const defaultSeedItems = [
-      { name: "Cheerios", amount: 0, category: "Cereal" },
-      { name: "Corn Flakes", amount: 1, category: "Cereal" },
-      { name: "Crunchy Nuts", amount: 1, category: "Cereal" },
-      { name: "Frosted Flakes", amount: 2, category: "Cereal" },
-      { name: "Granola", amount: 2, category: "Cereal" },
-      { name: "Weetabix", amount: 2, category: "Cereal" },
-      { name: "Gluten Free Granola", amount: 2, category: "Gluten Free Cereal" },
-      { name: "Gluten Free Porridge", amount: 2, category: "Gluten Free Cereal" },
-      { name: "Gluten Free Weetabix", amount: 0, category: "Gluten Free Cereal" },
-      { name: "Dettol Spray", amount: 4, category: "Cleaning" },
-      { name: "Dishwasher Cleaner", amount: 0, category: "Cleaning" },
-      { name: "Fairy Liquid", amount: 2, category: "Cleaning" },
-      { name: "Washing Machine Cleaner", amount: 1, category: "Cleaning" },
-      { name: "Tomato Ketchup", amount: 3, category: "Condiments" },
-      { name: "Kitchen Towel", amount: 8, category: "Household" },
-      { name: "Toilet Rolls", amount: 40, category: "Household" },
-      { name: "XL Kitchen Foil", amount: 1, category: "Kitchenware" },
-      { name: "Nutella", amount: 2, category: "Spreads" },
-      { name: "Dishwasher Tablets", amount: 1, category: "Household" },
-      { name: "Tea", amount: 2, category: "Condiments" }
-    ];
-
     const defaultCategories = ["Cereal", "Gluten Free Cereal", "Cleaning", "Household", "Condiments", "Spreads", "Kitchenware"];
 
     let items = [];
@@ -533,6 +704,19 @@
     let selectedModalCategory = "";
     let modalInitialQty = 1;
     let pendingDeleteCategory = null;
+
+    // Scanner state
+    let html5QrScanner = null;
+    let isScannerRunning = false;
+    let lastScannedBarcode = null;
+    let lastScanTime = 0;
+
+    // Speed Dial State
+    let isSpeedDialOpen = false;
+    let longPressTimer = null;
+    let isLongPressTriggered = false;
+    let touchStartX = 0;
+    let touchStartY = 0;
 
     const dom = {
       body: document.body,
@@ -558,6 +742,7 @@
       inlineNewCategory: document.getElementById('inlineNewCategory'),
       modalQtyVal: document.getElementById('modalQtyVal'),
       newItemName: document.getElementById('newItemName'),
+      newItemBarcode: document.getElementById('newItemBarcode'),
       categoryModalOverlay: document.getElementById('categoryModalOverlay'),
       categoryManageList: document.getElementById('categoryManageList'),
       newCatInput: document.getElementById('newCatInput'),
@@ -566,10 +751,17 @@
       confirmBulkDeleteBtn: document.getElementById('confirmBulkDeleteBtn'),
       bulkListPreview: document.getElementById('bulkListPreview'),
       catDeleteDialogOverlay: document.getElementById('catDeleteDialogOverlay'),
-      catDeleteDialogDesc: document.getElementById('catDeleteDialogDesc')
+      catDeleteDialogDesc: document.getElementById('catDeleteDialogDesc'),
+      scannerModalOverlay: document.getElementById('scannerModalOverlay'),
+      scannerStatusText: document.getElementById('scannerStatusText'),
+      scannerResultBox: document.getElementById('scannerResultBox'),
+      fabAdd: document.getElementById('fabAdd'),
+      speedDialOverlay: document.getElementById('speedDialOverlay'),
+      speedDialMenu: document.getElementById('speedDialMenu')
     };
 
-const logoSVGs = {
+    // Staging Blueprint Schematic SVGs
+    const logoSVGs = {
       dark: `<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <linearGradient id="bpGradDark" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -582,33 +774,21 @@ const logoSVGs = {
         </defs>
         <rect width="512" height="512" rx="120" fill="url(#bpGradDark)"/>
         <rect width="512" height="512" rx="120" fill="url(#bpGridDark)"/>
-        
-        <!-- Blueprint Schematic Frame -->
         <rect x="56" y="56" width="400" height="400" rx="32" fill="none" stroke="#38bdf8" stroke-width="6" stroke-dasharray="16 10" stroke-opacity="0.6"/>
-        
-        <!-- Staging Gear Silhouette -->
         <g transform="translate(256, 175)">
           <circle cx="0" cy="0" r="46" fill="none" stroke="#facc15" stroke-width="16" stroke-dasharray="14 10"/>
           <circle cx="0" cy="0" r="22" fill="#facc15"/>
         </g>
-
-        <!-- Isometric Wireframe Dev Crate -->
-        <!-- Back Verticals -->
         <line x1="160" y1="260" x2="160" y2="380" stroke="#0284c7" stroke-width="8"/>
         <line x1="352" y1="260" x2="352" y2="380" stroke="#0284c7" stroke-width="8"/>
-        
-        <!-- Crate Outer Frame -->
         <polygon points="256,215 384,275 256,335 128,275" fill="#0369a1" fill-opacity="0.35" stroke="#38bdf8" stroke-width="10" stroke-linejoin="round"/>
         <polygon points="128,275 256,335 256,415 128,355" fill="#075985" fill-opacity="0.5" stroke="#38bdf8" stroke-width="10" stroke-linejoin="round"/>
         <polygon points="256,335 384,275 384,355 256,415" fill="#0c4a6e" fill-opacity="0.5" stroke="#38bdf8" stroke-width="10" stroke-linejoin="round"/>
-
-        <!-- Blueprint Dimension Nodes -->
         <circle cx="256" cy="215" r="7" fill="#facc15"/>
         <circle cx="384" cy="275" r="7" fill="#facc15"/>
         <circle cx="128" cy="275" r="7" fill="#facc15"/>
         <circle cx="256" cy="415" r="7" fill="#facc15"/>
       </svg>`,
-
       light: `<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <linearGradient id="bpGradLight" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -621,24 +801,16 @@ const logoSVGs = {
         </defs>
         <rect width="512" height="512" rx="120" fill="url(#bpGradLight)" stroke="#bae6fd" stroke-width="12"/>
         <rect width="512" height="512" rx="120" fill="url(#bpGridLight)"/>
-        
-        <!-- Schematic Frame -->
         <rect x="56" y="56" width="400" height="400" rx="32" fill="none" stroke="#0284c7" stroke-width="6" stroke-dasharray="16 10" stroke-opacity="0.7"/>
-        
-        <!-- Staging Gear -->
         <g transform="translate(256, 175)">
           <circle cx="0" cy="0" r="46" fill="none" stroke="#d97706" stroke-width="16" stroke-dasharray="14 10"/>
           <circle cx="0" cy="0" r="22" fill="#d97706"/>
         </g>
-
-        <!-- Isometric Wireframe Dev Crate -->
         <line x1="160" y1="260" x2="160" y2="380" stroke="#93c5fd" stroke-width="8"/>
         <line x1="352" y1="260" x2="352" y2="380" stroke="#93c5fd" stroke-width="8"/>
-        
         <polygon points="256,215 384,275 256,335 128,275" fill="#e0f2fe" fill-opacity="0.7" stroke="#0284c7" stroke-width="10" stroke-linejoin="round"/>
         <polygon points="128,275 256,335 256,415 128,355" fill="#bae6fd" fill-opacity="0.6" stroke="#0284c7" stroke-width="10" stroke-linejoin="round"/>
         <polygon points="256,335 384,275 384,355 256,415" fill="#7dd3fc" fill-opacity="0.6" stroke="#0284c7" stroke-width="10" stroke-linejoin="round"/>
-
         <circle cx="256" cy="215" r="7" fill="#d97706"/>
         <circle cx="384" cy="275" r="7" fill="#d97706"/>
         <circle cx="128" cy="275" r="7" fill="#d97706"/>
@@ -693,6 +865,132 @@ const logoSVGs = {
       return (str || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
     }
 
+    function playScanBeep() {
+      if (navigator.vibrate) navigator.vibrate(80);
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.frequency.value = 1046.5; // C6 chime
+        gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.14);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.14);
+      } catch (e) {}
+    }
+
+    // ==========================================
+    // PRESS & HOLD SPEED DIAL LOGIC
+    // ==========================================
+    window.openSpeedDialMenu = function() {
+      isSpeedDialOpen = true;
+      dom.fabAdd.classList.add('is-open');
+      dom.speedDialOverlay.classList.add('active');
+      dom.speedDialMenu.classList.add('active');
+      if (navigator.vibrate) navigator.vibrate(60);
+    };
+
+    window.closeSpeedDialMenu = function() {
+      isSpeedDialOpen = false;
+      dom.fabAdd.classList.remove('is-open');
+      dom.speedDialOverlay.classList.remove('active');
+      dom.speedDialMenu.classList.remove('active');
+    };
+
+    window.toggleSpeedDialMenu = function() {
+      if (isSpeedDialOpen) closeSpeedDialMenu();
+      else openSpeedDialMenu();
+    };
+
+    window.selectSpeedDialAction = function(action) {
+      closeSpeedDialMenu();
+      if (action === 'scan') {
+        toggleScannerModal(true);
+      } else if (action === 'manual') {
+        toggleAddModal(true);
+      }
+    };
+
+    function setupFabPressAndHold() {
+      const btn = dom.fabAdd;
+
+      const handlePressStart = (clientX, clientY) => {
+        if (isSpeedDialOpen) return;
+        touchStartX = clientX;
+        touchStartY = clientY;
+        isLongPressTriggered = false;
+        longPressTimer = setTimeout(() => {
+          isLongPressTriggered = true;
+          openSpeedDialMenu();
+        }, 400); // 400ms threshold for press-and-hold
+      };
+
+      const handlePressEnd = (e) => {
+        clearTimeout(longPressTimer);
+        if (isLongPressTriggered) {
+          e.preventDefault();
+          isLongPressTriggered = false;
+          return;
+        }
+        if (isSpeedDialOpen) {
+          closeSpeedDialMenu();
+        } else {
+          toggleAddModal(true);
+        }
+      };
+
+      const handlePressMove = (clientX, clientY) => {
+        const deltaX = Math.abs(clientX - touchStartX);
+        const deltaY = Math.abs(clientY - touchStartY);
+        if (deltaX > 12 || deltaY > 12) {
+          clearTimeout(longPressTimer);
+        }
+      };
+
+      // Touch Events
+      btn.addEventListener('touchstart', (e) => {
+        const t = e.touches[0];
+        handlePressStart(t.clientX, t.clientY);
+      }, { passive: true });
+
+      btn.addEventListener('touchmove', (e) => {
+        const t = e.touches[0];
+        handlePressMove(t.clientX, t.clientY);
+      }, { passive: true });
+
+      btn.addEventListener('touchend', (e) => {
+        handlePressEnd(e);
+      });
+
+      btn.addEventListener('touchcancel', () => {
+        clearTimeout(longPressTimer);
+      });
+
+      // Mouse Events (Desktop)
+      btn.addEventListener('mousedown', (e) => {
+        if (e.button !== 0) return;
+        handlePressStart(e.clientX, e.clientY);
+      });
+
+      btn.addEventListener('mousemove', (e) => {
+        handlePressMove(e.clientX, e.clientY);
+      });
+
+      btn.addEventListener('mouseup', (e) => {
+        if (e.button !== 0) return;
+        handlePressEnd(e);
+      });
+
+      btn.addEventListener('mouseleave', () => {
+        clearTimeout(longPressTimer);
+      });
+    }
+
+    // ==========================================
+    // FIRESTORE SYNC & INVENTORY LOGIC
+    // ==========================================
     function initRealtimeDatabase() {
       onSnapshot(metaDoc, (snap) => {
         if (snap.exists() && Array.isArray(snap.data().list)) {
@@ -713,11 +1011,6 @@ const logoSVGs = {
       });
 
       onSnapshot(itemsCol, async (snapshot) => {
-        if (snapshot.empty && !localStorage.getItem('garage_seeded_fb')) {
-          seedDatabase();
-          return;
-        }
-
         const map = new Map();
         const duplicatesToDelete = [];
         const updatesToApply = [];
@@ -728,6 +1021,7 @@ const logoSVGs = {
           const normalizedKey = rawName.toLowerCase();
           const sanitizedCat = sanitizeCategoryName(data.category);
           const amount = Number(data.amount) || 0;
+          const barcode = (data.barcode || '').trim();
 
           if (!map.has(normalizedKey)) {
             map.set(normalizedKey, { 
@@ -735,13 +1029,15 @@ const logoSVGs = {
               name: sanitizeItemName(rawName),
               amount: amount,
               category: sanitizedCat,
+              barcode: barcode,
               updatedAt: data.updatedAt
             });
           } else {
             const primary = map.get(normalizedKey);
             primary.amount += amount;
+            if (!primary.barcode && barcode) primary.barcode = barcode;
             duplicatesToDelete.push(d.id);
-            updatesToApply.push({ id: primary.id, amount: primary.amount, name: primary.name });
+            updatesToApply.push({ id: primary.id, amount: primary.amount, name: primary.name, barcode: primary.barcode });
           }
         });
 
@@ -755,6 +1051,7 @@ const logoSVGs = {
               batch.update(doc(db, "garage_items", upd.id), {
                 amount: upd.amount,
                 name: upd.name,
+                barcode: upd.barcode || "",
                 updatedAt: serverTimestamp()
               });
             });
@@ -782,21 +1079,6 @@ const logoSVGs = {
         if (dom.summaryText) dom.summaryText.innerText = "Error: " + (err.message || err.code);
         updateSyncStatus(false);
       });
-    }
-
-    async function seedDatabase() {
-      localStorage.setItem('garage_seeded_fb', 'true');
-      const batch = writeBatch(db);
-      defaultSeedItems.forEach((item) => {
-        const newDoc = doc(itemsCol);
-        batch.set(newDoc, {
-          name: sanitizeItemName(item.name),
-          amount: item.amount,
-          category: sanitizeCategoryName(item.category),
-          updatedAt: serverTimestamp()
-        });
-      });
-      await batch.commit().catch(console.error);
     }
 
     function updateSyncStatus(isLive) {
@@ -862,6 +1144,7 @@ const logoSVGs = {
       if (!rawName) return alert('Please enter an item name');
 
       const name = sanitizeItemName(rawName);
+      const barcode = dom.newItemBarcode.value.trim();
       let category = selectedModalCategory;
       
       if (category === '__new__') {
@@ -882,18 +1165,21 @@ const logoSVGs = {
       if (existing) {
         await updateDoc(doc(db, "garage_items", existing.id), {
           amount: increment(modalInitialQty),
+          barcode: barcode || existing.barcode || "",
           updatedAt: serverTimestamp()
         }).catch(console.error);
       } else {
         await addDoc(itemsCol, {
           name,
           category,
+          barcode: barcode || "",
           amount: modalInitialQty,
           updatedAt: serverTimestamp()
         }).catch(console.error);
       }
 
       dom.newItemName.value = '';
+      dom.newItemBarcode.value = '';
       dom.inlineNewCategory.value = '';
       dom.inlineNewCategory.style.display = 'none';
       toggleAddModal(false);
@@ -920,17 +1206,148 @@ const logoSVGs = {
       renderModalCategoryPills();
     };
 
-    window.toggleAddModal = function(open) {
+    window.toggleAddModal = function(open, prefillName = "", prefillBarcode = "") {
       if (open) {
         modalInitialQty = 1;
         dom.modalQtyVal.innerText = modalInitialQty;
         if (categories.length > 0) selectedModalCategory = categories[0];
         renderModalCategoryPills();
+        if (prefillName) dom.newItemName.value = prefillName;
+        if (prefillBarcode) dom.newItemBarcode.value = prefillBarcode;
         dom.addModalOverlay.classList.add('open');
         setTimeout(() => dom.newItemName.focus(), 120);
       } else {
         dom.addModalOverlay.classList.remove('open');
       }
+    };
+
+    // ==========================================
+    // BARCODE CAMERA SCANNER
+    // ==========================================
+    window.toggleScannerModal = async function(open) {
+      if (open) {
+        dom.scannerModalOverlay.classList.add('open');
+        dom.scannerResultBox.style.display = 'none';
+        dom.scannerStatusText.innerText = "Starting camera...";
+        startCameraScanner();
+      } else {
+        stopCameraScanner();
+        dom.scannerModalOverlay.classList.remove('open');
+      }
+    };
+
+    async function startCameraScanner() {
+      if (isScannerRunning) return;
+      try {
+        if (!html5QrScanner) {
+          html5QrScanner = new Html5Qrcode("scannerRegion");
+        }
+        const config = { 
+          fps: 15, 
+          qrbox: { width: 260, height: 160 },
+          aspectRatio: 1.0
+        };
+
+        await html5QrScanner.start(
+          { facingMode: "environment" },
+          config,
+          onBarcodeScanned,
+          (err) => { /* ignore minor frame search misses */ }
+        );
+        isScannerRunning = true;
+        dom.scannerStatusText.innerText = "Point camera at a product barcode";
+      } catch (err) {
+        console.error("Camera start error:", err);
+        dom.scannerStatusText.innerText = "Camera access denied or unavailable.";
+      }
+    }
+
+    async function stopCameraScanner() {
+      if (html5QrScanner && isScannerRunning) {
+        try {
+          await html5QrScanner.stop();
+          isScannerRunning = false;
+        } catch (e) {
+          console.warn("Scanner stop:", e);
+        }
+      }
+    }
+
+    async function onBarcodeScanned(decodedText) {
+      const now = Date.now();
+      if (decodedText === lastScannedBarcode && now - lastScanTime < 2500) {
+        return; // debounce 2.5s
+      }
+      lastScannedBarcode = decodedText;
+      lastScanTime = now;
+      playScanBeep();
+
+      dom.scannerStatusText.innerText = `Scanned: ${decodedText}`;
+
+      // Check for catalog match
+      const match = items.find(i => (i.barcode && i.barcode === decodedText) || i.id === decodedText);
+
+      if (match) {
+        renderMatchedScannerItem(match);
+      } else {
+        dom.scannerStatusText.innerText = `Looking up barcode ${decodedText}...`;
+        try {
+          const res = await fetch(`https://world.openfoodfacts.org/api/v0/product/${decodedText}.json`);
+          const data = await res.json();
+
+          if (data && data.status === 1 && data.product) {
+            const p = data.product;
+            const discoveredTitle = p.product_name || p.generic_name || p.brands || "Unknown Product";
+            renderUnknownScannerProduct(decodedText, discoveredTitle);
+          } else {
+            renderUnknownScannerProduct(decodedText, "");
+          }
+        } catch (e) {
+          renderUnknownScannerProduct(decodedText, "");
+        }
+      }
+    }
+
+    function renderMatchedScannerItem(item) {
+      const box = dom.scannerResultBox;
+      box.style.display = 'block';
+      box.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <div>
+            <span class="category-chip">${item.category}</span>
+            <div style="font-size: 16px; font-weight: 800; margin-top: 4px;">${item.name}</div>
+            <div style="font-size: 11px; color: var(--text-muted);">Barcode: ${item.barcode}</div>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-size: 22px; font-weight: 800; color: ${item.amount === 0 ? 'var(--out-border)' : 'inherit'};">${item.amount} in stock</div>
+          </div>
+        </div>
+        <div style="display: flex; gap: 8px; margin-top: 10px;">
+          <button class="action-btn" style="flex: 1; padding: 10px; font-weight: 800; background: var(--pill-bg);" onclick="updateStock('${item.id}', -1)">— Decrease</button>
+          <button class="action-btn" style="flex: 1; padding: 10px; font-weight: 800; background: var(--fab-bg); color: var(--fab-text);" onclick="updateStock('${item.id}', 1)">+ Add 1</button>
+        </div>
+      `;
+    }
+
+    function renderUnknownScannerProduct(barcode, suggestedTitle) {
+      const box = dom.scannerResultBox;
+      box.style.display = 'block';
+      const titleEsc = escapeAttr(suggestedTitle);
+      box.innerHTML = `
+        <div style="text-align: center; padding: 6px 0;">
+          <div style="font-size: 12px; font-weight: 800; color: var(--low-border); text-transform: uppercase;">Unregistered Barcode</div>
+          <div style="font-size: 15px; font-weight: 700; margin: 4px 0;">${suggestedTitle ? suggestedTitle : 'Barcode: ' + barcode}</div>
+          <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">This item is not yet in your Garage List.</p>
+          <button class="action-btn" style="width: 100%; padding: 12px; background: var(--fab-bg); color: var(--fab-text); font-weight: 800; border-radius: 12px;" onclick="addScannedNewItem('${titleEsc}', '${barcode}')">
+            + Add to Garage Inventory
+          </button>
+        </div>
+      `;
+    }
+
+    window.addScannedNewItem = function(name, barcode) {
+      toggleScannerModal(false);
+      toggleAddModal(true, name, barcode);
     };
 
     window.toggleCategoryModal = function(open) {
@@ -1079,8 +1496,8 @@ const logoSVGs = {
       if ('Notification' in window && Notification.permission === 'granted') {
         new Notification(itemName === "Garage Alerts Enabled" ? "Garage List Active" : "Out of Stock ⚠️", {
           body: itemName === "Garage Alerts Enabled" ? "You will receive alerts here when items run out." : `${itemName} has run out in the garage!`,
-          icon: "apple-touch-icon.png",
-          badge: "apple-touch-icon.png"
+          icon: "apple-touch-icon-dev.png",
+          badge: "apple-touch-icon-dev.png"
         });
       }
     }
@@ -1143,6 +1560,8 @@ const logoSVGs = {
         const badgeHtml = isOut ? '<span class="status-badge badge-out">OUT OF STOCK</span>' :
                           (isLow ? '<span class="status-badge badge-low">LOW STOCK</span>' : '');
 
+        const barcodeHtml = item.barcode ? `<div class="card-barcode-tag"># ${item.barcode}</div>` : '';
+
         card.innerHTML = `
           <div>
             <div class="card-top">
@@ -1151,6 +1570,7 @@ const logoSVGs = {
               <div class="chk-circle">${isSelected ? '✓' : ''}</div>
             </div>
             <div class="card-title">${item.name}</div>
+            ${barcodeHtml}
           </div>
           <div class="stepper-pill" onclick="event.stopPropagation()">
             <button class="stepper-btn" onclick="updateStock('${item.id}', -1, event)">—</button>
@@ -1174,6 +1594,7 @@ const logoSVGs = {
         window.location.reload(true);
         return;
       }
+      setupFabPressAndHold();
       updateBellVisibility();
       initRealtimeDatabase();
     });

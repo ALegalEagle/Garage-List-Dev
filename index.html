@@ -24,8 +24,8 @@
       document.write(`
         <meta name="apple-mobile-web-app-title" content="${appName}" />
         <link id="dynamicFavicon" rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='120' fill='${encodeURIComponent(themeColor)}'/%3E%3C/svg%3E" />
-        <link rel="apple-touch-icon" sizes="180x180" href="${appIcon}?v=6" />
-        <link rel="manifest" href='data:application/manifest+json,{"name":"${appName}","short_name":"${appName}","start_url":"${appScope}","scope":"${appScope}","display":"standalone","background_color":"${themeColor}","theme_color":"${themeColor}","icons":[{"src":"${appIcon}?v=6","sizes":"180x180","type":"image/png"}]}' />
+        <link rel="apple-touch-icon" sizes="180x180" href="${appIcon}?v=7" />
+        <link rel="manifest" href='data:application/manifest+json,{"name":"${appName}","short_name":"${appName}","start_url":"${appScope}","scope":"${appScope}","display":"standalone","background_color":"${themeColor}","theme_color":"${themeColor}","icons":[{"src":"${appIcon}?v=7","sizes":"180x180","type":"image/png"}]}' />
       `);
     })();
   </script>
@@ -658,20 +658,44 @@
           <button class="modal-step-btn" onclick="adjustModalQty(1)">+</button>
         </div>
       </div>
+
+      <div class="form-group">
+        <label class="form-label">Low Stock Alert Threshold</label>
+        <div class="modal-stepper">
+          <button class="modal-step-btn" onclick="adjustNewItemMinStock(-1)">—</button>
+          <span class="modal-step-val" id="newModalMinStockVal" style="font-size: 16px;">≤ 1 item</span>
+          <button class="modal-step-btn" onclick="adjustNewItemMinStock(1)">+</button>
+        </div>
+        <div style="font-size: 11px; color: var(--text-muted); margin-top: 6px;" id="newModalMinStockDesc">Alerts when stock drops to 1 or lower.</div>
+      </div>
     </div>
   </div>
 
-  <!-- Edit Item Category Sheet -->
+  <!-- Item Settings & Category Picker Sheet -->
   <div class="modal-overlay" id="editCatModalOverlay" onclick="if(event.target===this) closeItemCategoryPicker()">
     <div class="modal">
       <div class="modal-top-bar">
-        <button class="modal-cancel-btn" onclick="closeItemCategoryPicker()">Cancel</button>
-        <div class="modal-title-header">Change Category</div>
+        <button class="modal-cancel-btn" onclick="closeItemCategoryPicker()">Done</button>
+        <div class="modal-title-header">Item Settings</div>
         <div style="width: 50px;"></div>
       </div>
-      <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;" id="editCatItemName">Select category:</div>
-      <div class="modal-cat-grid" id="editCatPickerGrid"></div>
-      <input type="text" id="inlineEditNewCategory" class="input-field" style="display: none; margin-top: 12px;" placeholder="Type new category name... (Press Return)" onkeydown="handleEditNewCategoryKeydown(event)" autocomplete="off" />
+      <div style="font-size: 14px; font-weight: 800; margin-bottom: 16px;" id="editCatItemName">Item Settings</div>
+
+      <div class="form-group">
+        <label class="form-label">Category</label>
+        <div class="modal-cat-grid" id="editCatPickerGrid"></div>
+        <input type="text" id="inlineEditNewCategory" class="input-field" style="display: none; margin-top: 12px;" placeholder="Type new category name... (Press Return)" onkeydown="handleEditNewCategoryKeydown(event)" autocomplete="off" />
+      </div>
+
+      <div class="form-group" style="margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--border);">
+        <label class="form-label">Low Stock Alert Threshold</label>
+        <div class="modal-stepper">
+          <button class="modal-step-btn" onclick="adjustEditingItemMinStock(-1)">—</button>
+          <span class="modal-step-val" id="editModalMinStockVal" style="font-size: 16px;">≤ 1 item</span>
+          <button class="modal-step-btn" onclick="adjustEditingItemMinStock(1)">+</button>
+        </div>
+        <div style="font-size: 11px; color: var(--text-muted); margin-top: 6px;" id="editModalMinStockDesc">Alerts when stock drops to 1 or lower.</div>
+      </div>
     </div>
   </div>
 
@@ -729,7 +753,7 @@
       serverTimestamp
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    const APP_VERSION = "4.9.3";
+    const APP_VERSION = "4.10.0";
 
     const isDev = window.location.pathname.toLowerCase().includes('dev');
 
@@ -758,8 +782,10 @@
     let selectedIds = new Set();
     let selectedModalCategory = "";
     let modalInitialQty = 1;
-    let pendingDeleteCategory = null;
+    let newItemMinStock = 1;
     let editingItemId = null;
+    let editingItemMinStock = 1;
+    let pendingDeleteCategory = null;
 
     // Scanner state
     let html5QrScanner = null;
@@ -950,6 +976,27 @@
 
     function escapeAttr(str) {
       return (str || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+    }
+
+    function getMinStockLabel(val) {
+      if (val === 0) return "Off (Never)";
+      if (val === 1) return "≤ 1 item";
+      return `≤ ${val} items`;
+    }
+
+    function getMinStockDesc(val) {
+      if (val === 0) return "No low-stock alerts will be shown for this item.";
+      if (val === 1) return "Alerts when stock drops to 1.";
+      return `Alerts when stock drops to ${val} or lower.`;
+    }
+
+    function isItemOutOfStock(item) {
+      return item.amount === 0;
+    }
+
+    function isItemLowStock(item) {
+      const threshold = item.minStock !== undefined ? item.minStock : 1;
+      return threshold > 0 && item.amount > 0 && item.amount <= threshold;
     }
 
     // Audio Engine
@@ -1170,6 +1217,7 @@
           const sanitizedCat = sanitizeCategoryName(data.category);
           const amount = Number(data.amount) || 0;
           const barcode = (data.barcode || '').trim();
+          const minStock = data.minStock !== undefined && data.minStock !== null ? Number(data.minStock) : 1;
 
           if (!map.has(normalizedKey)) {
             map.set(normalizedKey, { 
@@ -1178,14 +1226,22 @@
               amount: amount,
               category: sanitizedCat,
               barcode: barcode,
+              minStock: minStock,
               updatedAt: data.updatedAt
             });
           } else {
             const primary = map.get(normalizedKey);
             primary.amount += amount;
             if (!primary.barcode && barcode) primary.barcode = barcode;
+            if (data.minStock !== undefined && primary.minStock === undefined) primary.minStock = minStock;
             duplicatesToDelete.push(d.id);
-            updatesToApply.push({ id: primary.id, amount: primary.amount, name: primary.name, barcode: primary.barcode });
+            updatesToApply.push({ 
+              id: primary.id, 
+              amount: primary.amount, 
+              name: primary.name, 
+              barcode: primary.barcode,
+              minStock: primary.minStock
+            });
           }
         });
 
@@ -1200,6 +1256,7 @@
                 amount: upd.amount,
                 name: upd.name,
                 barcode: upd.barcode || "",
+                minStock: upd.minStock,
                 updatedAt: serverTimestamp()
               });
             });
@@ -1268,6 +1325,34 @@
       dom.modalQtyVal.innerText = modalInitialQty;
     };
 
+    window.adjustNewItemMinStock = function(delta) {
+      newItemMinStock = Math.max(0, newItemMinStock + delta);
+      const valEl = document.getElementById('newModalMinStockVal');
+      const descEl = document.getElementById('newModalMinStockDesc');
+      if (valEl) valEl.innerText = getMinStockLabel(newItemMinStock);
+      if (descEl) descEl.innerText = getMinStockDesc(newItemMinStock);
+    };
+
+    window.adjustEditingItemMinStock = async function(delta) {
+      if (!editingItemId) return;
+      editingItemMinStock = Math.max(0, editingItemMinStock + delta);
+      const valEl = document.getElementById('editModalMinStockVal');
+      const descEl = document.getElementById('editModalMinStockDesc');
+      if (valEl) valEl.innerText = getMinStockLabel(editingItemMinStock);
+      if (descEl) descEl.innerText = getMinStockDesc(editingItemMinStock);
+
+      const item = items.find(i => i.id === editingItemId);
+      if (item) {
+        item.minStock = editingItemMinStock;
+        render();
+      }
+
+      await updateDoc(doc(db, "garage_items", editingItemId), {
+        minStock: editingItemMinStock,
+        updatedAt: serverTimestamp()
+      }).catch(console.error);
+    };
+
     window.handleNewCategoryKeydown = function(event) {
       if (event.key === 'Enter') {
         event.preventDefault();
@@ -1314,6 +1399,7 @@
         await updateDoc(doc(db, "garage_items", existing.id), {
           amount: increment(modalInitialQty),
           barcode: barcode || existing.barcode || "",
+          minStock: newItemMinStock,
           updatedAt: serverTimestamp()
         }).catch(console.error);
       } else {
@@ -1322,6 +1408,7 @@
           category,
           barcode: barcode || "",
           amount: modalInitialQty,
+          minStock: newItemMinStock,
           updatedAt: serverTimestamp()
         }).catch(console.error);
       }
@@ -1357,7 +1444,14 @@
     window.toggleAddModal = function(open, prefillName = "", prefillBarcode = "") {
       if (open) {
         modalInitialQty = 1;
+        newItemMinStock = 1;
         dom.modalQtyVal.innerText = modalInitialQty;
+
+        const valEl = document.getElementById('newModalMinStockVal');
+        const descEl = document.getElementById('newModalMinStockDesc');
+        if (valEl) valEl.innerText = getMinStockLabel(newItemMinStock);
+        if (descEl) descEl.innerText = getMinStockDesc(newItemMinStock);
+
         if (categories.length > 0) selectedModalCategory = categories[0];
         renderModalCategoryPills();
         if (prefillName) dom.newItemName.value = prefillName;
@@ -1370,7 +1464,7 @@
     };
 
     // ==========================================
-    // INLINE ITEM CATEGORY EDITING LOGIC
+    // ITEM SETTINGS & INLINE CATEGORY/THRESHOLD PICKER
     // ==========================================
     window.openItemCategoryPicker = function(id, event) {
       if (event) event.stopPropagation();
@@ -1380,11 +1474,18 @@
       if (!item) return;
 
       editingItemId = id;
+      editingItemMinStock = item.minStock !== undefined ? item.minStock : 1;
+
       if (dom.editCatItemName) {
-        dom.editCatItemName.innerText = `Move "${item.name}" to:`;
+        dom.editCatItemName.innerText = `Settings for "${item.name}"`;
       }
 
       renderEditCategoryPills(item.category);
+
+      const valEl = document.getElementById('editModalMinStockVal');
+      const descEl = document.getElementById('editModalMinStockDesc');
+      if (valEl) valEl.innerText = getMinStockLabel(editingItemMinStock);
+      if (descEl) descEl.innerText = getMinStockDesc(editingItemMinStock);
 
       if (dom.inlineEditNewCategory) {
         dom.inlineEditNewCategory.value = '';
@@ -1437,13 +1538,14 @@
     window.applyItemCategory = async function(newCat) {
       if (!editingItemId) return;
       const targetId = editingItemId;
-      closeItemCategoryPicker();
 
       const item = items.find(i => i.id === targetId);
       if (item) {
         item.category = newCat;
         render();
       }
+
+      renderEditCategoryPills(newCat);
 
       await updateDoc(doc(db, "garage_items", targetId), {
         category: newCat,
@@ -1525,7 +1627,6 @@
       } else {
         dom.scannerStatusText.innerText = "Looking up product details...";
         
-        // Cascading lookup across Food -> Household/DIY -> Beauty/Hygiene
         const endpoints = [
           `https://world.openfoodfacts.org/api/v0/product/${decodedText}.json`,
           `https://world.openproductsfacts.org/api/v0/product/${decodedText}.json`,
@@ -1785,8 +1886,8 @@
         }
       }
 
-      const outCount = items.filter((i) => i.amount === 0).length;
-      const lowCount = items.filter((i) => i.amount === 1).length;
+      const outCount = items.filter(isItemOutOfStock).length;
+      const lowCount = items.filter(isItemLowStock).length;
       if (dom.outCount) dom.outCount.innerText = `${outCount} items`;
       if (dom.lowCount) dom.lowCount.innerText = `${lowCount} items`;
       if (dom.summaryText) dom.summaryText.innerText = `${items.length} items total • ${outCount} empty • ${lowCount} low`;
@@ -1813,15 +1914,15 @@
 
       let filtered = items.filter((i) => currentFilter === "All" || i.category === currentFilter);
       if (quickFilter === 'out') {
-        filtered = filtered.filter(i => i.amount === 0);
+        filtered = filtered.filter(isItemOutOfStock);
       } else if (quickFilter === 'low') {
-        filtered = filtered.filter(i => i.amount === 1);
+        filtered = filtered.filter(isItemLowStock);
       }
 
       const fragment = document.createDocumentFragment();
       filtered.forEach((item) => {
-        const isOut = item.amount === 0;
-        const isLow = item.amount === 1;
+        const isOut = isItemOutOfStock(item);
+        const isLow = isItemLowStock(item);
         const isSelected = selectedIds.has(item.id);
 
         const card = document.createElement('div');
@@ -1836,7 +1937,7 @@
         card.innerHTML = `
           <div>
             <div class="card-top">
-              <span class="category-chip editable" onclick="openItemCategoryPicker('${item.id}', event)" title="Tap to change category">
+              <span class="category-chip editable" onclick="openItemCategoryPicker('${item.id}', event)" title="Tap to change settings">
                 ${catLabel} ▾
               </span>
               ${badgeHtml}

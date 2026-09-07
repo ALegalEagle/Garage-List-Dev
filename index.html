@@ -24,8 +24,8 @@
       document.write(`
         <meta name="apple-mobile-web-app-title" content="${appName}" />
         <link id="dynamicFavicon" rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='120' fill='${encodeURIComponent(themeColor)}'/%3E%3C/svg%3E" />
-        <link rel="apple-touch-icon" sizes="180x180" href="${appIcon}?v=7" />
-        <link rel="manifest" href='data:application/manifest+json,{"name":"${appName}","short_name":"${appName}","start_url":"${appScope}","scope":"${appScope}","display":"standalone","background_color":"${themeColor}","theme_color":"${themeColor}","icons":[{"src":"${appIcon}?v=7","sizes":"180x180","type":"image/png"}]}' />
+        <link rel="apple-touch-icon" sizes="180x180" href="${appIcon}?v=8" />
+        <link rel="manifest" href='data:application/manifest+json,{"name":"${appName}","short_name":"${appName}","start_url":"${appScope}","scope":"${appScope}","display":"standalone","background_color":"${themeColor}","theme_color":"${themeColor}","icons":[{"src":"${appIcon}?v=8","sizes":"180x180","type":"image/png"}]}' />
       `);
     })();
   </script>
@@ -217,8 +217,13 @@
       justify-content: space-between; 
       min-height: 120px; 
       position: relative; 
+      cursor: pointer;
       animation: cardSlideIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      transition: transform 0.1s ease, box-shadow 0.1s ease;
       will-change: transform, opacity;
+    }
+    .bento-card:active {
+      transform: scale(0.98);
     }
     @keyframes cardSlideIn {
       0% { opacity: 0; transform: translateY(10px) scale(0.98); }
@@ -229,33 +234,40 @@
     .bento-card.is-low { border: 2px solid var(--low-border) !important; }
     .bento-card.is-selected { border: 3px solid var(--out-border) !important; background: var(--card-selected-bg) !important; }
 
-    body.selection-active .bento-card { cursor: pointer; }
-    body.selection-active .bento-card:active { transform: scale(0.98); }
-
-    .card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-    .category-chip { font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 6px; background: var(--pill-bg); color: var(--text-muted); text-transform: uppercase; }
-    
-    .category-chip.editable {
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 3px;
-      transition: background 0.15s ease, transform 0.1s ease, color 0.15s ease;
+    .card-top { 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      gap: 8px;
+      margin-bottom: 8px; 
     }
-    .category-chip.editable:active {
-      transform: scale(0.92);
-      background: var(--border);
-      color: var(--text);
+    .category-chip { 
+      font-size: 10px; 
+      font-weight: 700; 
+      padding: 2.5px 7px; 
+      border-radius: 6px; 
+      background: var(--pill-bg); 
+      color: var(--text-muted); 
+      text-transform: uppercase; 
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 58%;
     }
-    body.selection-active .category-chip.editable {
-      pointer-events: none;
+    .status-badge { 
+      font-size: 9px; 
+      font-weight: 800; 
+      padding: 3px 6px; 
+      border-radius: 5px; 
+      color: #fff; 
+      letter-spacing: 0.3px; 
+      white-space: nowrap;
+      flex-shrink: 0;
     }
-
-    .status-badge { font-size: 9px; font-weight: 800; padding: 3px 6px; border-radius: 5px; color: #fff; letter-spacing: 0.3px; }
     .badge-out { background: var(--out-badge); }
     .badge-low { background: var(--low-badge); }
 
-    .chk-circle { display: none; width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--text-muted); align-items: center; justify-content: center; font-size: 12px; font-weight: 800; }
+    .chk-circle { display: none; width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--text-muted); align-items: center; justify-content: center; font-size: 12px; font-weight: 800; flex-shrink: 0; }
     body.selection-active .chk-circle { display: flex; }
     body.selection-active .status-badge { display: none; }
     .bento-card.is-selected .chk-circle { background: var(--out-border); border-color: var(--out-border); color: #fff; }
@@ -679,7 +691,7 @@
         <div class="modal-title-header">Item Settings</div>
         <div style="width: 50px;"></div>
       </div>
-      <div style="font-size: 14px; font-weight: 800; margin-bottom: 16px;" id="editCatItemName">Item Settings</div>
+      <div style="font-size: 15px; font-weight: 800; margin-bottom: 16px;" id="editCatItemName">Item Settings</div>
 
       <div class="form-group">
         <label class="form-label">Category</label>
@@ -753,7 +765,7 @@
       serverTimestamp
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    const APP_VERSION = "4.10.0";
+    const APP_VERSION = "4.10.1";
 
     const isDev = window.location.pathname.toLowerCase().includes('dev');
 
@@ -1464,11 +1476,10 @@
     };
 
     // ==========================================
-    // ITEM SETTINGS & INLINE CATEGORY/THRESHOLD PICKER
+    // ITEM SETTINGS MODAL (CLICK WHOLE CARD)
     // ==========================================
-    window.openItemCategoryPicker = function(id, event) {
+    window.openItemSettings = function(id, event) {
       if (event) event.stopPropagation();
-      if (selectionMode) return;
 
       const item = items.find(i => i.id === id);
       if (!item) return;
@@ -1801,11 +1812,15 @@
       render();
     };
 
+    // Primary Card Click Handler
     window.handleCardClick = function(id) {
-      if (!selectionMode) return;
-      if (selectedIds.has(id)) selectedIds.delete(id);
-      else selectedIds.add(id);
-      render();
+      if (selectionMode) {
+        if (selectedIds.has(id)) selectedIds.delete(id);
+        else selectedIds.add(id);
+        render();
+      } else {
+        openItemSettings(id);
+      }
     };
 
     window.toggleSelectAll = function() {
@@ -1937,9 +1952,7 @@
         card.innerHTML = `
           <div>
             <div class="card-top">
-              <span class="category-chip editable" onclick="openItemCategoryPicker('${item.id}', event)" title="Tap to change settings">
-                ${catLabel} ▾
-              </span>
+              <span class="category-chip">${catLabel}</span>
               ${badgeHtml}
               <div class="chk-circle">${isSelected ? '✓' : ''}</div>
             </div>

@@ -24,8 +24,8 @@
       document.write(`
         <meta name="apple-mobile-web-app-title" content="${appName}" />
         <link id="dynamicFavicon" rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='120' fill='${encodeURIComponent(themeColor)}'/%3E%3C/svg%3E" />
-        <link rel="apple-touch-icon" sizes="180x180" href="${appIcon}?v=5" />
-        <link rel="manifest" href='data:application/manifest+json,{"name":"${appName}","short_name":"${appName}","start_url":"${appScope}","scope":"${appScope}","display":"standalone","background_color":"${themeColor}","theme_color":"${themeColor}","icons":[{"src":"${appIcon}?v=5","sizes":"180x180","type":"image/png"}]}' />
+        <link rel="apple-touch-icon" sizes="180x180" href="${appIcon}?v=6" />
+        <link rel="manifest" href='data:application/manifest+json,{"name":"${appName}","short_name":"${appName}","start_url":"${appScope}","scope":"${appScope}","display":"standalone","background_color":"${themeColor}","theme_color":"${themeColor}","icons":[{"src":"${appIcon}?v=6","sizes":"180x180","type":"image/png"}]}' />
       `);
     })();
   </script>
@@ -234,6 +234,23 @@
 
     .card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
     .category-chip { font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 6px; background: var(--pill-bg); color: var(--text-muted); text-transform: uppercase; }
+    
+    .category-chip.editable {
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      transition: background 0.15s ease, transform 0.1s ease, color 0.15s ease;
+    }
+    .category-chip.editable:active {
+      transform: scale(0.92);
+      background: var(--border);
+      color: var(--text);
+    }
+    body.selection-active .category-chip.editable {
+      pointer-events: none;
+    }
+
     .status-badge { font-size: 9px; font-weight: 800; padding: 3px 6px; border-radius: 5px; color: #fff; letter-spacing: 0.3px; }
     .badge-out { background: var(--out-badge); }
     .badge-low { background: var(--low-badge); }
@@ -644,6 +661,21 @@
     </div>
   </div>
 
+  <!-- Edit Item Category Sheet -->
+  <div class="modal-overlay" id="editCatModalOverlay" onclick="if(event.target===this) closeItemCategoryPicker()">
+    <div class="modal">
+      <div class="modal-top-bar">
+        <button class="modal-cancel-btn" onclick="closeItemCategoryPicker()">Cancel</button>
+        <div class="modal-title-header">Change Category</div>
+        <div style="width: 50px;"></div>
+      </div>
+      <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;" id="editCatItemName">Select category:</div>
+      <div class="modal-cat-grid" id="editCatPickerGrid"></div>
+      <input type="text" id="inlineEditNewCategory" class="input-field" style="display: none; margin-top: 12px;" placeholder="Type new category name... (Press Return)" onkeydown="handleEditNewCategoryKeydown(event)" autocomplete="off" />
+    </div>
+  </div>
+
+  <!-- Manage Categories Modal -->
   <div class="modal-overlay" id="categoryModalOverlay" onclick="if(event.target===this) toggleCategoryModal(false)">
     <div class="modal">
       <div class="modal-top-bar">
@@ -697,7 +729,7 @@
       serverTimestamp
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    const APP_VERSION = "4.9.2";
+    const APP_VERSION = "4.9.3";
 
     const isDev = window.location.pathname.toLowerCase().includes('dev');
 
@@ -727,6 +759,7 @@
     let selectedModalCategory = "";
     let modalInitialQty = 1;
     let pendingDeleteCategory = null;
+    let editingItemId = null;
 
     // Scanner state
     let html5QrScanner = null;
@@ -778,7 +811,11 @@
       scannerResultBox: document.getElementById('scannerResultBox'),
       fabAdd: document.getElementById('fabAdd'),
       speedDialOverlay: document.getElementById('speedDialOverlay'),
-      speedDialMenu: document.getElementById('speedDialMenu')
+      speedDialMenu: document.getElementById('speedDialMenu'),
+      editCatModalOverlay: document.getElementById('editCatModalOverlay'),
+      editCatPickerGrid: document.getElementById('editCatPickerGrid'),
+      editCatItemName: document.getElementById('editCatItemName'),
+      inlineEditNewCategory: document.getElementById('inlineEditNewCategory')
     };
 
     if (dom.appHeaderTitle) {
@@ -1333,6 +1370,90 @@
     };
 
     // ==========================================
+    // INLINE ITEM CATEGORY EDITING LOGIC
+    // ==========================================
+    window.openItemCategoryPicker = function(id, event) {
+      if (event) event.stopPropagation();
+      if (selectionMode) return;
+
+      const item = items.find(i => i.id === id);
+      if (!item) return;
+
+      editingItemId = id;
+      if (dom.editCatItemName) {
+        dom.editCatItemName.innerText = `Move "${item.name}" to:`;
+      }
+
+      renderEditCategoryPills(item.category);
+
+      if (dom.inlineEditNewCategory) {
+        dom.inlineEditNewCategory.value = '';
+        dom.inlineEditNewCategory.style.display = 'none';
+      }
+
+      dom.editCatModalOverlay?.classList.add('open');
+    };
+
+    window.closeItemCategoryPicker = function() {
+      editingItemId = null;
+      dom.editCatModalOverlay?.classList.remove('open');
+    };
+
+    function renderEditCategoryPills(currentCat) {
+      if (!dom.editCatPickerGrid) return;
+
+      let html = categories.map((c) => {
+        const esc = escapeAttr(c);
+        const isActive = (c.toLowerCase() === (currentCat || '').toLowerCase());
+        return `<div class="modal-cat-pill ${isActive ? 'active' : ''}" onclick="applyItemCategory('${esc}')">${c}</div>`;
+      }).join('');
+
+      html += `<div class="modal-cat-pill new-pill" onclick="showInlineEditNewCategory()">+ New Category...</div>`;
+      dom.editCatPickerGrid.innerHTML = html;
+    }
+
+    window.showInlineEditNewCategory = function() {
+      if (dom.inlineEditNewCategory) {
+        dom.inlineEditNewCategory.style.display = 'block';
+        dom.inlineEditNewCategory.focus();
+      }
+    };
+
+    window.handleEditNewCategoryKeydown = async function(event) {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        const val = dom.inlineEditNewCategory.value.trim();
+        if (!val) return;
+
+        const resolvedCategory = sanitizeCategoryName(val);
+        if (!categories.includes(resolvedCategory)) {
+          categories.push(resolvedCategory);
+          await setDoc(metaDoc, { list: categories }).catch(console.error);
+        }
+        await applyItemCategory(resolvedCategory);
+      }
+    };
+
+    window.applyItemCategory = async function(newCat) {
+      if (!editingItemId) return;
+      const targetId = editingItemId;
+      closeItemCategoryPicker();
+
+      const item = items.find(i => i.id === targetId);
+      if (item) {
+        item.category = newCat;
+        render();
+      }
+
+      await updateDoc(doc(db, "garage_items", targetId), {
+        category: newCat,
+        updatedAt: serverTimestamp()
+      }).catch((err) => {
+        console.error("Failed to update item category:", err);
+      });
+    };
+
+    // ==========================================
     // BARCODE SCANNER CAMERA LOGIC & CASCADING LOOKUP
     // ==========================================
     window.toggleScannerModal = async function(open) {
@@ -1710,10 +1831,14 @@
         const badgeHtml = isOut ? '<span class="status-badge badge-out">OUT OF STOCK</span>' :
                           (isLow ? '<span class="status-badge badge-low">LOW STOCK</span>' : '');
 
+        const catLabel = item.category || 'General';
+
         card.innerHTML = `
           <div>
             <div class="card-top">
-              <span class="category-chip">${item.category ? item.category.split(" ")[0] : 'ITEM'}</span>
+              <span class="category-chip editable" onclick="openItemCategoryPicker('${item.id}', event)" title="Tap to change category">
+                ${catLabel} ▾
+              </span>
               ${badgeHtml}
               <div class="chk-circle">${isSelected ? '✓' : ''}</div>
             </div>

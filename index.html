@@ -24,8 +24,8 @@
       document.write(`
         <meta name="apple-mobile-web-app-title" content="${appName}" />
         <link id="dynamicFavicon" rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='120' fill='${encodeURIComponent(themeColor)}'/%3E%3C/svg%3E" />
-        <link rel="apple-touch-icon" sizes="180x180" href="${appIcon}?v=4" />
-        <link rel="manifest" href='data:application/manifest+json,{"name":"${appName}","short_name":"${appName}","start_url":"${appScope}","scope":"${appScope}","display":"standalone","background_color":"${themeColor}","theme_color":"${themeColor}","icons":[{"src":"${appIcon}?v=4","sizes":"180x180","type":"image/png"}]}' />
+        <link rel="apple-touch-icon" sizes="180x180" href="${appIcon}?v=5" />
+        <link rel="manifest" href='data:application/manifest+json,{"name":"${appName}","short_name":"${appName}","start_url":"${appScope}","scope":"${appScope}","display":"standalone","background_color":"${themeColor}","theme_color":"${themeColor}","icons":[{"src":"${appIcon}?v=5","sizes":"180x180","type":"image/png"}]}' />
       `);
     })();
   </script>
@@ -215,7 +215,7 @@
       display: flex; 
       flex-direction: column; 
       justify-content: space-between; 
-      min-height: 130px; 
+      min-height: 120px; 
       position: relative; 
       animation: cardSlideIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
       will-change: transform, opacity;
@@ -243,8 +243,7 @@
     body.selection-active .status-badge { display: none; }
     .bento-card.is-selected .chk-circle { background: var(--out-border); border-color: var(--out-border); color: #fff; }
 
-    .card-title { font-size: 15px; font-weight: 700; line-height: 1.25; margin-bottom: 6px; word-break: break-word; }
-    .card-barcode-tag { font-size: 10px; font-weight: 600; color: var(--text-muted); margin-bottom: 10px; }
+    .card-title { font-size: 15px; font-weight: 700; line-height: 1.25; margin-bottom: 10px; word-break: break-word; }
 
     .stepper-pill { background: var(--stepper-bg); border-radius: 10px; display: flex; align-items: center; justify-content: space-between; padding: 4px 6px; height: 34px; border: 1px solid var(--border); }
     .stepper-btn { background: transparent; border: none; font-size: 18px; font-weight: 700; color: var(--text-muted); width: 28px; height: 28px; cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 6px; }
@@ -625,10 +624,8 @@
         <input type="text" id="newItemName" class="input-field" placeholder="e.g. WD-40 Lubricant" autocomplete="off" />
       </div>
 
-      <div class="form-group">
-        <label class="form-label">Barcode (Optional)</label>
-        <input type="text" id="newItemBarcode" class="input-field" placeholder="Scanned barcode will appear here" autocomplete="off" />
-      </div>
+      <!-- Silent Barcode Storage (Hidden from UI) -->
+      <input type="hidden" id="newItemBarcode" value="" />
 
       <div class="form-group">
         <label class="form-label">Choose Category</label>
@@ -700,7 +697,7 @@
       serverTimestamp
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    const APP_VERSION = "4.9.1";
+    const APP_VERSION = "4.9.2";
 
     const isDev = window.location.pathname.toLowerCase().includes('dev');
 
@@ -1327,7 +1324,7 @@
         if (categories.length > 0) selectedModalCategory = categories[0];
         renderModalCategoryPills();
         if (prefillName) dom.newItemName.value = prefillName;
-        if (prefillBarcode) dom.newItemBarcode.value = prefillBarcode;
+        dom.newItemBarcode.value = prefillBarcode || "";
         dom.addModalOverlay.classList.add('open');
         setTimeout(() => dom.newItemName.focus(), 120);
       } else {
@@ -1336,7 +1333,7 @@
     };
 
     // ==========================================
-    // BARCODE SCANNER CAMERA LOGIC
+    // BARCODE SCANNER CAMERA LOGIC & CASCADING LOOKUP
     // ==========================================
     window.toggleScannerModal = async function(open) {
       if (open) {
@@ -1398,28 +1395,37 @@
       lastScanTime = now;
       playScanBeep();
 
-      dom.scannerStatusText.innerText = `Scanned: ${decodedText}`;
+      dom.scannerStatusText.innerText = "Barcode recognized";
 
       const match = items.find(i => (i.barcode && i.barcode === decodedText) || i.id === decodedText);
 
       if (match) {
         renderMatchedScannerItem(match);
       } else {
-        dom.scannerStatusText.innerText = `Looking up barcode ${decodedText}...`;
-        try {
-          const res = await fetch(`https://world.openfoodfacts.org/api/v0/product/${decodedText}.json`);
-          const data = await res.json();
+        dom.scannerStatusText.innerText = "Looking up product details...";
+        
+        // Cascading lookup across Food -> Household/DIY -> Beauty/Hygiene
+        const endpoints = [
+          `https://world.openfoodfacts.org/api/v0/product/${decodedText}.json`,
+          `https://world.openproductsfacts.org/api/v0/product/${decodedText}.json`,
+          `https://world.openbeautyfacts.org/api/v0/product/${decodedText}.json`
+        ];
 
-          if (data && data.status === 1 && data.product) {
-            const p = data.product;
-            const discoveredTitle = p.product_name || p.generic_name || p.brands || "Unknown Product";
-            renderUnknownScannerProduct(decodedText, discoveredTitle);
-          } else {
-            renderUnknownScannerProduct(decodedText, "");
-          }
-        } catch (e) {
-          renderUnknownScannerProduct(decodedText, "");
+        let discoveredTitle = "";
+
+        for (const url of endpoints) {
+          try {
+            const res = await fetch(url);
+            const data = await res.json();
+            if (data && data.status === 1 && data.product) {
+              const p = data.product;
+              discoveredTitle = p.product_name || p.generic_name || p.brands || "";
+              if (discoveredTitle) break;
+            }
+          } catch (e) {}
         }
+
+        renderUnknownScannerProduct(decodedText, discoveredTitle);
       }
     }
 
@@ -1435,7 +1441,6 @@
           <div>
             <span class="category-chip">${item.category}</span>
             <div style="font-size: 16px; font-weight: 800; margin-top: 4px;">${item.name}</div>
-            <div style="font-size: 11px; color: var(--text-muted);">Barcode: ${item.barcode}</div>
           </div>
           <div style="text-align: right;">
             <div id="scannerStockQty" style="font-size: 22px; font-weight: 800; color: ${isOut ? 'var(--out-border)' : 'inherit'};">
@@ -1469,8 +1474,8 @@
       const titleEsc = escapeAttr(suggestedTitle);
       box.innerHTML = `
         <div style="text-align: center; padding: 6px 0;">
-          <div style="font-size: 12px; font-weight: 800; color: var(--low-border); text-transform: uppercase;">Unregistered Barcode</div>
-          <div style="font-size: 15px; font-weight: 700; margin: 4px 0;">${suggestedTitle ? suggestedTitle : 'Barcode: ' + barcode}</div>
+          <div style="font-size: 12px; font-weight: 800; color: var(--low-border); text-transform: uppercase;">Unregistered Product</div>
+          <div style="font-size: 15px; font-weight: 700; margin: 4px 0;">${suggestedTitle || 'New Scanned Item'}</div>
           <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">This item is not yet in your Garage List.</p>
           <button class="action-btn" style="width: 100%; padding: 12px; background: var(--fab-bg); color: var(--fab-text); font-weight: 800; border-radius: 12px;" onclick="addScannedNewItem('${titleEsc}', '${barcode}')">
             + Add to Garage Inventory
@@ -1705,8 +1710,6 @@
         const badgeHtml = isOut ? '<span class="status-badge badge-out">OUT OF STOCK</span>' :
                           (isLow ? '<span class="status-badge badge-low">LOW STOCK</span>' : '');
 
-        const barcodeHtml = item.barcode ? `<div class="card-barcode-tag"># ${item.barcode}</div>` : '';
-
         card.innerHTML = `
           <div>
             <div class="card-top">
@@ -1715,7 +1718,6 @@
               <div class="chk-circle">${isSelected ? '✓' : ''}</div>
             </div>
             <div class="card-title">${item.name}</div>
-            ${barcodeHtml}
           </div>
           <div class="stepper-pill" onclick="event.stopPropagation()">
             <button class="stepper-btn" onclick="updateStock('${item.id}', -1, event)">—</button>

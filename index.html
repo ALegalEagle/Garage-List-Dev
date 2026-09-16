@@ -631,7 +631,7 @@
       <div style="text-align: center; margin-bottom: 12px;">
         <div style="font-size: 32px; margin-bottom: 6px;">🛒</div>
         <div style="font-size: 16px; font-weight: 800;" id="exportModalTitle">Out-of-Stock Items</div>
-        <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Send out-of-stock items directly to Bring! or share via iOS sheet.</p>
+        <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Copies out-of-stock items to clipboard and opens Bring!</p>
       </div>
 
       <div class="bulk-list-preview" id="exportListPreview"></div>
@@ -793,7 +793,7 @@
       serverTimestamp
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    const APP_VERSION = "4.11.0";
+    const APP_VERSION = "4.11.1";
 
     const isDev = window.location.pathname.toLowerCase().includes('dev');
 
@@ -1110,14 +1110,20 @@
       dom.exportModalOverlay?.classList.remove('open');
     };
 
-    window.exportToBringApp = function() {
+    window.exportToBringApp = async function() {
       const outItems = getOutOfStockItems();
       if (outItems.length === 0) return alert("No out-of-stock items to export!");
 
-      const itemNames = outItems.map(i => i.name).join(',');
-      const bringUrl = `bring://add?items=${encodeURIComponent(itemNames)}`;
+      const textList = outItems.map(i => i.name).join('\n');
 
-      window.location.href = bringUrl;
+      try {
+        await navigator.clipboard.writeText(textList);
+      } catch (err) {
+        console.warn("Clipboard copy failed, attempting direct deep link fallback", err);
+      }
+
+      window.location.href = "bring://";
+
       setTimeout(() => {
         closeExportModal();
       }, 500);

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Garage Restock List</title>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const itemsRaw = params.get('items') || '';
+    const items = itemsRaw ? decodeURIComponent(itemsRaw).split('|') : [];
+
+    const jsonLd = {
+      "@context": "https://schema.org/",
+      "@type": "Recipe",
+      "name": "Garage Restock List",
+      "recipeIngredient": items.length ? items : ["Garage Restock Items"]
+    };
+
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.textContent = JSON.stringify(jsonLd);
+    document.head.appendChild(script);
+  </script>
+</head>
+<body style="font-family: -apple-system, sans-serif; text-align: center; padding: 40px; color: #0f172a;">
+  <h2>🛒 Garage Restock Import</h2>
+  <p>Importing your restock items into Bring!...</p>
+</body>
+</html>

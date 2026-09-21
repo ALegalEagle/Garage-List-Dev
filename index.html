@@ -24,8 +24,8 @@
       document.write(`
         <meta name="apple-mobile-web-app-title" content="${appName}" />
         <link id="dynamicFavicon" rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='120' fill='${encodeURIComponent(themeColor)}'/%3E%3C/svg%3E" />
-        <link rel="apple-touch-icon" sizes="180x180" href="${appIcon}?v=10" />
-        <link rel="manifest" href='data:application/manifest+json,{"name":"${appName}","short_name":"${appName}","start_url":"${appScope}","scope":"${appScope}","display":"standalone","background_color":"${themeColor}","theme_color":"${themeColor}","icons":[{"src":"${appIcon}?v=10","sizes":"180x180","type":"image/png"}]}' />
+        <link rel="apple-touch-icon" sizes="180x180" href="${appIcon}?v=11" />
+        <link rel="manifest" href='data:application/manifest+json,{"name":"${appName}","short_name":"${appName}","start_url":"${appScope}","scope":"${appScope}","display":"standalone","background_color":"${themeColor}","theme_color":"${themeColor}","icons":[{"src":"${appIcon}?v=11","sizes":"180x180","type":"image/png"}]}' />
       `);
     })();
   </script>
@@ -541,7 +541,7 @@
         </div>
       </div>
       <div class="header-actions">
-        <button class="action-btn" id="exportBtn" onclick="exportShoppingList()" title="Export Shopping List">🛒</button>
+        <button class="action-btn" id="exportBtn" onclick="exportShoppingList()" title="Export Out-of-Stock List to Bring!">🛒</button>
         <button class="action-btn" id="bellBtn" onclick="enableLockscreenAlerts()" title="Enable Lock Screen Alerts">🔔</button>
         <button class="action-btn" id="headerCogBtn" onclick="toggleCategoryModal(true)" title="Manage Categories">⚙️</button>
         <button class="action-btn" id="binBtn" onclick="toggleSelectionMode()" title="Toggle Delete / Selection Mode">🗑️</button>
@@ -764,7 +764,7 @@
       serverTimestamp
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    const APP_VERSION = "4.11.2";
+    const APP_VERSION = "4.11.3";
 
     const isDev = window.location.pathname.toLowerCase().includes('dev');
 
@@ -1048,32 +1048,20 @@
     }
 
     // ==========================================
-    // SHOPPING LIST EXPORT LOGIC (NATIVE SHARE EXTENSION)
+    // SHOPPING LIST EXPORT LOGIC (BRING! WEB IMPORT)
     // ==========================================
-    window.exportShoppingList = async function() {
+    window.exportShoppingList = function() {
       const outItems = items.filter(isItemOutOfStock);
       if (outItems.length === 0) return alert("🎉 All garage items are currently in stock!");
 
-      // Clean line-by-line format optimal for Bring! & iOS Share Sheet
-      const textList = outItems.map(i => i.name).join('\n');
+      // Format comma-separated list of items for Bring! import URL
+      const itemNames = outItems.map(i => encodeURIComponent(i.name)).join(',');
+      
+      // Official Bring! Web-to-App deep link
+      const bringImportUrl = `https://www.getbring.com/import?items=${itemNames}`;
 
-      if (navigator.share) {
-        try {
-          await navigator.share({
-            title: 'Garage Shopping List',
-            text: textList
-          });
-        } catch (e) {
-          console.warn("Share sheet dismissed:", e);
-        }
-      } else {
-        try {
-          await navigator.clipboard.writeText(textList);
-          alert("Shopping list copied to clipboard!");
-        } catch (err) {
-          alert("Failed to copy list.");
-        }
-      }
+      // Launch Bring! via Web Import
+      window.location.href = bringImportUrl;
     };
 
     // ==========================================

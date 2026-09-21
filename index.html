@@ -24,8 +24,8 @@
       document.write(`
         <meta name="apple-mobile-web-app-title" content="${appName}" />
         <link id="dynamicFavicon" rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='120' fill='${encodeURIComponent(themeColor)}'/%3E%3C/svg%3E" />
-        <link rel="apple-touch-icon" sizes="180x180" href="${appIcon}?v=11" />
-        <link rel="manifest" href='data:application/manifest+json,{"name":"${appName}","short_name":"${appName}","start_url":"${appScope}","scope":"${appScope}","display":"standalone","background_color":"${themeColor}","theme_color":"${themeColor}","icons":[{"src":"${appIcon}?v=11","sizes":"180x180","type":"image/png"}]}' />
+        <link rel="apple-touch-icon" sizes="180x180" href="${appIcon}?v=12" />
+        <link rel="manifest" href='data:application/manifest+json,{"name":"${appName}","short_name":"${appName}","start_url":"${appScope}","scope":"${appScope}","display":"standalone","background_color":"${themeColor}","theme_color":"${themeColor}","icons":[{"src":"${appIcon}?v=12","sizes":"180x180","type":"image/png"}]}' />
       `);
     })();
   </script>
@@ -52,7 +52,6 @@
       --low-badge: #f59e0b;
       --low-bg: #fffbeb;
       --synced-color: #10b981;
-      --bring-color: #e52e41;
       --card-selected-bg: #fef2f2;
       --speeddial-blur-bg: rgba(255, 255, 255, 0.72);
     }
@@ -75,7 +74,6 @@
       --low-badge: #f59e0b;
       --low-bg: #451a03;
       --synced-color: #34d399;
-      --bring-color: #ef4444;
       --card-selected-bg: #272042;
       --speeddial-blur-bg: rgba(15, 23, 42, 0.76);
     }
@@ -517,7 +515,6 @@
     .bulk-list-preview { max-height: 180px; overflow-y: auto; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 10px 14px; margin: 14px 0; }
     .bulk-item-line { font-size: 13px; font-weight: 600; padding: 4px 0; color: var(--text); }
     .btn-danger { width: 100%; padding: 15px; background: var(--out-border); color: white; border: none; border-radius: 14px; font-size: 15px; font-weight: 800; cursor: pointer; margin-bottom: 10px; }
-    .btn-bring { width: 100%; padding: 15px; background: var(--bring-color); color: white; border: none; border-radius: 14px; font-size: 15px; font-weight: 800; cursor: pointer; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; }
     .btn-cancel { width: 100%; padding: 12px; background: var(--pill-bg); color: var(--text); border: 1px solid var(--border); border-radius: 14px; font-size: 14px; font-weight: 700; cursor: pointer; }
 
     .cat-manage-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; }
@@ -631,17 +628,13 @@
       <div style="text-align: center; margin-bottom: 12px;">
         <div style="font-size: 32px; margin-bottom: 6px;">🛒</div>
         <div style="font-size: 16px; font-weight: 800;" id="exportModalTitle">Out-of-Stock Items</div>
-        <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Copies out-of-stock items to clipboard and opens Bring!</p>
+        <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Export list directly to Reminders, Messages, or Clipboard</p>
       </div>
 
       <div class="bulk-list-preview" id="exportListPreview"></div>
 
-      <button class="btn-bring" id="exportBringBtn" onclick="exportToBringApp()">
-        🛒 Open in Bring! App
-      </button>
-
-      <button class="btn-cancel" style="padding: 14px; font-weight: 800; margin-bottom: 8px;" onclick="exportToShareSheet()">
-        📤 iOS Share Sheet / Reminders
+      <button class="btn-cancel" style="padding: 15px; font-weight: 800; background: var(--fab-bg); color: var(--fab-text); margin-bottom: 8px;" onclick="exportToShareSheet()">
+        📤 Export via iOS Share Sheet / Reminders
       </button>
     </div>
   </div>
@@ -792,8 +785,7 @@
       serverTimestamp
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    const APP_VERSION = "4.11.4";
-;
+    const APP_VERSION = "4.11.5";
 
     const isDev = window.location.pathname.toLowerCase().includes('dev');
 
@@ -882,8 +874,7 @@
       inlineEditNewCategory: document.getElementById('inlineEditNewCategory'),
       exportModalOverlay: document.getElementById('exportModalOverlay'),
       exportModalTitle: document.getElementById('exportModalTitle'),
-      exportListPreview: document.getElementById('exportListPreview'),
-      exportBringBtn: document.getElementById('exportBringBtn')
+      exportListPreview: document.getElementById('exportListPreview')
     };
 
     if (dom.appHeaderTitle) {
@@ -1079,7 +1070,7 @@
     }
 
     // ==========================================
-    // SHOPPING LIST EXPORT LOGIC (BRING! FIX)
+    // SHOPPING LIST EXPORT LOGIC
     // ==========================================
     function getOutOfStockItems() {
       return items.filter(isItemOutOfStock);
@@ -1093,12 +1084,10 @@
 
       if (outItems.length === 0) {
         dom.exportListPreview.innerHTML = `<div style="text-align:center; padding: 12px 0; color:var(--synced-color); font-size:14px; font-weight:700;">🎉 All garage items are currently in stock!</div>`;
-        if (dom.exportBringBtn) dom.exportBringBtn.style.opacity = '0.5';
       } else {
         dom.exportListPreview.innerHTML = outItems.map(i => `
           <div class="bulk-item-line">⚠️ <b>${i.name}</b> <span style="color:var(--text-muted); font-size:11px;">(${i.category})</span></div>
         `).join('');
-        if (dom.exportBringBtn) dom.exportBringBtn.style.opacity = '1';
       }
 
       dom.exportModalOverlay?.classList.add('open');
@@ -1107,42 +1096,6 @@
     window.closeExportModal = function() {
       dom.exportModalOverlay?.classList.remove('open');
     };
-
-  window.exportToBringApp = async function() {
-  const outItems = getOutOfStockItems();
-  if (outItems.length === 0) return alert("No out-of-stock items to export!");
-
-  // Clean, newline-separated text optimal for Bring! import
-  const textList = outItems.map(i => i.name).join('\n');
-
-  // 1. Pre-copy plain text to system clipboard
-  try {
-    await navigator.clipboard.writeText(textList);
-  } catch (err) {
-    console.warn("Clipboard copy failed:", err);
-  }
-
-  // 2. Try Web Share API with plain text payload (Bypasses URL/Recipe extension entirely)
-  if (navigator.share) {
-    try {
-      await navigator.share({
-        text: textList
-      });
-      closeExportModal();
-      return;
-    } catch (e) {
-      // User canceled share sheet, fallback to direct app launch
-    }
-  }
-
-  // 3. Fallback direct app trigger
-  window.location.href = "bring://";
-
-  setTimeout(() => {
-    closeExportModal();
-  }, 500);
-};
-
 
     window.exportToShareSheet = async function() {
       const outItems = getOutOfStockItems();

@@ -24,8 +24,8 @@
       document.write(`
         <meta name="apple-mobile-web-app-title" content="${appName}" />
         <link id="dynamicFavicon" rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='120' fill='${encodeURIComponent(themeColor)}'/%3E%3C/svg%3E" />
-        <link rel="apple-touch-icon" sizes="180x180" href="${appIcon}?v=13" />
-        <link rel="manifest" href='data:application/manifest+json,{"name":"${appName}","short_name":"${appName}","start_url":"${appScope}","scope":"${appScope}","display":"standalone","background_color":"${themeColor}","theme_color":"${themeColor}","icons":[{"src":"${appIcon}?v=13","sizes":"180x180","type":"image/png"}]}' />
+        <link rel="apple-touch-icon" sizes="180x180" href="${appIcon}?v=14" />
+        <link rel="manifest" href='data:application/manifest+json,{"name":"${appName}","short_name":"${appName}","start_url":"${appScope}","scope":"${appScope}","display":"standalone","background_color":"${themeColor}","theme_color":"${themeColor}","icons":[{"src":"${appIcon}?v=14","sizes":"180x180","type":"image/png"}]}' />
       `);
     })();
   </script>
@@ -636,7 +636,7 @@
 
       <div class="bulk-list-preview" id="exportListPreview"></div>
 
-      <!-- Re-added Bring Button Trigger -->
+      <!-- Bring! Share Sheet Trigger Button -->
       <button class="btn-bring" id="exportBringBtn" onclick="exportToBringApp()">
         🛒 Open in Bring! App
       </button>
@@ -793,31 +793,7 @@
       serverTimestamp
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    // Dynamic Schema.org JSON-LD Injector for Bring! Share Extension Compatibility
-    (function handleBringRecipeImport() {
-      const params = new URLSearchParams(window.location.search);
-      const importItems = params.get('bring_export');
-
-      if (importItems) {
-        const itemList = decodeURIComponent(importItems).split('|');
-        
-        // Inject Schema.org Recipe structured data required by Bring!
-        const jsonLdData = {
-          "@context": "https://schema.org/",
-          "@type": "Recipe",
-          "name": "Garage Restock List",
-          "description": "Auto-generated restock items from Garage Inventory",
-          "recipeIngredient": itemList
-        };
-
-        const scriptTag = document.createElement('script');
-        scriptTag.type = 'application/ld+json';
-        scriptTag.text = JSON.stringify(jsonLdData);
-        document.head.appendChild(scriptTag);
-      }
-    })();
-
-    const APP_VERSION = "4.11.7";;
+    const APP_VERSION = "4.11.8";
 
     const isDev = window.location.pathname.toLowerCase().includes('dev');
 
@@ -1136,28 +1112,28 @@
       const outItems = getOutOfStockItems();
       if (outItems.length === 0) return alert("No out-of-stock items to export!");
 
-      const itemNames = outItems.map(i => i.name).join('|');
-      const baseUrl = window.location.origin + window.location.pathname;
-      const dummyRecipeUrl = `${baseUrl}?bring_export=${encodeURIComponent(itemNames)}`;
+      // Format items for Bring's official web import endpoint
+      const itemNames = outItems.map(i => i.name).join(',');
+      const bringImportUrl = `https://www.getbring.com/import?items=${encodeURIComponent(itemNames)}`;
 
-      // Pre-copy text list as a backup payload
+      // Pre-copy line-separated items to clipboard as backup
       try {
         await navigator.clipboard.writeText(outItems.map(i => i.name).join('\n'));
       } catch (err) {}
 
-      // Open iOS Share Sheet configured with Recipe Schema URL targeting Bring!
+      // Trigger Share Sheet with official import link
       if (navigator.share) {
         try {
           await navigator.share({
             title: "Garage Restock List",
-            url: dummyRecipeUrl
+            url: bringImportUrl
           });
           closeExportModal();
         } catch (e) {
-          // User dismissed share sheet
+          // User canceled share
         }
       } else {
-        window.location.href = `https://www.getbring.com/import?url=${encodeURIComponent(dummyRecipeUrl)}`;
+        window.location.href = bringImportUrl;
       }
     };
 

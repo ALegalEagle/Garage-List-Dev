@@ -24,8 +24,8 @@
       document.write(`
         <meta name="apple-mobile-web-app-title" content="${appName}" />
         <link id="dynamicFavicon" rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='120' fill='${encodeURIComponent(themeColor)}'/%3E%3C/svg%3E" />
-        <link rel="apple-touch-icon" sizes="180x180" href="${appIcon}?v=18" />
-        <link rel="manifest" href='data:application/manifest+json,{"name":"${appName}","short_name":"${appName}","start_url":"${appScope}","scope":"${appScope}","display":"standalone","background_color":"${themeColor}","theme_color":"${themeColor}","icons":[{"src":"${appIcon}?v=18","sizes":"180x180","type":"image/png"}]}' />
+        <link rel="apple-touch-icon" sizes="180x180" href="${appIcon}?v=19" />
+        <link rel="manifest" href='data:application/manifest+json,{"name":"${appName}","short_name":"${appName}","start_url":"${appScope}","scope":"${appScope}","display":"standalone","background_color":"${themeColor}","theme_color":"${themeColor}","icons":[{"src":"${appIcon}?v=19","sizes":"180x180","type":"image/png"}]}' />
       `);
     })();
   </script>
@@ -631,7 +631,7 @@
       <div style="text-align: center; margin-bottom: 12px;">
         <div style="font-size: 32px; margin-bottom: 6px;">🛒</div>
         <div style="font-size: 16px; font-weight: 800;" id="exportModalTitle">Out-of-Stock Items</div>
-        <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Generates a restock link for Bring!, Reminders, or Messages</p>
+        <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Generates a restock list with interactive checkboxes</p>
       </div>
 
       <div class="bulk-list-preview" id="exportListPreview"></div>
@@ -641,8 +641,9 @@
         🛒 Open in Bring! App
       </button>
 
+      <!-- Clean Apple Notes & Reminders export with interactive checkboxes -->
       <button class="btn-cancel" style="padding: 14px; font-weight: 800; margin-bottom: 8px;" onclick="exportToShareSheet()">
-        📤 iOS Share Sheet / Reminders
+        📝 Save to Apple Notes / Reminders
       </button>
     </div>
   </div>
@@ -793,7 +794,7 @@
       serverTimestamp
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    const APP_VERSION = "4.13.0";
+    const APP_VERSION = "4.14.0";
 
     const isDev = window.location.pathname.toLowerCase().includes('dev');
 
@@ -1134,7 +1135,8 @@
       const outItems = getOutOfStockItems();
       if (outItems.length === 0) return alert("No out-of-stock items to export!");
 
-      const lines = outItems.map(i => `[ ] ${i.name}`).join('\n');
+      // "- [ ] " format converts directly to interactive check circles in Apple Notes & Reminders
+      const lines = outItems.map(i => `- [ ] ${i.name} (${i.category})`).join('\n');
       const shareData = {
         title: 'Garage Out-of-Stock List',
         text: `🛒 Garage Out-of-Stock Items:\n\n${lines}`
@@ -1145,12 +1147,12 @@
           await navigator.share(shareData);
           closeExportModal();
         } catch (e) {
-          console.warn("Share sheet canceled:", e);
+          console.warn("Export canceled:", e);
         }
       } else {
         try {
-          await navigator.clipboard.writeText(lines);
-          alert("Shopping list copied to clipboard!");
+          await navigator.clipboard.writeText(shareData.text);
+          alert("Shopping list with checkboxes copied to clipboard!");
           closeExportModal();
         } catch (err) {
           alert("Failed to copy list.");

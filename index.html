@@ -10,7 +10,7 @@
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
 
-  <!-- Universal Environment Auto-Detector -->
+  <!-- Universal Environment Auto-Detector & Dynamic Manifest -->
   <script>
     (function() {
       const isDev = window.location.pathname.toLowerCase().includes('dev');
@@ -21,11 +21,23 @@
 
       document.title = appName;
 
+      const manifestJSON = JSON.stringify({
+        name: appName,
+        short_name: appName,
+        start_url: appScope,
+        scope: appScope,
+        display: "standalone",
+        background_color: themeColor,
+        theme_color: themeColor,
+        icons: [{ src: appIcon + "?v=12", sizes: "180x180", type: "image/png" }]
+      });
+
       document.write(`
         <meta name="apple-mobile-web-app-title" content="${appName}" />
+        <meta name="theme-color" content="${themeColor}" />
         <link id="dynamicFavicon" rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='120' fill='${encodeURIComponent(themeColor)}'/%3E%3C/svg%3E" />
         <link rel="apple-touch-icon" sizes="180x180" href="${appIcon}?v=12" />
-        <link rel="manifest" href='data:application/manifest+json,{"name":"${appName}","short_name":"${appName}","start_url":"${appScope}","scope":"${appScope}","display":"standalone","background_color":"${themeColor}","theme_color":"${themeColor}","icons":[{"src":"${appIcon}?v=12","sizes":"180x180","type":"image/png"}]}' />
+        <link rel="manifest" href='data:application/manifest+json,${encodeURIComponent(manifestJSON)}' />
       `);
     })();
   </script>
@@ -541,7 +553,7 @@
         </div>
       </div>
       <div class="header-actions">
-        <button class="action-btn" id="exportBtn" onclick="exportShoppingList()" title="Export Out-of-Stock List to Bring!">🛒</button>
+        <button class="action-btn" id="exportBtn" onclick="exportShoppingList()" title="Export Out-of-Stock List">🛒</button>
         <button class="action-btn" id="bellBtn" onclick="enableLockscreenAlerts()" title="Enable Lock Screen Alerts">🔔</button>
         <button class="action-btn" id="headerCogBtn" onclick="toggleCategoryModal(true)" title="Manage Categories">⚙️</button>
         <button class="action-btn" id="binBtn" onclick="toggleSelectionMode()" title="Toggle Delete / Selection Mode">🗑️</button>
@@ -652,7 +664,7 @@
         <input type="text" id="newItemName" class="input-field" placeholder="e.g. WD-40 Lubricant" autocomplete="off" />
       </div>
 
-      <!-- Silent Barcode Storage (Hidden from UI) -->
+      <!-- Silent Barcode Storage -->
       <input type="hidden" id="newItemBarcode" value="" />
 
       <div class="form-group">
@@ -765,7 +777,7 @@
       serverTimestamp
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    const APP_VERSION = "4.11.4";
+    const APP_VERSION = "4.12.0";
 
     const isDev = window.location.pathname.toLowerCase().includes('dev');
 
@@ -799,14 +811,14 @@
     let editingItemMinStock = 1;
     let pendingDeleteCategory = null;
 
-    // Scanner state
+    // Scanner State
     let html5QrScanner = null;
     let isScannerRunning = false;
     let lastScannedBarcode = null;
     let lastScanTime = 0;
     let activeScannedItemId = null;
 
-    // Speed Dial & FAB Press-and-Hold Engine
+    // Speed Dial State
     let isSpeedDialOpen = false;
     let fabTimer = null;
     let fabJustOpened = false;
@@ -969,9 +981,7 @@
       }
     }
 
-    // ==========================================
-    // SHOPPING LIST EXPORT LOGIC (NATIVE SHARE / CLIPBOARD)
-    // ==========================================
+    // Native Share / Clipboard Export Logic
     window.exportShoppingList = async function() {
       const outItems = items.filter(isItemOutOfStock);
       if (outItems.length === 0) return alert("🎉 All garage items are currently in stock!");
@@ -999,20 +1009,14 @@
         navigator.clipboard.writeText(text).then(() => {
           alert("📋 Shopping list copied to clipboard! You can now paste it into Bring! or any notes app.");
         }).catch(() => {
-          fallbackPromptCopy(text);
+          window.prompt("Copy your shopping list below:", text);
         });
       } else {
-        fallbackPromptCopy(text);
+        window.prompt("Copy your shopping list below:", text);
       }
     }
 
-    function fallbackPromptCopy(text) {
-      window.prompt("Copy your shopping list below:", text);
-    }
-    
-    // ==========================================
-    // PRESS & HOLD SPEED DIAL ENGINE
-    // ==========================================
+    // Speed Dial Engine
     window.setSpeedDialState = function(open) {
       isSpeedDialOpen = open;
       dom.fabAdd?.classList.toggle('is-open', open);
@@ -1037,7 +1041,6 @@
 
       let startX = 0, startY = 0, isLongPress = false;
 
-      // Prevent iOS context menus and touch gesture delays
       btn.style.touchAction = 'none';
       btn.addEventListener('contextmenu', (e) => e.preventDefault());
 
@@ -1084,13 +1087,11 @@
       };
 
       const handlePressMove = (x, y) => {
-        // Increased slop to 25px so micro-thumb movements after scrolling don't cancel long press
         if (Math.abs(x - startX) > 25 || Math.abs(y - startY) > 25) {
           clearFabTimer();
         }
       };
 
-      // Pointer Events (Handles touch/mouse uniformly without iOS delay)
       btn.addEventListener('pointerdown', (e) => {
         if (e.button !== undefined && e.button !== 0) return;
         handlePressStart(e.clientX, e.clientY);
@@ -1112,9 +1113,7 @@
       btn.addEventListener('click', (e) => e.preventDefault());
     }
 
-    // ==========================================
-    // FIRESTORE SYNC & INVENTORY LOGIC
-    // ==========================================
+    // Firestore Sync Engine
     function initRealtimeDatabase() {
       onSnapshot(metaDoc, (snap) => {
         if (snap.exists() && Array.isArray(snap.data().list)) {
@@ -1392,9 +1391,7 @@
       }
     };
 
-    // ==========================================
-    // ITEM SETTINGS MODAL (CLICK WHOLE CARD)
-    // ==========================================
+    // Item Settings Modal
     window.openItemSettings = function(id, event) {
       if (event) event.stopPropagation();
 
@@ -1483,9 +1480,7 @@
       });
     };
 
-    // ==========================================
-    // BARCODE SCANNER CAMERA LOGIC & CASCADING LOOKUP
-    // ==========================================
+    // Camera & Barcode Lookup
     window.toggleScannerModal = async function(open) {
       if (open) {
         unlockAudio();
@@ -1729,7 +1724,6 @@
       render();
     };
 
-    // Primary Card Click Handler
     window.handleCardClick = function(id) {
       if (selectionMode) {
         if (selectedIds.has(id)) selectedIds.delete(id);

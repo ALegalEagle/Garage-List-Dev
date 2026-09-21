@@ -765,7 +765,7 @@
       serverTimestamp
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    const APP_VERSION = "4.11.3";
+    const APP_VERSION = "4.11.4";
 
     const isDev = window.location.pathname.toLowerCase().includes('dev');
 
@@ -970,22 +970,46 @@
     }
 
     // ==========================================
-    // SHOPPING LIST EXPORT LOGIC (BRING! WEB IMPORT)
+    // SHOPPING LIST EXPORT LOGIC (NATIVE SHARE / CLIPBOARD)
     // ==========================================
-    window.exportShoppingList = function() {
+    window.exportShoppingList = async function() {
       const outItems = items.filter(isItemOutOfStock);
       if (outItems.length === 0) return alert("🎉 All garage items are currently in stock!");
 
-      // Format comma-separated list of items for Bring! import URL
-      const itemNames = outItems.map(i => encodeURIComponent(i.name)).join(',');
-      
-      // Official Bring! Web-to-App deep link
-      const bringImportUrl = `https://www.getbring.com/import?items=${itemNames}`;
+      const textList = "🛒 Garage Out-of-Stock List:\n" + outItems.map(i => `• ${i.name}`).join('\n');
 
-      // Launch Bring! via Web Import
-      window.location.href = bringImportUrl;
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: 'Garage Shopping List',
+            text: textList
+          });
+        } catch (e) {
+          if (e.name !== 'AbortError') {
+            copyShoppingListToClipboard(textList);
+          }
+        }
+      } else {
+        copyShoppingListToClipboard(textList);
+      }
     };
 
+    function copyShoppingListToClipboard(text) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+          alert("📋 Shopping list copied to clipboard! You can now paste it into Bring! or any notes app.");
+        }).catch(() => {
+          fallbackPromptCopy(text);
+        });
+      } else {
+        fallbackPromptCopy(text);
+      }
+    }
+
+    function fallbackPromptCopy(text) {
+      window.prompt("Copy your shopping list below:", text);
+    }
+    
     // ==========================================
     // PRESS & HOLD SPEED DIAL ENGINE
     // ==========================================
@@ -1011,35 +1035,47 @@
       const btn = dom.fabAdd;
       if (!btn) return;
 
-      let startX = 0, startY = 0, isLongPress = false, lastTouch = 0;
+      let startX = 0, startY = 0, isLongPress = false;
 
+      // Prevent iOS context menus and touch gesture delays
+      btn.style.touchAction = 'none';
       btn.addEventListener('contextmenu', (e) => e.preventDefault());
 
+      const clearFabTimer = () => {
+        if (fabTimer) {
+          clearTimeout(fabTimer);
+          fabTimer = null;
+        }
+      };
+
       const handlePressStart = (x, y) => {
-        startX = x; startY = y; isLongPress = false;
+        startX = x;
+        startY = y;
+        isLongPress = false;
+
         if (isSpeedDialOpen) return;
 
-        clearTimeout(fabTimer);
+        clearFabTimer();
         fabTimer = setTimeout(() => {
           isLongPress = true;
           fabJustOpened = true;
           if (window.getSelection) window.getSelection().removeAllRanges();
           openSpeedDialMenu();
           setTimeout(() => { fabJustOpened = false; }, 450);
-        }, 350);
+        }, 300);
       };
 
       const handlePressEnd = (e) => {
-        clearTimeout(fabTimer);
+        clearFabTimer();
 
         if (isLongPress || fabJustOpened) {
-          if (e?.cancelable) e.preventDefault();
+          if (e && e.cancelable) e.preventDefault();
           isLongPress = false;
           return;
         }
 
         if (isSpeedDialOpen) {
-          if (e?.cancelable) e.preventDefault();
+          if (e && e.cancelable) e.preventDefault();
           closeSpeedDialMenu();
           return;
         }
@@ -1048,50 +1084,29 @@
       };
 
       const handlePressMove = (x, y) => {
-        if (Math.abs(x - startX) > 15 || Math.abs(y - startY) > 15) {
-          clearTimeout(fabTimer);
+        // Increased slop to 25px so micro-thumb movements after scrolling don't cancel long press
+        if (Math.abs(x - startX) > 25 || Math.abs(y - startY) > 25) {
+          clearFabTimer();
         }
       };
 
-      // Touch Events
-      btn.addEventListener('touchstart', (e) => {
-        lastTouch = Date.now();
-        const t = e.touches[0];
-        handlePressStart(t.clientX, t.clientY);
-      }, { passive: true });
+      // Pointer Events (Handles touch/mouse uniformly without iOS delay)
+      btn.addEventListener('pointerdown', (e) => {
+        if (e.button !== undefined && e.button !== 0) return;
+        handlePressStart(e.clientX, e.clientY);
+      });
 
-      btn.addEventListener('touchmove', (e) => {
-        const t = e.touches[0];
-        handlePressMove(t.clientX, t.clientY);
-      }, { passive: true });
+      btn.addEventListener('pointermove', (e) => {
+        handlePressMove(e.clientX, e.clientY);
+      });
 
-      btn.addEventListener('touchend', (e) => {
-        lastTouch = Date.now();
+      btn.addEventListener('pointerup', (e) => {
         handlePressEnd(e);
       });
 
-      btn.addEventListener('touchcancel', () => {
-        clearTimeout(fabTimer);
+      btn.addEventListener('pointercancel', () => {
+        clearFabTimer();
         isLongPress = fabJustOpened = false;
-      });
-
-      // Mouse Fallbacks (Filters synthetic tap events after touch)
-      const isSynthetic = () => (Date.now() - lastTouch) < 800;
-
-      btn.addEventListener('mousedown', (e) => {
-        if (e.button === 0 && !isSynthetic()) handlePressStart(e.clientX, e.clientY);
-      });
-
-      btn.addEventListener('mousemove', (e) => {
-        if (!isSynthetic()) handlePressMove(e.clientX, e.clientY);
-      });
-
-      btn.addEventListener('mouseup', (e) => {
-        if (e.button === 0 && !isSynthetic()) handlePressEnd(e);
-      });
-
-      btn.addEventListener('mouseleave', () => {
-        if (!isSynthetic()) clearTimeout(fabTimer);
       });
 
       btn.addEventListener('click', (e) => e.preventDefault());

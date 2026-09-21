@@ -792,7 +792,8 @@
       serverTimestamp
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    const APP_VERSION = "4.11.3";
+    const APP_VERSION = "4.11.4";
+;
 
     const isDev = window.location.pathname.toLowerCase().includes('dev');
 
@@ -1107,26 +1108,41 @@
       dom.exportModalOverlay?.classList.remove('open');
     };
 
-    window.exportToBringApp = async function() {
-      const outItems = getOutOfStockItems();
-      if (outItems.length === 0) return alert("No out-of-stock items to export!");
+  window.exportToBringApp = async function() {
+  const outItems = getOutOfStockItems();
+  if (outItems.length === 0) return alert("No out-of-stock items to export!");
 
-      const textList = outItems.map(i => i.name).join('\n');
+  // Clean, newline-separated text optimal for Bring! import
+  const textList = outItems.map(i => i.name).join('\n');
 
-      // 1. Copy list to system clipboard for Bring! built-in clipboard import
-      try {
-        await navigator.clipboard.writeText(textList);
-      } catch (err) {
-        console.warn("Clipboard copy failed:", err);
-      }
+  // 1. Pre-copy plain text to system clipboard
+  try {
+    await navigator.clipboard.writeText(textList);
+  } catch (err) {
+    console.warn("Clipboard copy failed:", err);
+  }
 
-      // 2. Launch Bring cleanly via scheme without query parameters that trigger recipe error
-      window.location.href = "bring://";
+  // 2. Try Web Share API with plain text payload (Bypasses URL/Recipe extension entirely)
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        text: textList
+      });
+      closeExportModal();
+      return;
+    } catch (e) {
+      // User canceled share sheet, fallback to direct app launch
+    }
+  }
 
-      setTimeout(() => {
-        closeExportModal();
-      }, 500);
-    };
+  // 3. Fallback direct app trigger
+  window.location.href = "bring://";
+
+  setTimeout(() => {
+    closeExportModal();
+  }, 500);
+};
+
 
     window.exportToShareSheet = async function() {
       const outItems = getOutOfStockItems();

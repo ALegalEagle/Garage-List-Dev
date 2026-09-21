@@ -24,8 +24,8 @@
       document.write(`
         <meta name="apple-mobile-web-app-title" content="${appName}" />
         <link id="dynamicFavicon" rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='120' fill='${encodeURIComponent(themeColor)}'/%3E%3C/svg%3E" />
-        <link rel="apple-touch-icon" sizes="180x180" href="${appIcon}?v=20" />
-        <link rel="manifest" href='data:application/manifest+json,{"name":"${appName}","short_name":"${appName}","start_url":"${appScope}","scope":"${appScope}","display":"standalone","background_color":"${themeColor}","theme_color":"${themeColor}","icons":[{"src":"${appIcon}?v=20","sizes":"180x180","type":"image/png"}]}' />
+        <link rel="apple-touch-icon" sizes="180x180" href="${appIcon}?v=21" />
+        <link rel="manifest" href='data:application/manifest+json,{"name":"${appName}","short_name":"${appName}","start_url":"${appScope}","scope":"${appScope}","display":"standalone","background_color":"${themeColor}","theme_color":"${themeColor}","icons":[{"src":"${appIcon}?v=21","sizes":"180x180","type":"image/png"}]}' />
       `);
     })();
   </script>
@@ -794,7 +794,7 @@
       serverTimestamp
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    const APP_VERSION = "4.15.0";
+    const APP_VERSION = "4.16.0";
 
     const isDev = window.location.pathname.toLowerCase().includes('dev');
 
@@ -1135,8 +1135,8 @@
       const outItems = getOutOfStockItems();
       if (outItems.length === 0) return alert("No out-of-stock items to export!");
 
-      // "- [ ] " format converts directly to interactive check circles in Apple Notes & Reminders
-      const lines = outItems.map(i => `- [ ] ${i.name} (${i.category})`).join('\n');
+      // Use literal UTF-8 checkbox square symbol: ☐
+      const lines = outItems.map(i => `☐ ${i.name} (${i.category})`).join('\n');
       const shareData = {
         title: 'Garage Out-of-Stock List',
         text: `🛒 Garage Out-of-Stock Items:\n\n${lines}`

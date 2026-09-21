@@ -24,8 +24,8 @@
       document.write(`
         <meta name="apple-mobile-web-app-title" content="${appName}" />
         <link id="dynamicFavicon" rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='120' fill='${encodeURIComponent(themeColor)}'/%3E%3C/svg%3E" />
-        <link rel="apple-touch-icon" sizes="180x180" href="${appIcon}?v=10" />
-        <link rel="manifest" href='data:application/manifest+json,{"name":"${appName}","short_name":"${appName}","start_url":"${appScope}","scope":"${appScope}","display":"standalone","background_color":"${themeColor}","theme_color":"${themeColor}","icons":[{"src":"${appIcon}?v=10","sizes":"180x180","type":"image/png"}]}' />
+        <link rel="apple-touch-icon" sizes="180x180" href="${appIcon}?v=11" />
+        <link rel="manifest" href='data:application/manifest+json,{"name":"${appName}","short_name":"${appName}","start_url":"${appScope}","scope":"${appScope}","display":"standalone","background_color":"${themeColor}","theme_color":"${themeColor}","icons":[{"src":"${appIcon}?v=11","sizes":"180x180","type":"image/png"}]}' />
       `);
     })();
   </script>
@@ -613,7 +613,7 @@
     </div>
   </div>
 
-  <!-- FLOATING ACTION BUTTON (PRESS & HOLD via Pointer Events) -->
+  <!-- FLOATING ACTION BUTTON -->
   <button class="fab-bottom" id="fabAdd" title="Add or Scan Item">
     <span style="pointer-events: none; -webkit-user-select: none; user-select: none; line-height: 1;">+</span>
   </button>
@@ -681,7 +681,6 @@
         <input type="text" id="newItemName" class="input-field" placeholder="e.g. WD-40 Lubricant" autocomplete="off" />
       </div>
 
-      <!-- Silent Barcode Storage (Hidden from UI) -->
       <input type="hidden" id="newItemBarcode" value="" />
 
       <div class="form-group">
@@ -711,7 +710,7 @@
     </div>
   </div>
 
-  <!-- Item Settings & Category Picker Sheet -->
+  <!-- Item Settings Sheet -->
   <div class="modal-overlay" id="editCatModalOverlay" onclick="if(event.target===this) closeItemCategoryPicker()">
     <div class="modal">
       <div class="modal-top-bar">
@@ -793,7 +792,7 @@
       serverTimestamp
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    const APP_VERSION = "4.11.2";
+    const APP_VERSION = "4.11.3";
 
     const isDev = window.location.pathname.toLowerCase().includes('dev');
 
@@ -827,14 +826,12 @@
     let editingItemMinStock = 1;
     let pendingDeleteCategory = null;
 
-    // Scanner state
     let html5QrScanner = null;
     let isScannerRunning = false;
     let lastScannedBarcode = null;
     let lastScanTime = 0;
     let activeScannedItemId = null;
 
-    // Speed Dial State
     let isSpeedDialOpen = false;
 
     const dom = {
@@ -1081,7 +1078,7 @@
     }
 
     // ==========================================
-    // SHOPPING LIST EXPORT LOGIC (BRING! + NATIVE)
+    // SHOPPING LIST EXPORT LOGIC (BRING! FIX)
     // ==========================================
     function getOutOfStockItems() {
       return items.filter(isItemOutOfStock);
@@ -1116,12 +1113,14 @@
 
       const textList = outItems.map(i => i.name).join('\n');
 
+      // 1. Copy list to system clipboard for Bring! built-in clipboard import
       try {
         await navigator.clipboard.writeText(textList);
       } catch (err) {
-        console.warn("Clipboard copy failed, attempting direct deep link fallback", err);
+        console.warn("Clipboard copy failed:", err);
       }
 
+      // 2. Launch Bring cleanly via scheme without query parameters that trigger recipe error
       window.location.href = "bring://";
 
       setTimeout(() => {
@@ -1551,9 +1550,6 @@
       }
     };
 
-    // ==========================================
-    // ITEM SETTINGS MODAL (CLICK WHOLE CARD)
-    // ==========================================
     window.openItemSettings = function(id, event) {
       if (event) event.stopPropagation();
 
@@ -1642,9 +1638,6 @@
       });
     };
 
-    // ==========================================
-    // BARCODE SCANNER CAMERA LOGIC & CASCADING LOOKUP
-    // ==========================================
     window.toggleScannerModal = async function(open) {
       if (open) {
         unlockAudio();
@@ -1888,7 +1881,6 @@
       render();
     };
 
-    // Primary Card Click Handler
     window.handleCardClick = function(id) {
       if (selectionMode) {
         if (selectedIds.has(id)) selectedIds.delete(id);

@@ -806,8 +806,10 @@
     let lastScanTime = 0;
     let activeScannedItemId = null;
 
-    // Speed Dial State
+    // Speed Dial & FAB Press-and-Hold Engine
     let isSpeedDialOpen = false;
+    let fabTimer = null;
+    let fabJustOpened = false;
 
     const dom = {
       body: document.body,
@@ -985,88 +987,59 @@
     };
 
     // ==========================================
-    // PRESS & HOLD SPEED DIAL LOGIC
+    // PRESS & HOLD SPEED DIAL ENGINE
     // ==========================================
-    window.openSpeedDialMenu = function() {
-      isSpeedDialOpen = true;
-      dom.fabAdd.classList.add('is-open');
-      dom.speedDialOverlay.classList.add('active');
-      dom.speedDialMenu.classList.add('active');
-      if (navigator.vibrate) navigator.vibrate(60);
+    window.setSpeedDialState = function(open) {
+      isSpeedDialOpen = open;
+      dom.fabAdd?.classList.toggle('is-open', open);
+      dom.speedDialOverlay?.classList.toggle('active', open);
+      dom.speedDialMenu?.classList.toggle('active', open);
+      if (open && navigator.vibrate) navigator.vibrate(60);
     };
 
-    window.closeSpeedDialMenu = function() {
-      isSpeedDialOpen = false;
-      dom.fabAdd.classList.remove('is-open');
-      dom.speedDialOverlay.classList.remove('active');
-      dom.speedDialMenu.classList.remove('active');
-    };
-
-    window.toggleSpeedDialMenu = function() {
-      if (isSpeedDialOpen) closeSpeedDialMenu();
-      else openSpeedDialMenu();
-    };
+    window.openSpeedDialMenu = () => setSpeedDialState(true);
+    window.closeSpeedDialMenu = () => setSpeedDialState(false);
+    window.toggleSpeedDialMenu = () => setSpeedDialState(!isSpeedDialOpen);
 
     window.selectSpeedDialAction = function(action) {
       closeSpeedDialMenu();
-      if (action === 'scan') {
-        toggleScannerModal(true);
-      } else if (action === 'manual') {
-        toggleAddModal(true);
-      }
+      if (action === 'scan') toggleScannerModal(true);
+      else if (action === 'manual') toggleAddModal(true);
     };
 
     function setupFabPressAndHold() {
       const btn = dom.fabAdd;
       if (!btn) return;
 
-      let touchStartX = 0;
-      let touchStartY = 0;
-      let longPressTimer = null;
-      let isLongPressTriggered = false;
-      let speedDialJustOpened = false;
-      let lastTouchTime = 0;
+      let startX = 0, startY = 0, isLongPress = false, lastTouch = 0;
 
-      btn.addEventListener('contextmenu', (e) => {
-        e.preventDefault();
-        return false;
-      });
+      btn.addEventListener('contextmenu', (e) => e.preventDefault());
 
-      const handlePressStart = (clientX, clientY) => {
-        touchStartX = clientX;
-        touchStartY = clientY;
-        isLongPressTriggered = false;
-
+      const handlePressStart = (x, y) => {
+        startX = x; startY = y; isLongPress = false;
         if (isSpeedDialOpen) return;
 
-        clearTimeout(longPressTimer);
-        longPressTimer = setTimeout(() => {
-          isLongPressTriggered = true;
-          speedDialJustOpened = true;
-
-          if (window.getSelection) {
-            window.getSelection().removeAllRanges();
-          }
-
+        clearTimeout(fabTimer);
+        fabTimer = setTimeout(() => {
+          isLongPress = true;
+          fabJustOpened = true;
+          if (window.getSelection) window.getSelection().removeAllRanges();
           openSpeedDialMenu();
-
-          setTimeout(() => {
-            speedDialJustOpened = false;
-          }, 450);
+          setTimeout(() => { fabJustOpened = false; }, 450);
         }, 350);
       };
 
       const handlePressEnd = (e) => {
-        clearTimeout(longPressTimer);
+        clearTimeout(fabTimer);
 
-        if (isLongPressTriggered || speedDialJustOpened) {
-          if (e && e.cancelable) e.preventDefault();
-          isLongPressTriggered = false;
+        if (isLongPress || fabJustOpened) {
+          if (e?.cancelable) e.preventDefault();
+          isLongPress = false;
           return;
         }
 
         if (isSpeedDialOpen) {
-          if (e && e.cancelable) e.preventDefault();
+          if (e?.cancelable) e.preventDefault();
           closeSpeedDialMenu();
           return;
         }
@@ -1074,16 +1047,15 @@
         toggleAddModal(true);
       };
 
-      const handlePressMove = (clientX, clientY) => {
-        const deltaX = Math.abs(clientX - touchStartX);
-        const deltaY = Math.abs(clientY - touchStartY);
-        if (deltaX > 15 || deltaY > 15) {
-          clearTimeout(longPressTimer);
+      const handlePressMove = (x, y) => {
+        if (Math.abs(x - startX) > 15 || Math.abs(y - startY) > 15) {
+          clearTimeout(fabTimer);
         }
       };
 
+      // Touch Events
       btn.addEventListener('touchstart', (e) => {
-        lastTouchTime = Date.now();
+        lastTouch = Date.now();
         const t = e.touches[0];
         handlePressStart(t.clientX, t.clientY);
       }, { passive: true });
@@ -1094,41 +1066,35 @@
       }, { passive: true });
 
       btn.addEventListener('touchend', (e) => {
-        lastTouchTime = Date.now();
+        lastTouch = Date.now();
         handlePressEnd(e);
       });
 
       btn.addEventListener('touchcancel', () => {
-        clearTimeout(longPressTimer);
-        isLongPressTriggered = false;
-        speedDialJustOpened = false;
+        clearTimeout(fabTimer);
+        isLongPress = fabJustOpened = false;
       });
 
-      const isSynthetic = () => (Date.now() - lastTouchTime) < 800;
+      // Mouse Fallbacks (Filters synthetic tap events after touch)
+      const isSynthetic = () => (Date.now() - lastTouch) < 800;
 
       btn.addEventListener('mousedown', (e) => {
-        if (e.button !== 0 || isSynthetic()) return;
-        handlePressStart(e.clientX, e.clientY);
+        if (e.button === 0 && !isSynthetic()) handlePressStart(e.clientX, e.clientY);
       });
 
       btn.addEventListener('mousemove', (e) => {
-        if (isSynthetic()) return;
-        handlePressMove(e.clientX, e.clientY);
+        if (!isSynthetic()) handlePressMove(e.clientX, e.clientY);
       });
 
       btn.addEventListener('mouseup', (e) => {
-        if (e.button !== 0 || isSynthetic()) return;
-        handlePressEnd(e);
+        if (e.button === 0 && !isSynthetic()) handlePressEnd(e);
       });
 
       btn.addEventListener('mouseleave', () => {
-        if (isSynthetic()) return;
-        clearTimeout(longPressTimer);
+        if (!isSynthetic()) clearTimeout(fabTimer);
       });
 
-      btn.addEventListener('click', (e) => {
-        e.preventDefault();
-      });
+      btn.addEventListener('click', (e) => e.preventDefault());
     }
 
     // ==========================================

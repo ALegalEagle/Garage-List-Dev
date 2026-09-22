@@ -14,7 +14,7 @@
   <!-- Universal Environment Auto-Detector with Cache Versioning -->
   <script>
     (function() {
-      const APP_VER = "6.3.1";
+      const APP_VER = "6.3.2";
       const isDev = window.location.pathname.toLowerCase().includes('dev');
       const appName = isDev ? "Garage DEV" : "Garage List";
       const appIcon = isDev ? "blueprint-icon.png" : "apple-touch-icon.png";
@@ -86,6 +86,7 @@
 
       --pill-bar-bg: #1e293b;
       --pill-bar-border: #334155;
+      --pill-bar-border: #334155;
       --pill-active-bg: #334155;
       --pill-icon: #94a3b8;
       --pill-icon-active: #ffffff;
@@ -121,10 +122,10 @@
       overflow-x: hidden;
     }
 
-    /* PULL SPINNER POSITIONED EXACTLY IN ANNOTATED CIRCLE LOCATION ABOVE HEADER TITLE */
+    /* PULL SPINNER WITH SMOOTH TRANSLATION + ROTATION ANIMATION */
     .ptr-top-container {
       position: absolute;
-      top: calc(env(safe-area-inset-top, 20px) + 38px);
+      top: calc(env(safe-area-inset-top, 20px) + 20px);
       left: 0;
       right: 0;
       display: flex;
@@ -134,9 +135,13 @@
       pointer-events: none;
       height: 36px;
       opacity: 0;
-      transform: translateY(-15px);
-      transition: opacity 0.15s ease;
+      transform: translateY(-40px);
+      transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.2s ease;
       will-change: transform, opacity;
+    }
+
+    .ptr-top-container.dragging {
+      transition: none !important;
     }
 
     .ptr-spinner-icon {
@@ -144,6 +149,7 @@
       height: 32px !important;
       color: var(--text-muted);
       transform: rotate(0deg);
+      transition: transform 0.05s linear;
     }
 
     .ptr-spinner-icon.spinning {
@@ -155,7 +161,7 @@
       100% { transform: rotate(360deg); }
     }
 
-    /* MAIN CONTAINER TRANSLATES DOWNWARD TO CREATE SPACE FOR CIRCLED SPINNER */
+    /* MAIN CONTAINER DRAG PHYSICAL SLIDE */
     .container { 
       max-width: 1200px; 
       margin: 0 auto; 
@@ -667,7 +673,7 @@
 </head>
 <body>
 
-  <!-- SPINNER AT ANNOTATED CIRCLED POSITION ABOVE "GARAGE LIST" -->
+  <!-- DYNAMIC ANIMATED SPINNER OVERLAY -->
   <div class="ptr-top-container" id="ptrContainer">
     <svg class="ptr-spinner-icon" id="ptrSpinnerIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
       <line x1="12" y1="2" x2="12" y2="6"></line>
@@ -961,7 +967,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, doc, onSnapshot, setDoc, addDoc, updateDoc, deleteDoc, writeBatch, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    const APP_VERSION = "6.3.1";
+    const APP_VERSION = "6.3.2";
     const firebaseConfig = {
       apiKey: "AIzaSyAMznXG0OXHqMdfrmOGHK-g08TugsYfWw8",
       authDomain: "garage-stock-747e8.firebaseapp.com",
@@ -1044,7 +1050,7 @@
       mainContainer: document.getElementById('appMainContainer')
     };
 
-    // CONTENT TRANSLATION DRAG MECHANIC FOR ANNOTATED CIRCLE PLACEMENT
+    // DYNAMIC FLUID ANIMATED PULL GESTURE
     function setupPullToRefreshAndCollapsibleSearch() {
       let startY = 0;
       let lastScrollY = 0;
@@ -1075,6 +1081,7 @@
           isPulling = true;
           hasCrossedThreshold = false;
           dom.mainContainer.classList.add('dragging');
+          dom.ptrContainer.classList.add('dragging');
         }
       }, { passive: true });
 
@@ -1091,13 +1098,17 @@
           const pullDist = Math.min(80, diff * 0.42);
           const opacity = Math.min(1, pullDist / 20);
           
-          // Physically shift container content down to expose spinner in circled location
+          // Physically slide content container down
           dom.mainContainer.style.transform = `translateY(${pullDist}px)`;
 
+          // Animate spinner from offscreen down into target spot
+          const spinnerY = Math.min(0, -40 + pullDist * 0.7);
+          dom.ptrContainer.style.opacity = opacity;
+          dom.ptrContainer.style.transform = `translateY(${spinnerY}px)`;
+
+          // Rotate spinner in discrete clock ticks as drag progresses
           const stepNotch = Math.floor((pullDist / threshold) * 12);
           const rotDeg = stepNotch * 30;
-
-          dom.ptrContainer.style.opacity = opacity;
           dom.ptrSpinnerIcon.style.transform = `rotate(${rotDeg}deg)`;
 
           if (pullDist > 20) {
@@ -1118,12 +1129,14 @@
         isPulling = false;
 
         dom.mainContainer.classList.remove('dragging');
+        dom.ptrContainer.classList.remove('dragging');
         setTimeout(() => { isGestureInProgress = false; }, 250);
 
         if (hasCrossedThreshold) {
           triggerAndroidHaptic(60);
 
           dom.mainContainer.style.transform = `translateY(55px)`;
+          dom.ptrContainer.style.transform = `translateY(0px)`;
           dom.ptrSpinnerIcon.classList.add('spinning');
 
           if ('serviceWorker' in navigator) {
@@ -1134,10 +1147,12 @@
           setTimeout(() => {
             dom.ptrSpinnerIcon.classList.remove('spinning');
             dom.ptrContainer.style.opacity = '0';
+            dom.ptrContainer.style.transform = `translateY(-40px)`;
             dom.mainContainer.style.transform = `translateY(0px)`;
           }, 900);
         } else {
           dom.ptrContainer.style.opacity = '0';
+          dom.ptrContainer.style.transform = `translateY(-40px)`;
           dom.mainContainer.style.transform = `translateY(0px)`;
         }
       });

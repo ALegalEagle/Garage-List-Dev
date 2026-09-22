@@ -6,13 +6,15 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 
+  <!-- Aggressive iOS PWA Cache Busting -->
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
 
-  <!-- Universal Environment Auto-Detector -->
+  <!-- Universal Environment Auto-Detector with Cache Versioning -->
   <script>
     (function() {
+      const APP_VER = "5.3.0";
       const isDev = window.location.pathname.toLowerCase().includes('dev');
       const appName = isDev ? "Garage DEV" : "Garage List";
       const appIcon = isDev ? "blueprint-icon.png" : "apple-touch-icon.png";
@@ -21,11 +23,20 @@
 
       document.title = appName;
 
+      // Force service worker unregister/update if cached
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          for (let registration of registrations) {
+            registration.update();
+          }
+        });
+      }
+
       document.write(`
         <meta name="apple-mobile-web-app-title" content="${appName}" />
         <link id="dynamicFavicon" rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='120' fill='${encodeURIComponent(themeColor)}'/%3E%3C/svg%3E" />
-        <link rel="apple-touch-icon" sizes="180x180" href="${appIcon}?v=21" />
-        <link rel="manifest" href='data:application/manifest+json,{"name":"${appName}","short_name":"${appName}","start_url":"${appScope}","scope":"${appScope}","display":"standalone","background_color":"${themeColor}","theme_color":"${themeColor}","icons":[{"src":"${appIcon}?v=21","sizes":"180x180","type":"image/png"}]}' />
+        <link rel="apple-touch-icon" sizes="180x180" href="${appIcon}?v=${APP_VER}" />
+        <link rel="manifest" href='data:application/manifest+json,{"name":"${appName}","short_name":"${appName}","start_url":"${appScope}?v=${APP_VER}","scope":"${appScope}","display":"standalone","background_color":"${themeColor}","theme_color":"${themeColor}","icons":[{"src":"${appIcon}?v=${APP_VER}","sizes":"180x180","type":"image/png"}]}' />
       `);
     })();
   </script>
@@ -45,7 +56,6 @@
       --fab-bg: #5c6b73;
       --fab-text: #ffffff;
       
-      /* TickTick Island Pill Tokens */
       --pill-bar-bg: #f8fafc;
       --pill-bar-border: #e2e8f0;
       --pill-active-bg: #e2e8f0;
@@ -721,7 +731,6 @@
       document.getElementById(`tab-${tabId}`)?.classList.add('active-tab');
       document.getElementById(`btn-tab-${tabId}`)?.classList.add('active');
 
-      // Slide pill indicator horizontally (64px offset per step: 60px width + 4px gap)
       if (dom.tabIndicator) {
         dom.tabIndicator.style.transform = `translateX(${index * 64}px)`;
       }

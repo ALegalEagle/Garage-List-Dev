@@ -14,7 +14,7 @@
   <!-- Universal Environment Auto-Detector with Cache Versioning -->
   <script>
     (function() {
-      const APP_VER = "6.2.1";
+      const APP_VER = "6.2.2";
       const isDev = window.location.pathname.toLowerCase().includes('dev');
       const appName = isDev ? "Garage DEV" : "Garage List";
       const appIcon = isDev ? "blueprint-icon.png" : "apple-touch-icon.png";
@@ -190,18 +190,6 @@
 
     header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
     .header-top { display: flex; align-items: center; justify-content: space-between; width: 100%; }
-
-    /* HARDWARE HAPTIC SWITCH OVERLAY FOR BUTTONS ONLY */
-    .haptic-switch {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      opacity: 0.0001;
-      z-index: 1;
-      pointer-events: none;
-      -webkit-tap-highlight-color: transparent;
-    }
     
     .circle-icon-btn, .bento-card, .btn-action-primary, .shopping-item-row, .chip, .speeddial-item {
       transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.15s ease, border-color 0.15s ease;
@@ -679,7 +667,6 @@
     <header>
       <div class="header-top">
         <button class="circle-icon-btn" id="btnBinMode" onclick="toggleSelectionMode()" title="Selection / Bin Mode">
-          <input type="checkbox" switch class="haptic-switch" />
           🗑️
         </button>
       </div>
@@ -705,12 +692,10 @@
 
       <div class="bento-stats">
         <div class="stat-card out" id="statCardOut" onclick="toggleQuickFilter('out')">
-          <input type="checkbox" switch class="haptic-switch" />
           <div class="stat-label">OUT OF STOCK</div>
           <div class="stat-value" id="outCount">0 items</div>
         </div>
         <div class="stat-card low" id="statCardLow" onclick="toggleQuickFilter('low')">
-          <input type="checkbox" switch class="haptic-switch" />
           <div class="stat-label">LOW STOCK</div>
           <div class="stat-value" id="lowCount">0 items</div>
         </div>
@@ -730,12 +715,10 @@
       <div id="shoppingListContainer"></div>
 
       <button class="btn-action-primary" onclick="completeShoppingSession()">
-        <input type="checkbox" switch class="haptic-switch" />
         ✓ Finish Shopping & Restock
       </button>
 
       <button class="btn-action-primary" style="background: var(--bring-color); color: white; margin-top: 8px;" onclick="exportToBringApp()">
-        <input type="checkbox" switch class="haptic-switch" />
         🛒 Open Out-of-Stock in Bring! App
       </button>
     </div>
@@ -754,11 +737,9 @@
           <span style="font-weight:700; font-size:15px;">Theme</span>
           <div class="segmented-control">
             <button class="segment-btn" id="segBtnLight" onclick="setTheme('light')">
-              <input type="checkbox" switch class="haptic-switch" />
               ☀️ Light
             </button>
             <button class="segment-btn" id="segBtnDark" onclick="setTheme('dark')">
-              <input type="checkbox" switch class="haptic-switch" />
               🌙 Dark
             </button>
           </div>
@@ -771,7 +752,6 @@
         <div class="cat-input-row">
           <input type="text" id="newCatInput" class="input-field" style="border:none; background:transparent; padding:8px 0;" placeholder="Add new category..." />
           <button class="circle-icon-btn" style="border-radius: 12px; width: 36px; height:36px; flex-shrink: 0; background: var(--fab-bg); color: var(--fab-text);" onclick="addNewCategoryFromSettings()">
-            <input type="checkbox" switch class="haptic-switch" />
             +
           </button>
         </div>
@@ -789,7 +769,6 @@
         Get notified instantly on your lock screen when items run low or go out of stock in the garage.
       </p>
       <button class="btn-action-primary" style="margin-top:0; margin-bottom:8px;" onclick="requestNotificationPermission()">
-        <input type="checkbox" switch class="haptic-switch" />
         Allow Notifications
       </button>
       <button class="modal-cancel-btn" style="padding: 10px; font-size: 14px;" onclick="dismissNotificationPrompt()">
@@ -800,7 +779,6 @@
 
   <!-- BATCH DELETE BUTTON FLOATER -->
   <div class="batch-delete-bar" id="batchDeleteBar" onclick="executeBatchDelete()">
-    <input type="checkbox" switch class="haptic-switch" />
     Delete Selected Items (<span id="selectedCountVal">0</span>)
   </div>
 
@@ -809,7 +787,6 @@
     <div class="ticktick-indicator" id="tabIndicator"></div>
 
     <button class="ticktick-tab active" id="btn-tab-inventory" onclick="switchTab('inventory', 0)" title="Inventory">
-      <input type="checkbox" switch class="haptic-switch" />
       <svg class="ticktick-icon" viewBox="0 0 24 24">
         <rect x="3" y="3" width="18" height="18" rx="5" stroke-width="2.2" />
         <path d="M9 12l2 2 4-4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
@@ -817,7 +794,6 @@
     </button>
 
     <button class="ticktick-tab" id="btn-tab-shopping" onclick="switchTab('shopping', 1)" title="Shopping">
-      <input type="checkbox" switch class="haptic-switch" />
       <svg class="ticktick-icon" viewBox="0 0 24 24">
         <circle cx="9" cy="20" r="1.5" />
         <circle cx="18" cy="20" r="1.5" />
@@ -827,7 +803,6 @@
     </button>
 
     <button class="ticktick-tab" id="btn-tab-settings" onclick="switchTab('settings', 2)" title="Settings">
-      <input type="checkbox" switch class="haptic-switch" />
       <svg class="ticktick-icon" viewBox="0 0 24 24">
         <circle cx="12" cy="12" r="3.2" />
         <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
@@ -837,7 +812,6 @@
 
   <!-- FLOATING FAB (+) -->
   <button class="ticktick-fab" id="fabAdd" title="Add Item">
-    <input type="checkbox" switch class="haptic-switch" />
     <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round">
       <line x1="12" y1="5" x2="12" y2="19"></line>
       <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -849,7 +823,6 @@
 
   <div class="speeddial-menu" id="speedDialMenu">
     <div class="speeddial-item" onclick="selectSpeedDialAction('scan')">
-      <input type="checkbox" switch class="haptic-switch" />
       <div class="speeddial-icon-badge">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
           <path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2" />
@@ -859,7 +832,6 @@
       <span>Scan Barcode</span>
     </div>
     <div class="speeddial-item" onclick="selectSpeedDialAction('manual')">
-      <input type="checkbox" switch class="haptic-switch" />
       <div class="speeddial-icon-badge">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
           <path d="M12 20h9" />
@@ -907,15 +879,9 @@
       <div class="form-group">
         <label class="form-label">Starting Quantity</label>
         <div class="modal-stepper">
-          <button class="modal-step-btn" onclick="adjustModalQty(-1)">
-            <input type="checkbox" switch class="haptic-switch" />
-            —
-          </button>
+          <button class="modal-step-btn" onclick="adjustModalQty(-1)">—</button>
           <span class="modal-step-val" id="modalQtyVal">1</span>
-          <button class="modal-step-btn" onclick="adjustModalQty(1)">
-            <input type="checkbox" switch class="haptic-switch" />
-            +
-          </button>
+          <button class="modal-step-btn" onclick="adjustModalQty(1)">+</button>
         </div>
       </div>
     </div>
@@ -937,15 +903,9 @@
       <div class="form-group">
         <label class="form-label">Low Stock Threshold</label>
         <div class="modal-stepper">
-          <button class="modal-step-btn" onclick="adjustEditingItemMinStock(-1)">
-            <input type="checkbox" switch class="haptic-switch" />
-            —
-          </button>
+          <button class="modal-step-btn" onclick="adjustEditingItemMinStock(-1)">—</button>
           <span class="modal-step-val" id="editModalMinStockVal">≤ 1 item</span>
-          <button class="modal-step-btn" onclick="adjustEditingItemMinStock(1)">
-            <input type="checkbox" switch class="haptic-switch" />
-            +
-          </button>
+          <button class="modal-step-btn" onclick="adjustEditingItemMinStock(1)">+</button>
         </div>
       </div>
     </div>
@@ -955,7 +915,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, doc, onSnapshot, setDoc, addDoc, updateDoc, deleteDoc, writeBatch, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    const APP_VERSION = "6.2.1";
+    const APP_VERSION = "6.2.2";
     const firebaseConfig = {
       apiKey: "AIzaSyAMznXG0OXHqMdfrmOGHK-g08TugsYfWw8",
       authDomain: "garage-stock-747e8.firebaseapp.com",
@@ -1037,7 +997,7 @@
       searchCollapsibleWrap: document.getElementById('searchCollapsibleWrap')
     };
 
-    // COMBINED GMAIL LOGO PULL-TO-REFRESH & COLLAPSIBLE SEARCH BAR MECHANIC
+    // COMBINED GMAIL LOGO PULL-TO-REFRESH & COLLAPSIBLE SEARCH BAR MECHANIC WITH HAPTICS
     function setupPullToRefreshAndCollapsibleSearch() {
       let startY = 0;
       let lastScrollY = 0;
@@ -1089,7 +1049,7 @@
 
           if (pullDist >= threshold && !hasCrossedThreshold) {
             hasCrossedThreshold = true;
-            triggerAndroidHaptic(45);
+            triggerAndroidHaptic(45); // Haptic feedback on reaching threshold
           } else if (pullDist < threshold && hasCrossedThreshold) {
             hasCrossedThreshold = false;
           }
@@ -1103,7 +1063,7 @@
         setTimeout(() => { isGestureInProgress = false; }, 200);
 
         if (hasCrossedThreshold) {
-          triggerAndroidHaptic(60);
+          triggerAndroidHaptic(60); // Haptic feedback on release to refresh
 
           dom.ptrLogoWrapper.classList.add('spinning');
           dom.ptrLogoWrapper.style.transform = `scale(1)`;
@@ -1129,7 +1089,7 @@
       });
     }
 
-    // MULTI-SELECT BIN MODE
+    // MULTI-SELECT BIN MODE WITH HAPTICS
     window.toggleSelectionMode = function() {
       isSelectionMode = !isSelectionMode;
       selectedItemIds.clear();
@@ -1229,7 +1189,7 @@
         dom.tabIndicator.style.transform = `translateX(${index * 64}px)`;
       }
 
-      triggerAndroidHaptic(20);
+      triggerAndroidHaptic(25);
     };
 
     function setupTabDragGesture() {
@@ -1287,6 +1247,7 @@
         document.getElementById('segBtnDark')?.classList.remove('active');
       }
       localStorage.setItem('garage_theme', mode);
+      triggerAndroidHaptic(20);
     };
 
     const savedTheme = localStorage.getItem('garage_theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
@@ -1343,7 +1304,7 @@
       const item = items.find((i) => i.id === id);
       if (!item || (item.amount <= 0 && delta < 0)) return;
 
-      triggerAndroidHaptic(20);
+      triggerAndroidHaptic(25);
       item.amount += delta;
       render();
 
@@ -1392,6 +1353,7 @@
         }
         dom.scannerModalOverlay.classList.remove('open');
       }
+      triggerAndroidHaptic(30);
     };
 
     async function onBarcodeScanned(decodedText) {
@@ -1448,7 +1410,6 @@
 
         dom.modalCatGrid.innerHTML = categories.map(c => `
           <div class="modal-cat-pill ${c === selectedModalCategory ? 'active' : ''}" onclick="selectModalCategory('${c}')">
-            <input type="checkbox" switch class="haptic-switch" />
             ${c}
           </div>
         `).join('');
@@ -1457,6 +1418,7 @@
       } else {
         dom.addModalOverlay.classList.remove('open');
       }
+      triggerAndroidHaptic(30);
     };
 
     window.selectModalCategory = function(cat) {
@@ -1464,12 +1426,13 @@
       document.querySelectorAll('#modalCatGrid .modal-cat-pill').forEach(p => {
         p.classList.toggle('active', p.innerText.trim() === cat);
       });
+      triggerAndroidHaptic(20);
     };
 
     window.adjustModalQty = function(delta) {
       modalInitialQty = Math.max(0, modalInitialQty + delta);
       dom.modalQtyVal.innerText = modalInitialQty;
-      triggerAndroidHaptic(15);
+      triggerAndroidHaptic(20);
     };
 
     window.addNewItem = async function() {
@@ -1486,7 +1449,7 @@
       });
 
       toggleAddModal(false);
-      triggerAndroidHaptic(30);
+      triggerAndroidHaptic(40);
     };
 
     window.openSpeedDialMenu = function() {
@@ -1502,6 +1465,7 @@
       dom.fabAdd.classList.remove('is-open');
       dom.speedDialOverlay.classList.remove('active');
       dom.speedDialMenu.classList.remove('active');
+      triggerAndroidHaptic(30);
     };
 
     window.selectSpeedDialAction = function(action) {
@@ -1561,7 +1525,6 @@
         const isBought = shoppingCart.has(i.id);
         return `
           <div class="shopping-item-row ${isBought ? 'is-bought' : ''}" onclick="toggleShoppingItem('${i.id}')">
-            <input type="checkbox" switch class="haptic-switch" />
             <div style="display:flex; align-items:center; gap:12px;">
               <div class="shopping-chk">${isBought ? '✓' : ''}</div>
               <div>
@@ -1600,6 +1563,7 @@
     };
 
     window.exportToBringApp = function() {
+      triggerAndroidHaptic(30);
       const outItems = items.filter(isItemOutOfStock).map(i => i.name).join(',');
       const workerUrl = `https://billowing-forest-5301.swanson-ronan.workers.dev/?items=${encodeURIComponent(outItems)}`;
       window.location.href = `bring://import?url=${encodeURIComponent(workerUrl)}`;
@@ -1620,22 +1584,24 @@
 
       dom.editCatPickerGrid.innerHTML = categories.map(c => `
         <div class="modal-cat-pill ${item.category === c ? 'active' : ''}" onclick="applyItemCategory('${c}')">
-          <input type="checkbox" switch class="haptic-switch" />
           ${c}
         </div>
       `).join('');
 
       dom.editCatModalOverlay.classList.add('open');
+      triggerAndroidHaptic(30);
     };
 
     window.closeItemCategoryPicker = function() {
       dom.editCatModalOverlay.classList.remove('open');
+      triggerAndroidHaptic(20);
     };
 
     window.applyItemCategory = async function(cat) {
       if (!editingItemId) return;
       await updateDoc(doc(db, "garage_items", editingItemId), { category: cat });
       closeItemCategoryPicker();
+      triggerAndroidHaptic(30);
     };
 
     window.adjustEditingItemMinStock = async function(delta) {
@@ -1643,6 +1609,7 @@
       editingItemMinStock = Math.max(0, editingItemMinStock + delta);
       document.getElementById('editModalMinStockVal').innerText = `≤ ${editingItemMinStock} items`;
       await updateDoc(doc(db, "garage_items", editingItemId), { minStock: editingItemMinStock });
+      triggerAndroidHaptic(20);
     };
 
     function render() {
@@ -1664,7 +1631,6 @@
 
       dom.filterBar.innerHTML = ["All", ...categories].map(c => `
         <div class="chip ${currentFilter === c ? 'active' : ''}" onclick="setFilter('${c}')">
-          <input type="checkbox" switch class="haptic-switch" />
           ${c}
         </div>
       `).join('');
@@ -1699,23 +1665,27 @@
               <div class="card-title">${item.name}</div>
             </div>
             <div class="stepper-pill" onclick="event.stopPropagation()">
-              <button class="stepper-btn" onclick="updateStock('${item.id}', -1, event)">
-                <input type="checkbox" switch class="haptic-switch" />
-                —
-              </button>
+              <button class="stepper-btn" onclick="updateStock('${item.id}', -1, event)">—</button>
               <span class="stepper-count ${isOut ? 'count-out' : (isLow ? 'count-low' : '')}">${item.amount}</span>
-              <button class="stepper-btn" onclick="updateStock('${item.id}', 1, event)">
-                <input type="checkbox" switch class="haptic-switch" />
-                +
-              </button>
+              <button class="stepper-btn" onclick="updateStock('${item.id}', 1, event)">+</button>
             </div>
           </div>
         `;
       }).join('');
     }
 
-    window.setFilter = function(cat) { currentFilter = cat; quickFilter = null; render(); };
-    window.toggleQuickFilter = function(type) { quickFilter = quickFilter === type ? null : type; render(); };
+    window.setFilter = function(cat) { 
+      currentFilter = cat; 
+      quickFilter = null; 
+      render(); 
+      triggerAndroidHaptic(20);
+    };
+
+    window.toggleQuickFilter = function(type) { 
+      quickFilter = quickFilter === type ? null : type; 
+      render(); 
+      triggerAndroidHaptic(25);
+    };
 
     function renderCategorySettings() {
       dom.categoryManageList.innerHTML = categories.map(c => `
@@ -1732,12 +1702,14 @@
         categories.push(val);
         await setDoc(metaDoc, { list: categories });
         document.getElementById('newCatInput').value = '';
+        triggerAndroidHaptic(30);
       }
     };
 
     window.deleteCategory = async function(cat) {
       categories = categories.filter(c => c !== cat);
       await setDoc(metaDoc, { list: categories });
+      triggerAndroidHaptic(30);
     };
 
     window.addEventListener('load', () => {

@@ -14,7 +14,7 @@
   <!-- Universal Environment Auto-Detector with Cache Versioning -->
   <script>
     (function() {
-      const APP_VER = "5.4.0";
+      const APP_VER = "5.5.0";
       const isDev = window.location.pathname.toLowerCase().includes('dev');
       const appName = isDev ? "Garage DEV" : "Garage List";
       const appIcon = isDev ? "blueprint-icon.png" : "apple-touch-icon.png";
@@ -236,6 +236,69 @@
     .count-out { color: var(--out-border) !important; }
     .count-low { color: var(--low-border) !important; }
 
+    /* REDESIGNED GROUPED INSET SETTINGS LISTS */
+    .settings-group {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      overflow: hidden;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+    }
+    .settings-group-title {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.6px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      padding-left: 4px;
+    }
+
+    .settings-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .settings-row:last-child { border-bottom: none; }
+
+    .segmented-control {
+      display: flex;
+      background: var(--bg);
+      padding: 3px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+    .segment-btn {
+      border: none;
+      background: transparent;
+      padding: 6px 14px;
+      border-radius: 9px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+    .segment-btn.active {
+      background: var(--card-bg);
+      color: var(--text);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+
+    .cat-input-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
     /* TICKTICK SLIDING INTERACTIVE ISLAND BAR */
     .ticktick-island-bar {
       position: fixed;
@@ -253,7 +316,7 @@
       z-index: 90;
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
-      touch-action: none; /* Allows fluid drag gesture tracking */
+      touch-action: none;
     }
 
     .ticktick-tab {
@@ -281,9 +344,7 @@
       z-index: 1;
       transition: transform 0.28s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
-    .ticktick-indicator.dragging {
-      transition: none !important; /* Instant position tracking while thumb drags */
-    }
+    .ticktick-indicator.dragging { transition: none !important; }
 
     .ticktick-icon {
       width: 22px;
@@ -296,9 +357,7 @@
       transition: stroke 0.2s ease;
       pointer-events: none;
     }
-    .ticktick-tab.active .ticktick-icon {
-      stroke: var(--pill-icon-active);
-    }
+    .ticktick-tab.active .ticktick-icon { stroke: var(--pill-icon-active); }
 
     .ticktick-dot-badge {
       position: absolute;
@@ -332,13 +391,8 @@
       touch-action: manipulation;
       transition: transform 0.2s ease, background 0.2s ease;
     }
-    body.dark .ticktick-fab {
-      background: #475569;
-    }
-    .ticktick-fab.is-open {
-      transform: rotate(45deg);
-      background: #dc2626 !important;
-    }
+    body.dark .ticktick-fab { background: #475569; }
+    .ticktick-fab.is-open { transform: rotate(45deg); background: #dc2626 !important; }
 
     /* SPEED DIAL OVERLAY */
     .speeddial-overlay {
@@ -444,7 +498,8 @@
     .shopping-item-row.is-bought .shopping-chk { background: var(--synced-color); border-color: var(--synced-color); color: white; }
     .shopping-item-row.is-bought .shopping-title { text-decoration: line-through; opacity: 0.6; }
 
-    .cat-manage-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px; margin-bottom: 8px; }
+    .cat-manage-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--border); }
+    .cat-manage-row:last-child { border-bottom: none; }
     .cat-del-btn { background: none; border: none; color: var(--out-border); font-size: 16px; cursor: pointer; }
     .btn-action-primary { width: 100%; padding: 15px; background: var(--fab-bg); color: var(--fab-text); border: none; border-radius: 16px; font-size: 15px; font-weight: 800; cursor: pointer; margin-top: 12px; }
   </style>
@@ -454,10 +509,6 @@
     <header>
       <div class="header-top">
         <button class="circle-icon-btn" onclick="toggleSelectionMode()" title="Selection / Bin Mode">🗑️</button>
-        <div class="theme-switch" style="display: flex; gap: 6px;">
-          <button class="circle-icon-btn" id="btnLight" onclick="setTheme('light')">☀️</button>
-          <button class="circle-icon-btn" id="btnDark" onclick="setTheme('dark')">🌙</button>
-        </div>
       </div>
     </header>
 
@@ -509,27 +560,42 @@
       </button>
     </div>
 
-    <!-- TAB 3: SETTINGS VIEW -->
+    <!-- TAB 3: REDESIGNED SETTINGS VIEW -->
     <div class="tab-content" id="tab-settings">
       <div style="margin-bottom: 20px;">
         <h2 style="font-size: 22px; font-weight: 800;">App Settings</h2>
-        <p style="font-size: 13px; color: var(--text-muted); margin-top: 2px;">Manage categories and alerts</p>
+        <p style="font-size: 13px; color: var(--text-muted); margin-top: 2px;">Manage preferences, categories, and alerts</p>
       </div>
 
-      <div class="form-group">
-        <label class="form-label">Manage Categories</label>
-        <div style="display: flex; gap: 8px; margin-bottom: 12px;">
-          <input type="text" id="newCatInput" class="input-field" placeholder="New category name..." />
-          <button class="circle-icon-btn" style="border-radius: 14px; width: 50px; flex-shrink: 0; background: var(--fab-bg); color: var(--fab-text);" onclick="addNewCategoryFromSettings()">+</button>
+      <!-- Appearance Group -->
+      <div class="settings-group-title">APPEARANCE</div>
+      <div class="settings-group">
+        <div class="settings-row">
+          <span style="font-weight:700; font-size:15px;">Theme</span>
+          <div class="segmented-control">
+            <button class="segment-btn" id="segBtnLight" onclick="setTheme('light')">☀️ Light</button>
+            <button class="segment-btn" id="segBtnDark" onclick="setTheme('dark')">🌙 Dark</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Categories Group -->
+      <div class="settings-group-title">MANAGE CATEGORIES</div>
+      <div class="settings-group">
+        <div class="cat-input-row">
+          <input type="text" id="newCatInput" class="input-field" style="border:none; background:transparent; padding:8px 0;" placeholder="Add new category..." />
+          <button class="circle-icon-btn" style="border-radius: 12px; width: 36px; height:36px; flex-shrink: 0; background: var(--fab-bg); color: var(--fab-text);" onclick="addNewCategoryFromSettings()">+</button>
         </div>
         <div id="categoryManageList"></div>
       </div>
 
-      <div class="form-group" style="margin-top: 24px;">
-        <label class="form-label">Lock Screen Alerts</label>
-        <button class="btn-action-primary" style="background: var(--card-bg); color: var(--text); border: 1px solid var(--border);" onclick="enableLockscreenAlerts()">
-          🔔 Enable Push Notifications
-        </button>
+      <!-- Alerts Group -->
+      <div class="settings-group-title">NOTIFICATIONS</div>
+      <div class="settings-group">
+        <div class="settings-row" style="cursor:pointer;" onclick="enableLockscreenAlerts()">
+          <span style="font-weight:700; font-size:15px;">Enable Push Notifications</span>
+          <span style="color:var(--text-muted); font-size:16px;">🔔</span>
+        </div>
       </div>
     </div>
   </div>
@@ -667,7 +733,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, doc, onSnapshot, setDoc, addDoc, updateDoc, writeBatch, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    const APP_VERSION = "5.4.0";
+    const APP_VERSION = "5.5.0";
     const firebaseConfig = {
       apiKey: "AIzaSyAMznXG0OXHqMdfrmOGHK-g08TugsYfWw8",
       authDomain: "garage-stock-747e8.firebaseapp.com",
@@ -745,7 +811,6 @@
       } catch (e) { console.warn("Audio Context beep blocked:", e); }
     }
 
-    // TAB SWITCHER logic
     const tabMap = ['inventory', 'shopping', 'settings'];
 
     window.switchTab = function(tabId, index) {
@@ -764,17 +829,14 @@
       if (navigator.vibrate) navigator.vibrate(25);
     };
 
-    // TICKTICK DRAG GESTURE ENGINE FOR THE FLOATING TAB BAR
     function setupTabDragGesture() {
       const bar = dom.islandTabBar;
       const indicator = dom.tabIndicator;
       let isDragging = false;
-      let startX = 0;
       let barRect = null;
 
       function onPointerDown(e) {
         isDragging = true;
-        startX = e.clientX;
         barRect = bar.getBoundingClientRect();
         indicator.classList.add('dragging');
         if (bar.setPointerCapture) bar.setPointerCapture(e.pointerId);
@@ -782,14 +844,11 @@
 
       function onPointerMove(e) {
         if (!isDragging || !barRect) return;
-        
-        // Calculate offset inside the bar relative to current thumb position
-        const relX = e.clientX - barRect.left - 4; // Account for 4px padding
-        const clampedX = Math.max(0, Math.min(128, relX - 30)); // 30px is half tab width
+        const relX = e.clientX - barRect.left - 4;
+        const clampedX = Math.max(0, Math.min(128, relX - 30));
         
         indicator.style.transform = `translateX(${clampedX}px)`;
 
-        // Highlight nearest tab dynamically while dragging
         const targetIdx = Math.max(0, Math.min(2, Math.round(clampedX / 64)));
         document.querySelectorAll('.ticktick-tab').forEach((b, idx) => {
           b.classList.toggle('active', idx === targetIdx);
@@ -815,8 +874,15 @@
     }
 
     window.setTheme = function(mode) {
-      if (mode === 'dark') dom.body.classList.add('dark');
-      else dom.body.classList.remove('dark');
+      if (mode === 'dark') {
+        dom.body.classList.add('dark');
+        document.getElementById('segBtnDark')?.classList.add('active');
+        document.getElementById('segBtnLight')?.classList.remove('active');
+      } else {
+        dom.body.classList.remove('dark');
+        document.getElementById('segBtnLight')?.classList.add('active');
+        document.getElementById('segBtnDark')?.classList.remove('active');
+      }
       localStorage.setItem('garage_theme', mode);
     };
 
@@ -1173,7 +1239,7 @@
     function renderCategorySettings() {
       dom.categoryManageList.innerHTML = categories.map(c => `
         <div class="cat-manage-row">
-          <span style="font-weight:700;">${c}</span>
+          <span style="font-weight:700; font-size:15px;">${c}</span>
           <button class="cat-del-btn" onclick="deleteCategory('${c}')">✕</button>
         </div>
       `).join('');

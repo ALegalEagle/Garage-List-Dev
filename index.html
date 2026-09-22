@@ -14,7 +14,7 @@
   <!-- Universal Environment Auto-Detector with Cache Versioning -->
   <script>
     (function() {
-      const APP_VER = "6.4.1";
+      const APP_VER = "6.5.0";
       const isDev = window.location.pathname.toLowerCase().includes('dev');
       const appName = isDev ? "Garage DEV" : "Garage List";
       const appIcon = isDev ? "blueprint-icon.png" : "apple-touch-icon.png";
@@ -69,7 +69,6 @@
       --low-bg: #fffbeb;
       --synced-color: #10b981;
       --bring-color: #e52e41;
-      --speeddial-blur-bg: rgba(255, 255, 255, 0.72);
       --skeleton-bg: #e2e8f0;
     }
 
@@ -98,7 +97,6 @@
       --low-bg: #451a03;
       --synced-color: #34d399;
       --bring-color: #ef4444;
-      --speeddial-blur-bg: rgba(15, 23, 42, 0.76);
       --skeleton-bg: #334155;
     }
 
@@ -142,7 +140,7 @@
     header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
     .header-top { display: flex; align-items: center; justify-content: space-between; width: 100%; }
     
-    .circle-icon-btn, .bento-card, .btn-action-primary, .shopping-item-row, .chip, .speeddial-item {
+    .circle-icon-btn, .bento-card, .btn-action-primary, .shopping-item-row, .chip {
       transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.15s ease, border-color 0.15s ease;
     }
     .circle-icon-btn:active, .btn-action-primary:active, .shopping-item-row:active, .chip:active {
@@ -466,7 +464,6 @@
     }
     .ticktick-fab:active { transform: scale(0.92); }
     body.dark .ticktick-fab { background: #475569; }
-    .ticktick-fab.is-open { transform: rotate(45deg); background: #dc2626 !important; }
 
     /* BATCH DELETE FAB */
     .batch-delete-bar {
@@ -492,64 +489,6 @@
       opacity: 1;
       pointer-events: auto;
       transform: translateX(-50%) translateY(0);
-    }
-
-    /* SPEED DIAL OVERLAY */
-    .speeddial-overlay {
-      position: fixed;
-      inset: 0;
-      background: var(--speeddial-blur-bg);
-      backdrop-filter: blur(22px);
-      -webkit-backdrop-filter: blur(22px);
-      z-index: 92;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.22s ease;
-    }
-    .speeddial-overlay.active { opacity: 1; pointer-events: auto; }
-
-    .speeddial-menu {
-      position: fixed;
-      bottom: calc(env(safe-area-inset-bottom, 16px) + 80px);
-      right: clamp(16px, 5vw, 32px);
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 12px;
-      z-index: 95;
-      pointer-events: none;
-    }
-    .speeddial-menu.active { pointer-events: auto; }
-
-    .speeddial-item {
-      display: inline-flex;
-      align-items: center;
-      gap: 12px;
-      background: var(--card-bg);
-      color: var(--text);
-      border: 1px solid var(--border);
-      padding: 12px 18px;
-      border-radius: 30px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.18);
-      font-size: 14px;
-      font-weight: 800;
-      cursor: pointer;
-      opacity: 0;
-      transform: translateY(18px) scale(0.92);
-      transition: opacity 0.2s ease, transform 0.2s ease;
-      position: relative;
-    }
-    .speeddial-menu.active .speeddial-item { opacity: 1; transform: translateY(0) scale(1); }
-
-    .speeddial-icon-badge {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background: var(--pill-bg);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--text);
     }
 
     /* Modals & Sheets */
@@ -580,7 +519,31 @@
 
     .form-group { margin-bottom: 18px; }
     .form-label { font-size: 11px; font-weight: 800; letter-spacing: 0.6px; color: var(--text-muted); margin-bottom: 8px; display: block; text-transform: uppercase; }
+    
+    .input-with-scan {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
     .input-field { width: 100%; padding: 14px; border: 1px solid var(--border); border-radius: 14px; font-size: 15px; background: var(--bg); color: var(--text); outline: none; }
+
+    .btn-inline-scan {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      padding: 12px 14px;
+      border-radius: 14px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .btn-inline-scan:active { transform: scale(0.95); }
 
     .modal-cat-grid { display: flex; flex-wrap: wrap; gap: 8px; }
     .modal-cat-pill { padding: 8px 14px; border-radius: 14px; font-size: 13px; font-weight: 700; border: 1px solid var(--border); background: var(--bg); color: var(--text-muted); cursor: pointer; position: relative; }
@@ -753,37 +716,13 @@
     </button>
   </nav>
 
-  <!-- FLOATING FAB (+) -->
-  <button class="ticktick-fab" id="fabAdd" title="Add Item">
+  <!-- DIRECT NEW ITEM FAB (+) -->
+  <button class="ticktick-fab" id="fabAdd" title="Add Item" onclick="toggleAddModal(true)">
     <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round">
       <line x1="12" y1="5" x2="12" y2="19"></line>
       <line x1="5" y1="12" x2="19" y2="12"></line>
     </svg>
   </button>
-
-  <!-- SPEED DIAL OVERLAY -->
-  <div class="speeddial-overlay" id="speedDialOverlay" onclick="closeSpeedDialMenu()"></div>
-
-  <div class="speeddial-menu" id="speedDialMenu">
-    <div class="speeddial-item" onclick="selectSpeedDialAction('scan')">
-      <div class="speeddial-icon-badge">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
-          <path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2" />
-          <line x1="7" y1="12" x2="17" y2="12" />
-        </svg>
-      </div>
-      <span>Scan Barcode</span>
-    </div>
-    <div class="speeddial-item" onclick="selectSpeedDialAction('manual')">
-      <div class="speeddial-icon-badge">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
-          <path d="M12 20h9" />
-          <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
-        </svg>
-      </div>
-      <span>Add Manually</span>
-    </div>
-  </div>
 
   <!-- Barcode Scanner Modal -->
   <div class="modal-overlay" id="scannerModalOverlay" onclick="if(event.target===this) toggleScannerModal(false)">
@@ -799,7 +738,7 @@
     </div>
   </div>
 
-  <!-- New Item Modal -->
+  <!-- New Item Modal with Integrated Scanner Button -->
   <div class="modal-overlay" id="addModalOverlay" onclick="if(event.target===this) toggleAddModal(false)">
     <div class="modal">
       <div class="modal-top-bar">
@@ -810,7 +749,12 @@
 
       <div class="form-group">
         <label class="form-label">What's the item?</label>
-        <input type="text" id="newItemName" class="input-field" placeholder="e.g. WD-40 Lubricant" autocomplete="off" />
+        <div class="input-with-scan">
+          <input type="text" id="newItemName" class="input-field" placeholder="e.g. WD-40 Lubricant" autocomplete="off" />
+          <button class="btn-inline-scan" type="button" onclick="toggleScannerModal(true)">
+            📷 Scan
+          </button>
+        </div>
       </div>
       <input type="hidden" id="newItemBarcode" value="" />
 
@@ -866,7 +810,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, doc, onSnapshot, setDoc, addDoc, updateDoc, deleteDoc, writeBatch, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    const APP_VERSION = "6.4.1";
+    const APP_VERSION = "6.5.0";
     const firebaseConfig = {
       apiKey: "AIzaSyAMznXG0OXHqMdfrmOGHK-g08TugsYfWw8",
       authDomain: "garage-stock-747e8.firebaseapp.com",
@@ -902,7 +846,6 @@
 
     let html5QrCode = null;
     let isScannerRunning = false;
-    let isSpeedDialOpen = false;
 
     // GLOBAL SCROLL MONITORING TO PREVENT ACCIDENTAL ACCIDENTAL TOUCH TRIGGERS
     let isScrolling = false;
@@ -935,8 +878,6 @@
       shoppingBadge: document.getElementById('shoppingBadge'),
       categoryManageList: document.getElementById('categoryManageList'),
       fabAdd: document.getElementById('fabAdd'),
-      speedDialOverlay: document.getElementById('speedDialOverlay'),
-      speedDialMenu: document.getElementById('speedDialMenu'),
       addModalOverlay: document.getElementById('addModalOverlay'),
       newItemName: document.getElementById('newItemName'),
       newItemBarcode: document.getElementById('newItemBarcode'),
@@ -1250,9 +1191,9 @@
           </div>
         `;
       } else {
-        dom.scannerStatusText.innerText = "New barcode found. Fetching product info...";
+        dom.scannerStatusText.innerText = "Fetching product details...";
         dom.scannerResultBox.style.display = 'block';
-        dom.scannerResultBox.innerHTML = `<div style="font-size:13px; color:var(--text-muted);">Searching product databases...</div>`;
+        dom.scannerResultBox.innerHTML = `<div style="font-size:13px; color:var(--text-muted);">Searching database...</div>`;
 
         let fetchedName = "";
         try {
@@ -1270,18 +1211,18 @@
         } catch (e) { console.warn("Product lookup failed:", e); }
 
         toggleScannerModal(false);
-        toggleAddModal(true);
-        dom.newItemName.value = fetchedName;
+        dom.newItemName.value = fetchedName || "";
         dom.newItemBarcode.value = decodedText;
       }
     }
 
-    // ADD MODAL & SPEED DIAL
+    // ADD MODAL
     window.toggleAddModal = function(show) {
       if (isScrolling) return;
 
       if (show) {
-        if (!dom.newItemBarcode.value) dom.newItemName.value = '';
+        dom.newItemName.value = '';
+        dom.newItemBarcode.value = '';
         modalInitialQty = 1;
         dom.modalQtyVal.innerText = '1';
         selectedModalCategory = categories[0] || 'General';
@@ -1329,39 +1270,6 @@
       toggleAddModal(false);
       triggerAndroidHaptic(40);
     };
-
-    window.openSpeedDialMenu = function() {
-      if (isScrolling) return;
-      isSpeedDialOpen = true;
-      dom.fabAdd.classList.add('is-open');
-      dom.speedDialOverlay.classList.add('active');
-      dom.speedDialMenu.classList.add('active');
-      triggerAndroidHaptic(50);
-    };
-
-    window.closeSpeedDialMenu = function() {
-      isSpeedDialOpen = false;
-      dom.fabAdd.classList.remove('is-open');
-      dom.speedDialOverlay.classList.remove('active');
-      dom.speedDialMenu.classList.remove('active');
-      triggerAndroidHaptic(30);
-    };
-
-    window.selectSpeedDialAction = function(action) {
-      closeSpeedDialMenu();
-      if (action === 'scan') toggleScannerModal(true);
-      else if (action === 'manual') toggleAddModal(true);
-    };
-
-    // CLEAN EXPLICIT FAB CLICK LISTENER
-    function setupFabCleanClick() {
-      dom.fabAdd.addEventListener('click', (e) => {
-        e.preventDefault();
-        if (isScrolling) return;
-        if (isSpeedDialOpen) closeSpeedDialMenu();
-        else openSpeedDialMenu();
-      });
-    }
 
     function renderShoppingTab() {
       const neededItems = items.filter(i => isItemOutOfStock(i) || isItemLowStock(i));
@@ -1575,7 +1483,6 @@
     };
 
     window.addEventListener('load', () => {
-      setupFabCleanClick();
       setupTabDragGesture();
       initRealtimeDatabase();
       checkFirstLaunchNotificationPrompt();

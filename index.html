@@ -14,7 +14,7 @@
   <!-- Universal Environment Auto-Detector with Cache Versioning -->
   <script>
     (function() {
-      const APP_VER = "6.0.1";
+      const APP_VER = "6.0.2";
       const isDev = window.location.pathname.toLowerCase().includes('dev');
       const appName = isDev ? "Garage DEV" : "Garage List";
       const appIcon = isDev ? "blueprint-icon.png" : "apple-touch-icon.png";
@@ -633,7 +633,7 @@
     .modal-step-val { font-size: 20px; font-weight: 800; }
 
     #scannerRegion { position: relative; width: 100%; min-height: 260px; background: #000; border-radius: 18px; overflow: hidden; }
-    .scan-reticle { position: absolute; inset: 20px; pointer-events: none; border: 2px dashed rgba(56, 189, 248, 0.7); border-radius: 12px; }
+    .scan-reticle { position: absolute; inset: 20px; pointer-events: none; border: 2px dashed rgba(56, 189, 248, 0.7); border-radius: 12px; z-index: 2; }
     .scanner-result-box { margin-top: 14px; background: var(--bg); border: 1px solid var(--border); border-radius: 16px; padding: 14px; display: none; }
 
     .shopping-item-row { display: flex; align-items: center; justify-content: space-between; padding: 14px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; margin-bottom: 8px; cursor: pointer; position: relative; }
@@ -934,7 +934,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, doc, onSnapshot, setDoc, addDoc, updateDoc, deleteDoc, writeBatch, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    const APP_VERSION = "6.0.1";
+    const APP_VERSION = "6.0.2";
     const firebaseConfig = {
       apiKey: "AIzaSyAMznXG0OXHqMdfrmOGHK-g08TugsYfWw8",
       authDomain: "garage-stock-747e8.firebaseapp.com",
@@ -1301,7 +1301,7 @@
       }).catch(console.error);
     };
 
-    // BARCODE SCANNER CONTROLLER
+    // BARCODE SCANNER CONTROLLER WITH CLEANUP FIX
     window.toggleScannerModal = async function(show) {
       if (show) {
         dom.scannerResultBox.style.display = 'none';
@@ -1327,11 +1327,16 @@
           dom.scannerStatusText.innerText = "Unable to access camera.";
         }
       } else {
-        if (html5QrCode && isScannerRunning) {
+        if (html5QrCode) {
+          if (isScannerRunning) {
+            try {
+              await html5QrCode.stop();
+            } catch (e) { console.warn("Scanner stop error:", e); }
+            isScannerRunning = false;
+          }
           try {
-            await html5QrCode.stop();
-          } catch (e) { console.warn("Scanner stop error:", e); }
-          isScannerRunning = false;
+            await html5QrCode.clear();
+          } catch (e) { console.warn("Scanner clear error:", e); }
         }
         dom.scannerModalOverlay.classList.remove('open');
       }

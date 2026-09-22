@@ -14,7 +14,7 @@
   <!-- Universal Environment Auto-Detector with Cache Versioning -->
   <script>
     (function() {
-      const APP_VER = "6.2.5";
+      const APP_VER = "6.2.6";
       const isDev = window.location.pathname.toLowerCase().includes('dev');
       const appName = isDev ? "Garage DEV" : "Garage List";
       const appIcon = isDev ? "blueprint-icon.png" : "apple-touch-icon.png";
@@ -121,10 +121,10 @@
       overflow-x: hidden;
     }
 
-    /* LARGER, HIGHER-CONTRAST PULL-TO-REFRESH SPINNER */
+    /* PROPERLY SIZED NATIVE SPINNER CONTAINER */
     .ptr-top-container {
       position: fixed;
-      top: calc(env(safe-area-inset-top, 20px) + 24px);
+      top: calc(env(safe-area-inset-top, 20px) + 16px);
       left: 0;
       right: 0;
       display: flex;
@@ -135,23 +135,22 @@
     }
 
     .ptr-spinner-icon {
-      width: 42px;
-      height: 42px;
-      color: var(--text);
+      width: 32px;
+      height: 32px;
+      color: var(--text-muted);
       opacity: 0;
-      transform: scale(0.6) rotate(0deg);
+      transform: scale(0.5) rotate(0deg);
       transition: opacity 0.15s ease, transform 0.15s ease;
-      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
     }
 
     .ptr-spinner-icon.spinning {
       opacity: 1 !important;
-      transform: scale(1) rotate(0deg) !important;
+      transform: scale(1.1) rotate(0deg) !important;
       animation: ptr-spin 0.8s linear infinite !important;
     }
 
     @keyframes ptr-spin {
-      100% { transform: scale(1) rotate(360deg); }
+      100% { transform: scale(1.1) rotate(360deg); }
     }
 
     /* COLLAPSIBLE / REVEALABLE SEARCH BAR MECHANIC */
@@ -660,9 +659,9 @@
 </head>
 <body>
 
-  <!-- ENLARGED TOP PULL-TO-REFRESH SPINNER -->
+  <!-- CLEARLY VISIBLE PULL-TO-REFRESH SPINNER -->
   <div class="ptr-top-container">
-    <svg class="ptr-spinner-icon" id="ptrSpinnerIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <svg class="ptr-spinner-icon" id="ptrSpinnerIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
       <line x1="12" y1="2" x2="12" y2="6"></line>
       <line x1="12" y1="18" x2="12" y2="22"></line>
       <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line>
@@ -954,7 +953,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, doc, onSnapshot, setDoc, addDoc, updateDoc, deleteDoc, writeBatch, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    const APP_VERSION = "6.2.5";
+    const APP_VERSION = "6.2.6";
     const firebaseConfig = {
       apiKey: "AIzaSyAMznXG0OXHqMdfrmOGHK-g08TugsYfWw8",
       authDomain: "garage-stock-747e8.firebaseapp.com",
@@ -1074,8 +1073,8 @@
 
         if (diff > 0 && window.scrollY === 0) {
           const pullDist = Math.min(80, diff * 0.4);
-          const opacity = Math.min(1, pullDist / 30);
-          const scale = Math.min(1, (pullDist / threshold) * 1);
+          const opacity = Math.min(1, pullDist / 25);
+          const scale = Math.min(1.2, (pullDist / threshold) * 1.2);
           const rotDeg = Math.min(180, (pullDist / threshold) * 180);
 
           dom.ptrSpinnerIcon.style.opacity = opacity;
@@ -1113,11 +1112,11 @@
           setTimeout(() => {
             dom.ptrSpinnerIcon.classList.remove('spinning');
             dom.ptrSpinnerIcon.style.opacity = '0';
-            dom.ptrSpinnerIcon.style.transform = `scale(0.6) rotate(0deg)`;
+            dom.ptrSpinnerIcon.style.transform = `scale(0.5) rotate(0deg)`;
           }, 950);
         } else {
           dom.ptrSpinnerIcon.style.opacity = '0';
-          dom.ptrSpinnerIcon.style.transform = `scale(0.6) rotate(0deg)`;
+          dom.ptrSpinnerIcon.style.transform = `scale(0.5) rotate(0deg)`;
         }
       });
     }

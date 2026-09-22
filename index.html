@@ -14,7 +14,7 @@
   <!-- Universal Environment Auto-Detector with Cache Versioning -->
   <script>
     (function() {
-      const APP_VER = "6.5.1";
+      const APP_VER = "6.5.2";
       const isDev = window.location.pathname.toLowerCase().includes('dev');
       const appName = isDev ? "Garage DEV" : "Garage List";
       const appIcon = isDev ? "blueprint-icon.png" : "apple-touch-icon.png";
@@ -502,6 +502,10 @@
       justify-content: center; 
     }
     .modal-overlay.open { display: flex; }
+    
+    /* Scanner uses higher z-index to sit cleanly above add modal */
+    #scannerModalOverlay { z-index: 105; }
+
     .modal { 
       background: var(--card-bg); 
       width: 100%; 
@@ -709,13 +713,13 @@
     <button class="ticktick-tab" id="btn-tab-settings" onclick="switchTab('settings', 2)" title="Settings">
       <svg class="ticktick-icon" viewBox="0 0 24 24">
         <circle cx="12" cy="12" r="3.2" />
-        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l-.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l-.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
       </svg>
     </button>
   </nav>
 
   <!-- DIRECT NEW ITEM FAB (+) -->
-  <button class="ticktick-fab" id="fabAdd" title="Add Item" onclick="toggleAddModal(true)">
+  <button class="ticktick-fab" id="fabAdd" title="Add Item" onclick="openAddModal()">
     <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round">
       <line x1="12" y1="5" x2="12" y2="19"></line>
       <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -723,10 +727,10 @@
   </button>
 
   <!-- Barcode Scanner Modal -->
-  <div class="modal-overlay" id="scannerModalOverlay" onclick="if(event.target===this) toggleScannerModal(false)">
+  <div class="modal-overlay" id="scannerModalOverlay" onclick="if(event.target===this) closeScannerModal()">
     <div class="modal">
       <div class="modal-top-bar">
-        <button class="modal-cancel-btn" onclick="toggleScannerModal(false)">Done</button>
+        <button class="modal-cancel-btn" onclick="closeScannerModal()">Done</button>
         <div class="modal-title-header">Barcode Scanner</div>
         <div style="width: 48px;"></div>
       </div>
@@ -749,7 +753,7 @@
         <label class="form-label">What's the item?</label>
         <div class="input-with-scan">
           <input type="text" id="newItemName" class="input-field" placeholder="e.g. WD-40 Lubricant" autocomplete="off" />
-          <button class="btn-inline-scan" type="button" onclick="toggleScannerModal(true)" title="Scan Barcode">
+          <button class="btn-inline-scan" type="button" onclick="openScannerFromAddModal()" title="Scan Barcode">
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
               <path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2" />
               <line x1="7" y1="12" x2="17" y2="12" />
@@ -811,7 +815,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, doc, onSnapshot, setDoc, addDoc, updateDoc, deleteDoc, writeBatch, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    const APP_VERSION = "6.5.1";
+    const APP_VERSION = "6.5.2";
     const firebaseConfig = {
       apiKey: "AIzaSyAMznXG0OXHqMdfrmOGHK-g08TugsYfWw8",
       authDomain: "garage-stock-747e8.firebaseapp.com",
@@ -1127,73 +1131,80 @@
     };
 
     // BARCODE SCANNER CONTROLLER
-    window.toggleScannerModal = async function(show) {
+    window.openScannerFromAddModal = function() {
       if (isScrolling) return;
+      // Hide add modal temporarily to avoid overlapping modal layers
+      dom.addModalOverlay.classList.remove('open');
+      openScannerModal();
+    };
 
-      if (show) {
-        dom.scannerResultBox.style.display = 'none';
-        dom.scannerResultBox.innerHTML = '';
-        dom.scannerStatusText.innerText = "Initializing camera...";
-        dom.scannerModalOverlay.classList.add('open');
+    window.openScannerModal = async function() {
+      dom.scannerResultBox.style.display = 'none';
+      dom.scannerResultBox.innerHTML = '';
+      dom.scannerStatusText.innerText = "Initializing camera...";
+      dom.scannerModalOverlay.classList.add('open');
 
-        if (html5QrCode) {
-          try {
-            if (isScannerRunning) {
-              await html5QrCode.stop();
-              isScannerRunning = false;
-            }
-          } catch (e) { console.warn("Pre-clean scanner stop warning:", e); }
-        } else {
-          html5QrCode = new Html5Qrcode("scannerRegion");
-        }
-
+      if (html5QrCode) {
         try {
-          await html5QrCode.start(
-            { facingMode: "environment" },
-            { fps: 10, qrbox: { width: 220, height: 220 } },
-            onBarcodeScanned,
-            () => {}
-          );
-          isScannerRunning = true;
-          dom.scannerStatusText.innerText = "Point camera at barcode";
-        } catch (err) {
-          console.error("Camera access failed:", err);
-          dom.scannerStatusText.innerText = "Unable to access camera.";
-        }
-      } else {
-        if (html5QrCode && isScannerRunning) {
-          try {
+          if (isScannerRunning) {
             await html5QrCode.stop();
-          } catch (e) { console.warn("Scanner stop error:", e); }
-          isScannerRunning = false;
-        }
-        dom.scannerModalOverlay.classList.remove('open');
+            isScannerRunning = false;
+          }
+        } catch (e) { console.warn("Pre-clean scanner stop warning:", e); }
+      } else {
+        html5QrCode = new Html5Qrcode("scannerRegion");
+      }
+
+      try {
+        await html5QrCode.start(
+          { facingMode: "environment" },
+          { fps: 10, qrbox: { width: 220, height: 220 } },
+          onBarcodeScanned,
+          () => {}
+        );
+        isScannerRunning = true;
+        dom.scannerStatusText.innerText = "Point camera at barcode";
+      } catch (err) {
+        console.error("Camera access failed:", err);
+        dom.scannerStatusText.innerText = "Unable to access camera.";
       }
       triggerAndroidHaptic(30);
+    };
+
+    window.closeScannerModal = async function() {
+      if (html5QrCode && isScannerRunning) {
+        try {
+          await html5QrCode.stop();
+        } catch (e) { console.warn("Scanner stop error:", e); }
+        isScannerRunning = false;
+      }
+      dom.scannerModalOverlay.classList.remove('open');
+      // Reopen Add Modal when scanner is closed manually
+      dom.addModalOverlay.classList.add('open');
+      triggerAndroidHaptic(25);
     };
 
     async function onBarcodeScanned(decodedText) {
       playBeepSound();
       triggerAndroidHaptic(60);
 
+      if (html5QrCode && isScannerRunning) {
+        try { await html5QrCode.stop(); } catch (e) {}
+        isScannerRunning = false;
+      }
+      dom.scannerModalOverlay.classList.remove('open');
+
       const existingItem = items.find(i => i.barcode === decodedText);
 
       if (existingItem) {
-        dom.scannerStatusText.innerText = `Matched item in inventory:`;
-        dom.scannerResultBox.style.display = 'block';
-        dom.scannerResultBox.innerHTML = `
-          <div style="font-weight:800; font-size:16px;">${existingItem.name}</div>
-          <div style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">Current Stock: ${existingItem.amount}</div>
-          <div style="display:flex; gap:8px;">
-            <button class="modal-save-btn" style="flex:1;" onclick="updateStock('${existingItem.id}', 1); toggleScannerModal(false);">+ Add 1 Stock</button>
-            <button class="modal-cancel-btn" style="flex:1; border:1px solid var(--border); border-radius:12px;" onclick="updateStock('${existingItem.id}', -1); toggleScannerModal(false);">- Subtract 1</button>
-          </div>
-        `;
+        // If it already exists in inventory, just add 1 and reopen list
+        await updateDoc(doc(db, "garage_items", existingItem.id), {
+          amount: increment(1),
+          updatedAt: serverTimestamp()
+        });
+        alert(`Scanned existing item: "${existingItem.name}". Added 1 to stock!`);
       } else {
         dom.scannerStatusText.innerText = "Fetching product details...";
-        dom.scannerResultBox.style.display = 'block';
-        dom.scannerResultBox.innerHTML = `<div style="font-size:13px; color:var(--text-muted);">Searching database...</div>`;
-
         let fetchedName = "";
         try {
           const res = await fetch(`https://world.openfoodfacts.org/api/v0/product/${decodedText}.json`);
@@ -1209,13 +1220,18 @@
           }
         } catch (e) { console.warn("Product lookup failed:", e); }
 
-        toggleScannerModal(false);
+        // Reopen Add Modal with prefilled values
+        toggleAddModal(true);
         dom.newItemName.value = fetchedName || "";
         dom.newItemBarcode.value = decodedText;
       }
     }
 
     // ADD MODAL
+    window.openAddModal = function() {
+      toggleAddModal(true);
+    };
+
     window.toggleAddModal = function(show) {
       if (isScrolling) return;
 
@@ -1406,7 +1422,7 @@
             <div style="font-size:13px; color:var(--text-muted); margin-top:4px; margin-bottom:16px;">
               ${searchQuery ? `No garage items match "${searchQuery}"` : 'There are no items in this filter category.'}
             </div>
-            <button class="modal-save-btn" style="padding:10px 20px;" onclick="toggleAddModal(true)">+ Add New Item</button>
+            <button class="modal-save-btn" style="padding:10px 20px;" onclick="openAddModal()">+ Add New Item</button>
           </div>
         `;
         return;

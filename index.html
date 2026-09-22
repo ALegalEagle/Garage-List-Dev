@@ -14,7 +14,7 @@
   <!-- Universal Environment Auto-Detector with Cache Versioning -->
   <script>
     (function() {
-      const APP_VER = "6.3.4";
+      const APP_VER = "6.3.5";
       const isDev = window.location.pathname.toLowerCase().includes('dev');
       const appName = isDev ? "Garage DEV" : "Garage List";
       const appIcon = isDev ? "blueprint-icon.png" : "apple-touch-icon.png";
@@ -125,7 +125,7 @@
       overflow-x: hidden;
     }
 
-    /* FULL-SIZE HIGH-CONTRAST iOS SPINNER */
+    /* FULL ACCURATE iOS CLOCK SPINNER */
     .ptr-top-container {
       position: absolute;
       top: calc(env(safe-area-inset-top, 20px) + 16px);
@@ -163,7 +163,7 @@
       border-radius: 2px;
       transform-origin: 1.75px 16px;
       opacity: 0;
-      transition: opacity 0.05s ease;
+      transition: opacity 0.02s linear;
     }
 
     /* 12 Clock Positions */
@@ -1013,7 +1013,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, doc, onSnapshot, setDoc, addDoc, updateDoc, deleteDoc, writeBatch, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    const APP_VERSION = "6.3.4";
+    const APP_VERSION = "6.3.5";
     const firebaseConfig = {
       apiKey: "AIzaSyAMznXG0OXHqMdfrmOGHK-g08TugsYfWw8",
       authDomain: "garage-stock-747e8.firebaseapp.com",
@@ -1096,13 +1096,13 @@
       mainContainer: document.getElementById('appMainContainer')
     };
 
-    // ACCURATE SEQUENTIAL CLOCK-FILL LOGIC
+    // DIRECT 1-TO-1 PROGRESSIVE CLOCK-FILL LOGIC
     function setupPullToRefreshAndCollapsibleSearch() {
       let startY = 0;
       let lastScrollY = 0;
       let isPulling = false;
       let hasCrossedThreshold = false;
-      const threshold = 65;
+      const threshold = 70;
       const ticks = dom.iosClockSpinner.querySelectorAll('.ios-clock-tick');
 
       window.addEventListener('scroll', () => {
@@ -1136,22 +1136,21 @@
       window.addEventListener('touchmove', (e) => {
         if (!isPulling) return;
         const currentY = e.touches[0].clientY;
-        const diff = currentY - startY;
+        const rawDiff = currentY - startY;
 
-        if (diff > 12) {
+        if (rawDiff > 10) {
           isGestureInProgress = true;
         }
 
-        if (diff > 0 && window.scrollY === 0) {
-          const pullDist = Math.min(80, diff * 0.42);
-          const opacity = Math.min(1, pullDist / 10);
+        if (rawDiff > 0 && window.scrollY === 0) {
+          const pullDist = Math.min(85, rawDiff);
+          const opacity = Math.min(1, pullDist / 12);
           
-          // Move layout content down
-          dom.mainContainer.style.transform = `translateY(${pullDist}px)`;
+          dom.mainContainer.style.transform = `translateY(${pullDist * 0.75}px)`;
           dom.ptrContainer.style.opacity = opacity;
 
-          // Clock-tick fill mapping: 1st tick appears at drag start, 12th tick at threshold
-          const filledCount = pullDist > 0 ? Math.min(12, Math.max(1, Math.ceil((pullDist / threshold) * 12))) : 0;
+          // Pure linear mapping: pullDist 0px = 1 tick, threshold 70px = 12 ticks
+          const filledCount = Math.min(12, Math.max(1, Math.ceil((pullDist / threshold) * 12)));
           
           ticks.forEach((tick, idx) => {
             if (idx < filledCount) {

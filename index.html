@@ -14,7 +14,7 @@
   <!-- Universal Environment Auto-Detector with Cache Versioning -->
   <script>
     (function() {
-      const APP_VER = "6.5.0";
+      const APP_VER = "6.5.1";
       const isDev = window.location.pathname.toLowerCase().includes('dev');
       const appName = isDev ? "Garage DEV" : "Garage List";
       const appIcon = isDev ? "blueprint-icon.png" : "apple-touch-icon.png";
@@ -529,21 +529,19 @@
     .input-field { width: 100%; padding: 14px; border: 1px solid var(--border); border-radius: 14px; font-size: 15px; background: var(--bg); color: var(--text); outline: none; }
 
     .btn-inline-scan {
-      display: flex;
-      align-items: center;
-      gap: 6px;
+      width: 50px;
+      height: 50px;
+      border-radius: 14px;
       background: var(--bg);
       border: 1px solid var(--border);
-      padding: 12px 14px;
-      border-radius: 14px;
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
       cursor: pointer;
-      white-space: nowrap;
       flex-shrink: 0;
+      color: var(--text);
     }
-    .btn-inline-scan:active { transform: scale(0.95); }
+    .btn-inline-scan:active { transform: scale(0.92); }
 
     .modal-cat-grid { display: flex; flex-wrap: wrap; gap: 8px; }
     .modal-cat-pill { padding: 8px 14px; border-radius: 14px; font-size: 13px; font-weight: 700; border: 1px solid var(--border); background: var(--bg); color: var(--text-muted); cursor: pointer; position: relative; }
@@ -711,7 +709,7 @@
     <button class="ticktick-tab" id="btn-tab-settings" onclick="switchTab('settings', 2)" title="Settings">
       <svg class="ticktick-icon" viewBox="0 0 24 24">
         <circle cx="12" cy="12" r="3.2" />
-        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l-.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l-.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
       </svg>
     </button>
   </nav>
@@ -738,7 +736,7 @@
     </div>
   </div>
 
-  <!-- New Item Modal with Integrated Scanner Button -->
+  <!-- New Item Modal with Icon-Only Barcode Scanner Button -->
   <div class="modal-overlay" id="addModalOverlay" onclick="if(event.target===this) toggleAddModal(false)">
     <div class="modal">
       <div class="modal-top-bar">
@@ -751,8 +749,11 @@
         <label class="form-label">What's the item?</label>
         <div class="input-with-scan">
           <input type="text" id="newItemName" class="input-field" placeholder="e.g. WD-40 Lubricant" autocomplete="off" />
-          <button class="btn-inline-scan" type="button" onclick="toggleScannerModal(true)">
-            📷 Scan
+          <button class="btn-inline-scan" type="button" onclick="toggleScannerModal(true)" title="Scan Barcode">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+              <path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2" />
+              <line x1="7" y1="12" x2="17" y2="12" />
+            </svg>
           </button>
         </div>
       </div>
@@ -810,7 +811,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, doc, onSnapshot, setDoc, addDoc, updateDoc, deleteDoc, writeBatch, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    const APP_VERSION = "6.5.0";
+    const APP_VERSION = "6.5.1";
     const firebaseConfig = {
       apiKey: "AIzaSyAMznXG0OXHqMdfrmOGHK-g08TugsYfWw8",
       authDomain: "garage-stock-747e8.firebaseapp.com",
@@ -847,7 +848,6 @@
     let html5QrCode = null;
     let isScannerRunning = false;
 
-    // GLOBAL SCROLL MONITORING TO PREVENT ACCIDENTAL ACCIDENTAL TOUCH TRIGGERS
     let isScrolling = false;
     let scrollTimeout = null;
 
@@ -898,7 +898,6 @@
       mainContainer: document.getElementById('appMainContainer')
     };
 
-    // MULTI-SELECT BIN MODE
     window.toggleSelectionMode = function() {
       if (isScrolling) return;
       isSelectionMode = !isSelectionMode;
@@ -1055,7 +1054,7 @@
         document.getElementById('segBtnLight')?.classList.remove('active');
       } else {
         dom.body.classList.remove('dark');
-        document.getElementById('segBtnLight')?.classList.remove('active');
+        document.getElementById('segBtnLight')?.classList.add('active');
         document.getElementById('segBtnDark')?.classList.remove('active');
       }
       localStorage.setItem('garage_theme', mode);

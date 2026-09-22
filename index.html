@@ -14,7 +14,7 @@
   <!-- Universal Environment Auto-Detector with Cache Versioning -->
   <script>
     (function() {
-      const APP_VER = "6.3.6";
+      const APP_VER = "6.4.0";
       const isDev = window.location.pathname.toLowerCase().includes('dev');
       const appName = isDev ? "Garage DEV" : "Garage List";
       const appIcon = isDev ? "blueprint-icon.png" : "apple-touch-icon.png";
@@ -61,8 +61,6 @@
       --pill-icon: #64748b;
       --pill-icon-active: #0f172a;
 
-      --spinner-tick: #334155;
-
       --out-border: #dc2626;
       --out-badge: #ef4444;
       --out-bg: #fff1f2;
@@ -91,8 +89,6 @@
       --pill-active-bg: #334155;
       --pill-icon: #94a3b8;
       --pill-icon-active: #ffffff;
-
-      --spinner-tick: #f8fafc;
 
       --out-border: #ef4444;
       --out-badge: #ef4444;
@@ -125,98 +121,7 @@
       overflow-x: hidden;
     }
 
-    /* GESTURE BLOCKING SHIELD */
-    .gesture-shield {
-      position: fixed;
-      inset: 0;
-      z-index: 999;
-      display: none;
-      background: transparent;
-      touch-action: none;
-    }
-    .gesture-shield.active {
-      display: block;
-    }
-
-    /* FULL ACCURATE iOS CLOCK SPINNER */
-    .ptr-top-container {
-      position: absolute;
-      top: calc(env(safe-area-inset-top, 20px) + 16px);
-      left: 0;
-      right: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 10;
-      pointer-events: none;
-      height: 40px;
-      opacity: 0;
-      transform: translateY(-20px);
-      transition: transform 0.2s ease, opacity 0.2s ease;
-      will-change: transform, opacity;
-    }
-
-    .ptr-top-container.dragging {
-      transition: none !important;
-    }
-
-    .ios-clock-spinner {
-      position: relative;
-      width: 32px;
-      height: 32px;
-    }
-
-    .ios-clock-tick {
-      position: absolute;
-      top: 0;
-      left: 14.25px;
-      width: 3.5px;
-      height: 9.5px;
-      background-color: var(--spinner-tick);
-      border-radius: 2px;
-      transform-origin: 1.75px 16px;
-      opacity: 0;
-      transition: opacity 0.02s linear;
-    }
-
-    /* 12 Clock Positions */
-    .ios-clock-tick:nth-child(1)  { transform: rotate(0deg); }
-    .ios-clock-tick:nth-child(2)  { transform: rotate(30deg); }
-    .ios-clock-tick:nth-child(3)  { transform: rotate(60deg); }
-    .ios-clock-tick:nth-child(4)  { transform: rotate(90deg); }
-    .ios-clock-tick:nth-child(5)  { transform: rotate(120deg); }
-    .ios-clock-tick:nth-child(6)  { transform: rotate(150deg); }
-    .ios-clock-tick:nth-child(7)  { transform: rotate(180deg); }
-    .ios-clock-tick:nth-child(8)  { transform: rotate(210deg); }
-    .ios-clock-tick:nth-child(9)  { transform: rotate(240deg); }
-    .ios-clock-tick:nth-child(10) { transform: rotate(270deg); }
-    .ios-clock-tick:nth-child(11) { transform: rotate(300deg); }
-    .ios-clock-tick:nth-child(12) { transform: rotate(330deg); }
-
-    /* NATIVE iOS CLOCK STEP ANIMATION WHEN REFRESHING */
-    .ios-clock-spinner.spinning .ios-clock-tick {
-      animation: ios-clock-fade 0.85s linear infinite;
-    }
-
-    .ios-clock-spinner.spinning .ios-clock-tick:nth-child(1)  { animation-delay: -0.779s; }
-    .ios-clock-spinner.spinning .ios-clock-tick:nth-child(2)  { animation-delay: -0.708s; }
-    .ios-clock-spinner.spinning .ios-clock-tick:nth-child(3)  { animation-delay: -0.637s; }
-    .ios-clock-spinner.spinning .ios-clock-tick:nth-child(4)  { animation-delay: -0.566s; }
-    .ios-clock-spinner.spinning .ios-clock-tick:nth-child(5)  { animation-delay: -0.495s; }
-    .ios-clock-spinner.spinning .ios-clock-tick:nth-child(6)  { animation-delay: -0.425s; }
-    .ios-clock-spinner.spinning .ios-clock-tick:nth-child(7)  { animation-delay: -0.354s; }
-    .ios-clock-spinner.spinning .ios-clock-tick:nth-child(8)  { animation-delay: -0.283s; }
-    .ios-clock-spinner.spinning .ios-clock-tick:nth-child(9)  { animation-delay: -0.212s; }
-    .ios-clock-spinner.spinning .ios-clock-tick:nth-child(10) { animation-delay: -0.141s; }
-    .ios-clock-spinner.spinning .ios-clock-tick:nth-child(11) { animation-delay: -0.070s; }
-    .ios-clock-spinner.spinning .ios-clock-tick:nth-child(12) { animation-delay: 0s; }
-
-    @keyframes ios-clock-fade {
-      0% { opacity: 1; }
-      100% { opacity: 0.15; }
-    }
-
-    /* MAIN CONTAINER DRAG SLIDE */
+    /* MAIN CONTAINER */
     .container { 
       max-width: 1200px; 
       margin: 0 auto; 
@@ -224,11 +129,6 @@
       padding-left: clamp(16px, 4vw, 32px);
       padding-right: clamp(16px, 4vw, 32px);
       padding-bottom: calc(env(safe-area-inset-bottom, 20px) + 110px);
-      will-change: transform;
-      transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-    .container.dragging {
-      transition: none !important;
     }
 
     /* COLLAPSIBLE / REVEALABLE SEARCH BAR MECHANIC */
@@ -728,27 +628,6 @@
 </head>
 <body>
 
-  <!-- TOUCH INTERACTION SHIELD -->
-  <div class="gesture-shield" id="gestureShield"></div>
-
-  <!-- 12-SEGMENT HIGH-CONTRAST iOS SPINNER OVERLAY -->
-  <div class="ptr-top-container" id="ptrContainer">
-    <div class="ios-clock-spinner" id="iosClockSpinner">
-      <div class="ios-clock-tick"></div>
-      <div class="ios-clock-tick"></div>
-      <div class="ios-clock-tick"></div>
-      <div class="ios-clock-tick"></div>
-      <div class="ios-clock-tick"></div>
-      <div class="ios-clock-tick"></div>
-      <div class="ios-clock-tick"></div>
-      <div class="ios-clock-tick"></div>
-      <div class="ios-clock-tick"></div>
-      <div class="ios-clock-tick"></div>
-      <div class="ios-clock-tick"></div>
-      <div class="ios-clock-tick"></div>
-    </div>
-  </div>
-
   <div class="container" id="appMainContainer">
     <header>
       <div class="header-top">
@@ -770,7 +649,7 @@
     <!-- TAB 1: INVENTORY VIEW -->
     <div class="tab-content active-tab" id="tab-inventory">
       <!-- COLLAPSIBLE / REVEALABLE SEARCH BAR -->
-      <div class="search-collapsible-wrapper" id="searchCollapsibleWrap">
+      <div class="search-collapsible-wrapper revealed" id="searchCollapsibleWrap">
         <div class="search-bar-container">
           <span class="search-icon">🔍</span>
           <input type="text" id="searchInput" class="search-input" placeholder="Search garage items..." oninput="handleSearchInput()" autocomplete="off" />
@@ -1029,7 +908,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, doc, onSnapshot, setDoc, addDoc, updateDoc, deleteDoc, writeBatch, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    const APP_VERSION = "6.3.6";
+    const APP_VERSION = "6.4.0";
     const firebaseConfig = {
       apiKey: "AIzaSyAMznXG0OXHqMdfrmOGHK-g08TugsYfWw8",
       authDomain: "garage-stock-747e8.firebaseapp.com",
@@ -1066,7 +945,6 @@
     let html5QrCode = null;
     let isScannerRunning = false;
     let isSpeedDialOpen = false;
-    let isGestureInProgress = false;
 
     function triggerAndroidHaptic(ms = 35) {
       if ('vibrate' in navigator) {
@@ -1106,132 +984,11 @@
       btnBinMode: document.getElementById('btnBinMode'),
       batchDeleteBar: document.getElementById('batchDeleteBar'),
       selectedCountVal: document.getElementById('selectedCountVal'),
-      ptrContainer: document.getElementById('ptrContainer'),
-      iosClockSpinner: document.getElementById('iosClockSpinner'),
-      searchCollapsibleWrap: document.getElementById('searchCollapsibleWrap'),
-      mainContainer: document.getElementById('appMainContainer'),
-      gestureShield: document.getElementById('gestureShield')
+      mainContainer: document.getElementById('appMainContainer')
     };
-
-    // ISOLATED TOUCH PULL-TO-REFRESH
-    function setupPullToRefreshAndCollapsibleSearch() {
-      let startY = 0;
-      let lastScrollY = 0;
-      let isPulling = false;
-      let hasCrossedThreshold = false;
-      const threshold = 70;
-      const ticks = dom.iosClockSpinner.querySelectorAll('.ios-clock-tick');
-
-      window.addEventListener('scroll', () => {
-        const currentScrollY = window.scrollY;
-        
-        if (currentScrollY > lastScrollY && currentScrollY > 40) {
-          dom.searchCollapsibleWrap.classList.remove('revealed');
-        } else if (currentScrollY < lastScrollY && currentScrollY < 10) {
-          dom.searchCollapsibleWrap.classList.add('revealed');
-        }
-        
-        lastScrollY = currentScrollY;
-      }, { passive: true });
-
-      window.addEventListener('touchstart', (e) => {
-        if (e.target.closest('.ticktick-fab, .ticktick-island-bar, .modal-overlay, .speeddial-menu, .circle-icon-btn')) {
-          isPulling = false;
-          return;
-        }
-
-        if (window.scrollY === 0 && activeTabIndex === 0) {
-          startY = e.touches[0].clientY;
-          isPulling = true;
-          hasCrossedThreshold = false;
-          dom.mainContainer.classList.add('dragging');
-          dom.ptrContainer.classList.add('dragging');
-          dom.iosClockSpinner.classList.remove('spinning');
-        }
-      }, { passive: true });
-
-      window.addEventListener('touchmove', (e) => {
-        if (!isPulling) return;
-        const currentY = e.touches[0].clientY;
-        const rawDiff = currentY - startY;
-
-        if (rawDiff > 10) {
-          isGestureInProgress = true;
-          dom.gestureShield.classList.add('active');
-        }
-
-        if (rawDiff > 0 && window.scrollY === 0) {
-          const pullDist = Math.min(85, rawDiff);
-          const opacity = Math.min(1, pullDist / 12);
-          
-          dom.mainContainer.style.transform = `translateY(${pullDist * 0.75}px)`;
-          dom.ptrContainer.style.opacity = opacity;
-
-          const filledCount = Math.min(12, Math.max(1, Math.ceil((pullDist / threshold) * 12)));
-          
-          ticks.forEach((tick, idx) => {
-            if (idx < filledCount) {
-              tick.style.opacity = "1";
-            } else {
-              tick.style.opacity = "0";
-            }
-          });
-
-          if (pullDist > 20) {
-            dom.searchCollapsibleWrap.classList.add('revealed');
-          }
-
-          if (pullDist >= threshold && !hasCrossedThreshold) {
-            hasCrossedThreshold = true;
-            triggerAndroidHaptic(45);
-          } else if (pullDist < threshold && hasCrossedThreshold) {
-            hasCrossedThreshold = false;
-          }
-        }
-      }, { passive: true });
-
-      window.addEventListener('touchend', async () => {
-        if (!isPulling) return;
-        isPulling = false;
-
-        dom.mainContainer.classList.remove('dragging');
-        dom.ptrContainer.classList.remove('dragging');
-
-        setTimeout(() => { 
-          isGestureInProgress = false; 
-          dom.gestureShield.classList.remove('active');
-        }, 300);
-
-        if (hasCrossedThreshold) {
-          triggerAndroidHaptic(60);
-
-          dom.mainContainer.style.transform = `translateY(55px)`;
-          dom.ptrContainer.style.transform = `translateY(0px)`;
-          
-          dom.iosClockSpinner.classList.add('spinning');
-
-          if ('serviceWorker' in navigator) {
-            const regs = await navigator.serviceWorker.getRegistrations();
-            regs.forEach(r => r.update());
-          }
-
-          setTimeout(() => {
-            dom.iosClockSpinner.classList.remove('spinning');
-            dom.ptrContainer.style.opacity = '0';
-            dom.ptrContainer.style.transform = `translateY(-20px)`;
-            dom.mainContainer.style.transform = `translateY(0px)`;
-          }, 900);
-        } else {
-          dom.ptrContainer.style.opacity = '0';
-          dom.ptrContainer.style.transform = `translateY(-20px)`;
-          dom.mainContainer.style.transform = `translateY(0px)`;
-        }
-      });
-    }
 
     // MULTI-SELECT BIN MODE
     window.toggleSelectionMode = function() {
-      if (isGestureInProgress) return;
       isSelectionMode = !isSelectionMode;
       selectedItemIds.clear();
       dom.btnBinMode.classList.toggle('active-bin', isSelectionMode);
@@ -1318,7 +1075,6 @@
     const tabMap = ['inventory', 'shopping', 'settings'];
 
     window.switchTab = function(tabId, index) {
-      if (isGestureInProgress) return;
       activeTabIndex = index;
       document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active-tab'));
       document.querySelectorAll('.ticktick-tab').forEach(b => b.classList.remove('active'));
@@ -1341,7 +1097,6 @@
       let barRect = null;
 
       function onPointerDown(e) {
-        if (isGestureInProgress) return;
         isDragging = true;
         barRect = bar.getBoundingClientRect();
         indicator.classList.add('dragging');
@@ -1386,7 +1141,7 @@
         document.getElementById('segBtnLight')?.classList.remove('active');
       } else {
         dom.body.classList.remove('dark');
-        document.getElementById('segBtnLight')?.classList.remove('active');
+        document.getElementById('segBtnLight')?.classList.add('active');
         document.getElementById('segBtnDark')?.classList.remove('active');
       }
       localStorage.setItem('garage_theme', mode);
@@ -1444,7 +1199,6 @@
 
     window.updateStock = async function(id, delta, event) {
       if (event) event.stopPropagation();
-      if (isGestureInProgress) return;
       const item = items.find((i) => i.id === id);
       if (!item || (item.amount <= 0 && delta < 0)) return;
 
@@ -1460,8 +1214,6 @@
 
     // SAFE BARCODE SCANNER CONTROLLER
     window.toggleScannerModal = async function(show) {
-      if (isGestureInProgress) return;
-
       if (show) {
         dom.scannerResultBox.style.display = 'none';
         dom.scannerResultBox.innerHTML = '';
@@ -1550,8 +1302,6 @@
 
     // ADD MODAL & SPEED DIAL
     window.toggleAddModal = function(show) {
-      if (isGestureInProgress) return;
-
       if (show) {
         if (!dom.newItemBarcode.value) dom.newItemName.value = '';
         modalInitialQty = 1;
@@ -1604,7 +1354,6 @@
     };
 
     window.openSpeedDialMenu = function() {
-      if (isGestureInProgress) return;
       isSpeedDialOpen = true;
       dom.fabAdd.classList.add('is-open');
       dom.speedDialOverlay.classList.add('active');
@@ -1634,16 +1383,13 @@
       let isLongPress = false;
 
       btn.addEventListener('pointerdown', (e) => {
-        if (isGestureInProgress) return;
         isLongPress = false;
         startX = e.clientX;
         startY = e.clientY;
 
         timer = setTimeout(() => {
-          if (!isGestureInProgress) {
-            isLongPress = true;
-            openSpeedDialMenu();
-          }
+          isLongPress = true;
+          openSpeedDialMenu();
         }, 350);
       });
 
@@ -1655,7 +1401,7 @@
 
       btn.addEventListener('pointerup', () => {
         clearTimeout(timer);
-        if (!isLongPress && !isSpeedDialOpen && !isGestureInProgress) {
+        if (!isLongPress && !isSpeedDialOpen) {
           toggleAddModal(true);
         }
       });
@@ -1692,7 +1438,6 @@
     }
 
     window.toggleShoppingItem = function(id) {
-      if (isGestureInProgress) return;
       if (shoppingCart.has(id)) shoppingCart.delete(id);
       else shoppingCart.add(id);
       triggerAndroidHaptic(30);
@@ -1725,8 +1470,6 @@
     };
 
     window.openItemSettings = function(id) {
-      if (isGestureInProgress) return;
-
       if (isSelectionMode) {
         toggleSelectItemForDelete(id);
         return;
@@ -1840,7 +1583,6 @@
     }
 
     window.setFilter = function(cat) { 
-      if (isGestureInProgress) return;
       currentFilter = cat; 
       quickFilter = null; 
       render(); 
@@ -1848,7 +1590,6 @@
     };
 
     window.toggleQuickFilter = function(type) { 
-      if (isGestureInProgress) return;
       quickFilter = quickFilter === type ? null : type; 
       render(); 
       triggerAndroidHaptic(25);
@@ -1882,7 +1623,6 @@
     window.addEventListener('load', () => {
       setupFabPressAndHold();
       setupTabDragGesture();
-      setupPullToRefreshAndCollapsibleSearch();
       initRealtimeDatabase();
       checkFirstLaunchNotificationPrompt();
       dom.syncStatus.classList.remove('offline');

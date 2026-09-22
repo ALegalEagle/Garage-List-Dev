@@ -14,7 +14,7 @@
   <!-- Universal Environment Auto-Detector with Cache Versioning -->
   <script>
     (function() {
-      const APP_VER = "5.5.0";
+      const APP_VER = "5.6.0";
       const isDev = window.location.pathname.toLowerCase().includes('dev');
       const appName = isDev ? "Garage DEV" : "Garage List";
       const appIcon = isDev ? "blueprint-icon.png" : "apple-touch-icon.png";
@@ -236,7 +236,7 @@
     .count-out { color: var(--out-border) !important; }
     .count-low { color: var(--low-border) !important; }
 
-    /* REDESIGNED GROUPED INSET SETTINGS LISTS */
+    /* GROUPED SETTINGS */
     .settings-group {
       background: var(--card-bg);
       border: 1px solid var(--border);
@@ -564,7 +564,7 @@
     <div class="tab-content" id="tab-settings">
       <div style="margin-bottom: 20px;">
         <h2 style="font-size: 22px; font-weight: 800;">App Settings</h2>
-        <p style="font-size: 13px; color: var(--text-muted); margin-top: 2px;">Manage preferences, categories, and alerts</p>
+        <p style="font-size: 13px; color: var(--text-muted); margin-top: 2px;">Manage preferences and inventory categories</p>
       </div>
 
       <!-- Appearance Group -->
@@ -588,15 +588,23 @@
         </div>
         <div id="categoryManageList"></div>
       </div>
+    </div>
+  </div>
 
-      <!-- Alerts Group -->
-      <div class="settings-group-title">NOTIFICATIONS</div>
-      <div class="settings-group">
-        <div class="settings-row" style="cursor:pointer;" onclick="enableLockscreenAlerts()">
-          <span style="font-weight:700; font-size:15px;">Enable Push Notifications</span>
-          <span style="color:var(--text-muted); font-size:16px;">🔔</span>
-        </div>
-      </div>
+  <!-- FIRST LAUNCH iOS-STYLE NOTIFICATION PROMPT MODAL -->
+  <div class="modal-overlay" id="notifPromptOverlay">
+    <div class="modal" style="text-align: center; padding: 32px 24px;">
+      <div style="font-size: 48px; margin-bottom: 12px;">🔔</div>
+      <div style="font-size: 20px; font-weight: 800; margin-bottom: 8px;">Stay Updated</div>
+      <p style="font-size: 14px; color: var(--text-muted); line-height: 1.4; margin-bottom: 24px;">
+        Get notified instantly on your lock screen when items run low or go out of stock in the garage.
+      </p>
+      <button class="btn-action-primary" style="margin-top:0; margin-bottom:8px;" onclick="requestNotificationPermission()">
+        Allow Notifications
+      </button>
+      <button class="modal-cancel-btn" style="padding: 10px; font-size: 14px;" onclick="dismissNotificationPrompt()">
+        Not Now
+      </button>
     </div>
   </div>
 
@@ -733,7 +741,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, doc, onSnapshot, setDoc, addDoc, updateDoc, writeBatch, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    const APP_VERSION = "5.5.0";
+    const APP_VERSION = "5.6.0";
     const firebaseConfig = {
       apiKey: "AIzaSyAMznXG0OXHqMdfrmOGHK-g08TugsYfWw8",
       authDomain: "garage-stock-747e8.firebaseapp.com",
@@ -793,7 +801,38 @@
       editCatPickerGrid: document.getElementById('editCatPickerGrid'),
       editCatItemName: document.getElementById('editCatItemName'),
       tabIndicator: document.getElementById('tabIndicator'),
-      islandTabBar: document.getElementById('islandTabBar')
+      islandTabBar: document.getElementById('islandTabBar'),
+      notifPromptOverlay: document.getElementById('notifPromptOverlay')
+    };
+
+    function checkFirstLaunchNotificationPrompt() {
+      const hasPrompted = localStorage.getItem('garage_notif_prompted');
+      if (!hasPrompted && 'Notification' in window && Notification.permission === 'default') {
+        setTimeout(() => {
+          dom.notifPromptOverlay.classList.add('open');
+        }, 800);
+      }
+    }
+
+    window.requestNotificationPermission = async function() {
+      dom.notifPromptOverlay.classList.remove('open');
+      localStorage.setItem('garage_notif_prompted', 'true');
+
+      if ('Notification' in window) {
+        try {
+          const permission = await Notification.requestPermission();
+          if (permission === 'granted') {
+            console.log('Notification permission granted.');
+          }
+        } catch (e) {
+          console.warn('Error requesting permission:', e);
+        }
+      }
+    };
+
+    window.dismissNotificationPrompt = function() {
+      dom.notifPromptOverlay.classList.remove('open');
+      localStorage.setItem('garage_notif_prompted', 'true');
     };
 
     function playBeepSound() {
@@ -1263,6 +1302,7 @@
       setupFabPressAndHold();
       setupTabDragGesture();
       initRealtimeDatabase();
+      checkFirstLaunchNotificationPrompt();
       dom.syncStatus.classList.remove('offline');
       dom.syncText.innerText = "Live";
     });

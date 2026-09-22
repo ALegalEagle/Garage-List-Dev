@@ -14,7 +14,7 @@
   <!-- Universal Environment Auto-Detector with Cache Versioning -->
   <script>
     (function() {
-      const APP_VER = "6.2.0";
+      const APP_VER = "6.2.1";
       const isDev = window.location.pathname.toLowerCase().includes('dev');
       const appName = isDev ? "Garage DEV" : "Garage List";
       const appIcon = isDev ? "blueprint-icon.png" : "apple-touch-icon.png";
@@ -121,7 +121,7 @@
       overflow-x: hidden;
     }
 
-    /* VIDEO 2: TOP-CENTERED APP LOGO PULL-TO-REFRESH */
+    /* TOP-CENTERED APP LOGO PULL-TO-REFRESH */
     .ptr-top-container {
       position: fixed;
       top: calc(env(safe-area-inset-top, 20px) + 8px);
@@ -163,7 +163,7 @@
       100% { transform: rotate(360deg); }
     }
 
-    /* VIDEO 1: COLLAPSIBLE / REVEALABLE SEARCH BAR MECHANIC */
+    /* COLLAPSIBLE / REVEALABLE SEARCH BAR MECHANIC */
     .search-collapsible-wrapper {
       max-height: 0;
       opacity: 0;
@@ -198,9 +198,8 @@
       width: 100%;
       height: 100%;
       opacity: 0.0001;
-      z-index: 5;
-      cursor: pointer;
-      pointer-events: auto;
+      z-index: 1;
+      pointer-events: none;
       -webkit-tap-highlight-color: transparent;
     }
     
@@ -956,7 +955,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, doc, onSnapshot, setDoc, addDoc, updateDoc, deleteDoc, writeBatch, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    const APP_VERSION = "6.2.0";
+    const APP_VERSION = "6.2.1";
     const firebaseConfig = {
       apiKey: "AIzaSyAMznXG0OXHqMdfrmOGHK-g08TugsYfWw8",
       authDomain: "garage-stock-747e8.firebaseapp.com",
@@ -993,6 +992,7 @@
     let html5QrCode = null;
     let isScannerRunning = false;
     let isSpeedDialOpen = false;
+    let isGestureInProgress = false;
 
     function triggerAndroidHaptic(ms = 35) {
       if ('vibrate' in navigator) {
@@ -1045,15 +1045,12 @@
       let hasCrossedThreshold = false;
       const threshold = 80;
 
-      // Handle scroll down to hide search, pull up to reveal
       window.addEventListener('scroll', () => {
         const currentScrollY = window.scrollY;
         
         if (currentScrollY > lastScrollY && currentScrollY > 40) {
-          // Scrolling down -> hide search bar
           dom.searchCollapsibleWrap.classList.remove('revealed');
         } else if (currentScrollY < lastScrollY && currentScrollY < 10) {
-          // Scrolled back to top -> reveal search bar
           dom.searchCollapsibleWrap.classList.add('revealed');
         }
         
@@ -1073,26 +1070,26 @@
         const currentY = e.touches[0].clientY;
         const diff = currentY - startY;
 
+        if (diff > 10) {
+          isGestureInProgress = true;
+        }
+
         if (diff > 0 && window.scrollY === 0) {
           const pullDist = Math.min(100, diff * 0.45);
           const opacity = Math.min(1, pullDist / 30);
           const scale = Math.min(1, (pullDist / threshold) * 1.1);
 
-          // Top logo scaling & opacity
           dom.ptrLogoWrapper.style.transform = `scale(${scale})`;
           dom.ptrLogoWrapper.style.opacity = opacity;
-
-          // Push main content down slightly
           dom.appMainContainer.style.transform = `translateY(${pullDist * 0.35}px)`;
 
-          // Dynamically reveal search bar if pulled down
           if (pullDist > 25) {
             dom.searchCollapsibleWrap.classList.add('revealed');
           }
 
           if (pullDist >= threshold && !hasCrossedThreshold) {
             hasCrossedThreshold = true;
-            triggerAndroidHaptic(45); // Haptic feedback on reaching trigger point
+            triggerAndroidHaptic(45);
           } else if (pullDist < threshold && hasCrossedThreshold) {
             hasCrossedThreshold = false;
           }
@@ -1103,8 +1100,9 @@
         if (!isPulling) return;
         isPulling = false;
 
+        setTimeout(() => { isGestureInProgress = false; }, 200);
+
         if (hasCrossedThreshold) {
-          // Haptic on release to refresh
           triggerAndroidHaptic(60);
 
           dom.ptrLogoWrapper.classList.add('spinning');
@@ -1515,19 +1513,32 @@
     function setupFabPressAndHold() {
       const btn = dom.fabAdd;
       let timer = null;
+      let startX = 0;
+      let startY = 0;
       let isLongPress = false;
 
-      btn.addEventListener('pointerdown', () => {
+      btn.addEventListener('pointerdown', (e) => {
         isLongPress = false;
+        startX = e.clientX;
+        startY = e.clientY;
+
         timer = setTimeout(() => {
-          isLongPress = true;
-          openSpeedDialMenu();
+          if (!isGestureInProgress) {
+            isLongPress = true;
+            openSpeedDialMenu();
+          }
         }, 350);
+      });
+
+      btn.addEventListener('pointermove', (e) => {
+        if (Math.abs(e.clientX - startX) > 6 || Math.abs(e.clientY - startY) > 6) {
+          clearTimeout(timer);
+        }
       });
 
       btn.addEventListener('pointerup', () => {
         clearTimeout(timer);
-        if (!isLongPress && !isSpeedDialOpen) {
+        if (!isLongPress && !isSpeedDialOpen && !isGestureInProgress) {
           toggleAddModal(true);
         }
       });

@@ -14,7 +14,7 @@
   <!-- Universal Environment Auto-Detector with Cache Versioning -->
   <script>
     (function() {
-      const APP_VER = "6.3.3";
+      const APP_VER = "6.3.4";
       const isDev = window.location.pathname.toLowerCase().includes('dev');
       const appName = isDev ? "Garage DEV" : "Garage List";
       const appIcon = isDev ? "blueprint-icon.png" : "apple-touch-icon.png";
@@ -61,6 +61,8 @@
       --pill-icon: #64748b;
       --pill-icon-active: #0f172a;
 
+      --spinner-tick: #334155;
+
       --out-border: #dc2626;
       --out-badge: #ef4444;
       --out-bg: #fff1f2;
@@ -89,6 +91,8 @@
       --pill-active-bg: #334155;
       --pill-icon: #94a3b8;
       --pill-icon-active: #ffffff;
+
+      --spinner-tick: #f8fafc;
 
       --out-border: #ef4444;
       --out-badge: #ef4444;
@@ -121,10 +125,10 @@
       overflow-x: hidden;
     }
 
-    /* EXACT NATIVE iOS 12-TICK CLOCK SPINNER */
+    /* FULL-SIZE HIGH-CONTRAST iOS SPINNER */
     .ptr-top-container {
       position: absolute;
-      top: calc(env(safe-area-inset-top, 20px) + 20px);
+      top: calc(env(safe-area-inset-top, 20px) + 16px);
       left: 0;
       right: 0;
       display: flex;
@@ -132,9 +136,9 @@
       align-items: center;
       z-index: 10;
       pointer-events: none;
-      height: 36px;
+      height: 40px;
       opacity: 0;
-      transform: translateY(-20px) scale(0.7);
+      transform: translateY(-20px);
       transition: transform 0.2s ease, opacity 0.2s ease;
       will-change: transform, opacity;
     }
@@ -145,21 +149,21 @@
 
     .ios-clock-spinner {
       position: relative;
-      width: 24px;
-      height: 24px;
+      width: 32px;
+      height: 32px;
     }
 
     .ios-clock-tick {
       position: absolute;
       top: 0;
-      left: 10.5px;
-      width: 3px;
-      height: 7px;
-      background-color: var(--text-muted);
+      left: 14.25px;
+      width: 3.5px;
+      height: 9.5px;
+      background-color: var(--spinner-tick);
       border-radius: 2px;
-      transform-origin: 1.5px 12px;
-      opacity: 0.15;
-      transition: opacity 0.08s ease;
+      transform-origin: 1.75px 16px;
+      opacity: 0;
+      transition: opacity 0.05s ease;
     }
 
     /* 12 Clock Positions */
@@ -178,20 +182,20 @@
 
     /* NATIVE iOS CLOCK STEP ANIMATION WHEN REFRESHING */
     .ios-clock-spinner.spinning .ios-clock-tick {
-      animation: ios-clock-fade 1s linear infinite;
+      animation: ios-clock-fade 0.85s linear infinite;
     }
 
-    .ios-clock-spinner.spinning .ios-clock-tick:nth-child(1)  { animation-delay: -0.916s; }
-    .ios-clock-spinner.spinning .ios-clock-tick:nth-child(2)  { animation-delay: -0.833s; }
-    .ios-clock-spinner.spinning .ios-clock-tick:nth-child(3)  { animation-delay: -0.750s; }
-    .ios-clock-spinner.spinning .ios-clock-tick:nth-child(4)  { animation-delay: -0.666s; }
-    .ios-clock-spinner.spinning .ios-clock-tick:nth-child(5)  { animation-delay: -0.583s; }
-    .ios-clock-spinner.spinning .ios-clock-tick:nth-child(6)  { animation-delay: -0.500s; }
-    .ios-clock-spinner.spinning .ios-clock-tick:nth-child(7)  { animation-delay: -0.416s; }
-    .ios-clock-spinner.spinning .ios-clock-tick:nth-child(8)  { animation-delay: -0.333s; }
-    .ios-clock-spinner.spinning .ios-clock-tick:nth-child(9)  { animation-delay: -0.250s; }
-    .ios-clock-spinner.spinning .ios-clock-tick:nth-child(10) { animation-delay: -0.166s; }
-    .ios-clock-spinner.spinning .ios-clock-tick:nth-child(11) { animation-delay: -0.083s; }
+    .ios-clock-spinner.spinning .ios-clock-tick:nth-child(1)  { animation-delay: -0.779s; }
+    .ios-clock-spinner.spinning .ios-clock-tick:nth-child(2)  { animation-delay: -0.708s; }
+    .ios-clock-spinner.spinning .ios-clock-tick:nth-child(3)  { animation-delay: -0.637s; }
+    .ios-clock-spinner.spinning .ios-clock-tick:nth-child(4)  { animation-delay: -0.566s; }
+    .ios-clock-spinner.spinning .ios-clock-tick:nth-child(5)  { animation-delay: -0.495s; }
+    .ios-clock-spinner.spinning .ios-clock-tick:nth-child(6)  { animation-delay: -0.425s; }
+    .ios-clock-spinner.spinning .ios-clock-tick:nth-child(7)  { animation-delay: -0.354s; }
+    .ios-clock-spinner.spinning .ios-clock-tick:nth-child(8)  { animation-delay: -0.283s; }
+    .ios-clock-spinner.spinning .ios-clock-tick:nth-child(9)  { animation-delay: -0.212s; }
+    .ios-clock-spinner.spinning .ios-clock-tick:nth-child(10) { animation-delay: -0.141s; }
+    .ios-clock-spinner.spinning .ios-clock-tick:nth-child(11) { animation-delay: -0.070s; }
     .ios-clock-spinner.spinning .ios-clock-tick:nth-child(12) { animation-delay: 0s; }
 
     @keyframes ios-clock-fade {
@@ -711,7 +715,7 @@
 </head>
 <body>
 
-  <!-- 12-SEGMENT NATIVE iOS CLOCK SPINNER OVERLAY -->
+  <!-- 12-SEGMENT HIGH-CONTRAST iOS SPINNER OVERLAY -->
   <div class="ptr-top-container" id="ptrContainer">
     <div class="ios-clock-spinner" id="iosClockSpinner">
       <div class="ios-clock-tick"></div>
@@ -1009,7 +1013,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, doc, onSnapshot, setDoc, addDoc, updateDoc, deleteDoc, writeBatch, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    const APP_VERSION = "6.3.3";
+    const APP_VERSION = "6.3.4";
     const firebaseConfig = {
       apiKey: "AIzaSyAMznXG0OXHqMdfrmOGHK-g08TugsYfWw8",
       authDomain: "garage-stock-747e8.firebaseapp.com",
@@ -1092,7 +1096,7 @@
       mainContainer: document.getElementById('appMainContainer')
     };
 
-    // DYNAMIC NATIVE iOS CLOCK TICK-FILL MECHANIC
+    // ACCURATE SEQUENTIAL CLOCK-FILL LOGIC
     function setupPullToRefreshAndCollapsibleSearch() {
       let startY = 0;
       let lastScrollY = 0;
@@ -1140,23 +1144,20 @@
 
         if (diff > 0 && window.scrollY === 0) {
           const pullDist = Math.min(80, diff * 0.42);
-          const opacity = Math.min(1, pullDist / 15);
-          const scale = Math.min(1, 0.6 + (pullDist / threshold) * 0.4);
+          const opacity = Math.min(1, pullDist / 10);
           
           // Move layout content down
           dom.mainContainer.style.transform = `translateY(${pullDist}px)`;
-
-          // Scale & positioning of clock spinner
           dom.ptrContainer.style.opacity = opacity;
-          dom.ptrContainer.style.transform = `translateY(0px) scale(${scale})`;
 
-          // Reveal individual clock ticks sequentially as finger pulls down
-          const filledCount = Math.floor((pullDist / threshold) * 12);
+          // Clock-tick fill mapping: 1st tick appears at drag start, 12th tick at threshold
+          const filledCount = pullDist > 0 ? Math.min(12, Math.max(1, Math.ceil((pullDist / threshold) * 12))) : 0;
+          
           ticks.forEach((tick, idx) => {
             if (idx < filledCount) {
               tick.style.opacity = "1";
             } else {
-              tick.style.opacity = "0.15";
+              tick.style.opacity = "0";
             }
           });
 
@@ -1185,7 +1186,7 @@
           triggerAndroidHaptic(60);
 
           dom.mainContainer.style.transform = `translateY(55px)`;
-          dom.ptrContainer.style.transform = `translateY(0px) scale(1)`;
+          dom.ptrContainer.style.transform = `translateY(0px)`;
           
           // Switch to CSS native stepped spinning state
           dom.iosClockSpinner.classList.add('spinning');
@@ -1198,12 +1199,12 @@
           setTimeout(() => {
             dom.iosClockSpinner.classList.remove('spinning');
             dom.ptrContainer.style.opacity = '0';
-            dom.ptrContainer.style.transform = `translateY(-20px) scale(0.7)`;
+            dom.ptrContainer.style.transform = `translateY(-20px)`;
             dom.mainContainer.style.transform = `translateY(0px)`;
           }, 900);
         } else {
           dom.ptrContainer.style.opacity = '0';
-          dom.ptrContainer.style.transform = `translateY(-20px) scale(0.7)`;
+          dom.ptrContainer.style.transform = `translateY(-20px)`;
           dom.mainContainer.style.transform = `translateY(0px)`;
         }
       });

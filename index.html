@@ -35,15 +35,17 @@
 
   <style>
     :root {
-      --bg: #fcfcfc;
+      --bg: #f4f4f6;
       --card-bg: #ffffff;
       --text: #0f172a;
       --text-muted: #64748b;
       --border: #e2e8f0;
-      --pill-bg: #f1f5f9;
+      --pill-bg: #e2e8f0;
       --stepper-bg: #f8fafc;
-      --fab-bg: #0f172a;
+      --fab-bg: #475569;
       --fab-text: #ffffff;
+      --tab-bg: #f1f5f9;
+      --tab-active-bg: #ffffff;
 
       --out-border: #dc2626;
       --out-badge: #ef4444;
@@ -67,6 +69,8 @@
       --stepper-bg: #0f172a;
       --fab-bg: #38bdf8;
       --fab-text: #0f172a;
+      --tab-bg: #1e293b;
+      --tab-active-bg: #334155;
 
       --out-border: #ef4444;
       --out-badge: #ef4444;
@@ -101,221 +105,215 @@
     .container { 
       max-width: 1200px; 
       margin: 0 auto; 
-      padding-top: calc(env(safe-area-inset-top, 20px) + 16px);
+      padding-top: calc(env(safe-area-inset-top, 20px) + 12px);
       padding-left: clamp(16px, 4vw, 32px);
       padding-right: clamp(16px, 4vw, 32px);
-      padding-bottom: calc(env(safe-area-inset-bottom, 20px) + 95px);
+      padding-bottom: calc(env(safe-area-inset-bottom, 20px) + 110px);
     }
 
-    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
-    .title-row { display: flex; align-items: center; gap: 10px; }
+    /* Minimal Header */
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .header-top { display: flex; align-items: center; justify-content: space-between; width: 100%; }
     
-    .brand-icon {
-      width: 34px;
-      height: 34px;
-      border-radius: 9px;
+    .circle-icon-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 3px 8px rgba(0,0,0,0.12);
-      flex-shrink: 0;
-      overflow: hidden;
+      font-size: 18px;
+      cursor: pointer;
+      color: var(--text);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.04);
     }
-    .brand-icon svg { width: 100%; height: 100%; display: block; }
 
-    .title-row h1 { font-size: 24px; font-weight: 800; letter-spacing: -0.5px; }
-
+    .title-area { margin-bottom: 12px; }
+    .title-area h1 { font-size: 32px; font-weight: 800; letter-spacing: -0.8px; }
+    
     .sync-pill {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      background: var(--pill-bg);
+      background: var(--card-bg);
       border: 1px solid var(--border);
-      padding: 4px 10px;
-      border-radius: 14px;
+      padding: 3px 8px;
+      border-radius: 12px;
       font-size: 11px;
       font-weight: 700;
       color: var(--synced-color);
+      margin-left: 8px;
+    }
+    .sync-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--synced-color); display: inline-block; }
+    .sync-pill.offline { color: var(--out-border) !important; border-color: var(--out-border) !important; }
+    .sync-pill.offline .sync-dot { background: var(--out-border) !important; }
+
+    /* TICKTICK-STYLE SEARCH BAR */
+    .search-bar-container {
+      position: relative;
+      margin-bottom: 16px;
+    }
+    .search-input {
+      width: 100%;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 12px 16px 12px 42px;
+      font-size: 15px;
+      color: var(--text);
       outline: none;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.02);
     }
-    .sync-dot { 
-      width: 7px; 
-      height: 7px; 
-      border-radius: 50%; 
-      background: var(--synced-color); 
-      display: inline-block; 
-      transition: background 0.2s ease; 
+    .search-icon {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 16px;
+      color: var(--text-muted);
+      pointer-events: none;
     }
-    
-    .sync-pill.offline { 
-      color: var(--out-border) !important; 
-      border-color: var(--out-border) !important;
-    }
-    .sync-pill.offline .sync-dot { 
-      background: var(--out-border) !important; 
-      animation: pulse 1s infinite; 
-    }
-    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
-    .header-actions { display: flex; align-items: center; gap: 8px; }
-    .action-btn { background: var(--pill-bg); border: 1px solid var(--border); border-radius: 20px; padding: 6px 10px; font-size: 13px; cursor: pointer; color: var(--text); transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; }
-    .action-btn.active-bin { background: var(--out-border); color: #ffffff; border-color: var(--out-border); }
-    
-    #bellBtn.hidden { display: none; }
-    #headerCogBtn { display: none; }
-    body.notifications-active #headerCogBtn { display: flex; }
+    /* Subpage Navigation Containers */
+    .tab-content { display: none; }
+    .tab-content.active-tab { display: block; }
 
-    .theme-switch { display: flex; background: var(--pill-bg); border-radius: 20px; padding: 2px; border: 1px solid var(--border); }
-    .theme-btn { border: none; background: transparent; padding: 4px 8px; border-radius: 16px; font-size: 12px; cursor: pointer; color: var(--text-muted); }
-    .theme-btn.active { background: var(--card-bg); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-
-    .subtitle { font-size: 13px; color: var(--text-muted); margin-bottom: 16px; }
-
-    .selection-bar { display: none; justify-content: space-between; align-items: center; background: var(--card-bg); border: 1px solid var(--out-border); padding: 10px 14px; border-radius: 16px; margin-bottom: 16px; max-width: 600px; }
-    .selection-bar.active { display: flex; }
-    .sel-count { font-size: 13px; font-weight: 800; color: var(--out-border); }
-    .sel-actions { display: flex; gap: 8px; align-items: center; }
-    .sel-btn-text { background: none; border: none; font-size: 12px; font-weight: 700; color: var(--text-muted); cursor: pointer; }
-    .sel-btn-exit { background: var(--pill-bg); border: 1px solid var(--border); padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 700; cursor: pointer; color: var(--text); }
-
+    /* Bento Grid & Cards */
     .bento-stats { 
       display: grid; 
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); 
-      max-width: 480px; 
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); 
       gap: 12px; 
       margin-bottom: 16px; 
     }
-    .stat-card { border-radius: 16px; padding: 14px 16px; border-width: 2px; border-style: solid; min-height: 80px; display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; transition: transform 0.1s ease, box-shadow 0.15s ease; will-change: transform; }
-    .stat-card:active { transform: scale(0.97); }
-    
+    .stat-card { border-radius: 16px; padding: 12px 16px; border-width: 2px; border-style: solid; display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; }
     .stat-card.out { background: var(--out-bg); border-color: var(--out-border); }
     .stat-card.low { background: var(--low-bg); border-color: var(--low-border); }
     .stat-card.active-filter-card { box-shadow: 0 0 0 3px var(--fab-bg); }
-
     .stat-label { font-size: 10px; font-weight: 800; letter-spacing: 0.6px; }
     .stat-card.out .stat-label { color: var(--out-badge); }
     .stat-card.low .stat-label { color: var(--low-badge); }
-    .stat-value { font-size: 24px; font-weight: 800; line-height: 1; margin-top: 4px; }
+    .stat-value { font-size: 22px; font-weight: 800; line-height: 1; margin-top: 4px; }
 
     .filters { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 16px; scrollbar-width: none; }
     .filters::-webkit-scrollbar { display: none; }
-    .chip { padding: 6px 14px; border-radius: 16px; font-size: 12px; font-weight: 700; border: 1px solid var(--border); background: var(--card-bg); color: var(--text-muted); cursor: pointer; white-space: nowrap; transition: background 0.15s ease, color 0.15s ease; }
+    .chip { padding: 6px 14px; border-radius: 16px; font-size: 12px; font-weight: 700; border: 1px solid var(--border); background: var(--card-bg); color: var(--text-muted); cursor: pointer; white-space: nowrap; }
     .chip.active { background: var(--fab-bg); color: var(--fab-text); border-color: var(--fab-bg); }
 
     .bento-grid { 
       display: grid; 
-      grid-template-columns: repeat(auto-fill, minmax(175px, 1fr)); 
+      grid-template-columns: repeat(auto-fill, minmax(165px, 1fr)); 
       gap: 12px; 
-      contain: content; 
     }
-    
     .bento-card { 
       background: var(--card-bg); 
-      border-radius: 16px; 
+      border-radius: 18px; 
       padding: 14px; 
       border: 1px solid var(--border); 
       display: flex; 
       flex-direction: column; 
       justify-content: space-between; 
-      min-height: 120px; 
+      min-height: 115px; 
       position: relative; 
       cursor: pointer;
-      animation: cardSlideIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-      transition: transform 0.1s ease, box-shadow 0.1s ease;
-      will-change: transform, opacity;
     }
-    .bento-card:active {
-      transform: scale(0.98);
-    }
-    @keyframes cardSlideIn {
-      0% { opacity: 0; transform: translateY(10px) scale(0.98); }
-      100% { opacity: 1; transform: translateY(0) scale(1); }
-    }
-
     .bento-card.is-out { border: 2.5px solid var(--out-border) !important; }
     .bento-card.is-low { border: 2px solid var(--low-border) !important; }
     .bento-card.is-selected { border: 3px solid var(--out-border) !important; background: var(--card-selected-bg) !important; }
 
-    .card-top { 
-      display: flex; 
-      justify-content: space-between; 
-      align-items: center; 
-      gap: 8px;
-      margin-bottom: 8px; 
-    }
-    .category-chip { 
-      font-size: 10px; 
-      font-weight: 700; 
-      padding: 2.5px 7px; 
-      border-radius: 6px; 
-      background: var(--pill-bg); 
-      color: var(--text-muted); 
-      text-transform: uppercase; 
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 58%;
-    }
-    .status-badge { 
-      font-size: 9px; 
-      font-weight: 800; 
-      padding: 3px 6px; 
-      border-radius: 5px; 
-      color: #fff; 
-      letter-spacing: 0.3px; 
-      white-space: nowrap;
-      flex-shrink: 0;
-    }
+    .card-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .category-chip { font-size: 10px; font-weight: 700; padding: 2.5px 7px; border-radius: 6px; background: var(--pill-bg); color: var(--text-muted); text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 58%; }
+    .status-badge { font-size: 9px; font-weight: 800; padding: 3px 6px; border-radius: 5px; color: #fff; white-space: nowrap; }
     .badge-out { background: var(--out-badge); }
     .badge-low { background: var(--low-badge); }
 
-    .chk-circle { display: none; width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--text-muted); align-items: center; justify-content: center; font-size: 12px; font-weight: 800; flex-shrink: 0; }
+    .chk-circle { display: none; width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid var(--text-muted); align-items: center; justify-content: center; font-size: 11px; font-weight: 800; }
     body.selection-active .chk-circle { display: flex; }
     body.selection-active .status-badge { display: none; }
     .bento-card.is-selected .chk-circle { background: var(--out-border); border-color: var(--out-border); color: #fff; }
 
-    .card-title { font-size: 15px; font-weight: 700; line-height: 1.25; margin-bottom: 10px; word-break: break-word; }
+    .card-title { font-size: 14px; font-weight: 700; line-height: 1.25; margin-bottom: 10px; word-break: break-word; }
 
-    .stepper-pill { background: var(--stepper-bg); border-radius: 10px; display: flex; align-items: center; justify-content: space-between; padding: 4px 6px; height: 34px; border: 1px solid var(--border); }
-    .stepper-btn { background: transparent; border: none; font-size: 18px; font-weight: 700; color: var(--text-muted); width: 28px; height: 28px; cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 6px; }
-    .stepper-btn:active { background: var(--border); }
-    .stepper-count { font-size: 16px; font-weight: 800; }
+    .stepper-pill { background: var(--stepper-bg); border-radius: 10px; display: flex; align-items: center; justify-content: space-between; padding: 4px 6px; height: 32px; border: 1px solid var(--border); }
+    .stepper-btn { background: transparent; border: none; font-size: 16px; font-weight: 700; color: var(--text-muted); width: 26px; height: 26px; cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 6px; }
+    .stepper-count { font-size: 15px; font-weight: 800; }
     .count-out { color: var(--out-border) !important; }
     .count-low { color: var(--low-border) !important; }
 
-    body.selection-active .stepper-btn { pointer-events: none; opacity: 0.2; }
+    /* TICKTICK-STYLE FLOATING ISLAND TAB BAR */
+    .floating-tab-bar {
+      position: fixed;
+      bottom: calc(env(safe-area-inset-bottom, 16px) + 12px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--tab-bg);
+      border: 1px solid var(--border);
+      padding: 5px;
+      border-radius: 35px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+      z-index: 90;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+    .tab-btn {
+      background: transparent;
+      border: none;
+      padding: 10px 22px;
+      border-radius: 28px;
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+    .tab-btn.active {
+      background: var(--tab-active-bg);
+      color: var(--text);
+      box-shadow: 0 3px 10px rgba(0,0,0,0.06);
+    }
+    .tab-badge {
+      background: var(--out-badge);
+      color: white;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 10px;
+      margin-left: 2px;
+    }
 
-    /* FAB & BLURRED SPEED DIAL OVERLAY */
+    /* FAB & SPEED DIAL OVERLAY */
     .fab-bottom {
       position: fixed;
-      bottom: calc(env(safe-area-inset-bottom, 16px) + 20px);
+      bottom: calc(env(safe-area-inset-bottom, 16px) + 80px);
       right: clamp(20px, 4vw, 36px);
-      width: 58px;
-      height: 58px;
+      width: 56px;
+      height: 56px;
       background: var(--fab-bg);
       color: var(--fab-text);
       border: none;
-      border-radius: 20px;
-      font-size: 30px;
+      border-radius: 50%;
+      font-size: 28px;
       font-weight: 700;
       cursor: pointer;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.22);
       display: flex;
       align-items: center;
       justify-content: center;
       z-index: 95;
-      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background 0.2s ease;
-      touch-action: manipulation;
-      -webkit-touch-callout: none !important;
-      -webkit-user-select: none !important;
-      user-select: none !important;
+      transition: transform 0.2s ease, background 0.2s ease;
     }
-    .fab-bottom:active { transform: scale(0.92); }
     .fab-bottom.is-open {
       transform: rotate(45deg);
       background: #dc2626 !important;
       color: #ffffff !important;
-      box-shadow: 0 10px 30px rgba(220, 38, 38, 0.45);
     }
 
     .speeddial-overlay {
@@ -327,27 +325,22 @@
       z-index: 92;
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: opacity 0.22s ease;
     }
-    .speeddial-overlay.active {
-      opacity: 1;
-      pointer-events: auto;
-    }
+    .speeddial-overlay.active { opacity: 1; pointer-events: auto; }
 
     .speeddial-menu {
       position: fixed;
-      bottom: calc(env(safe-area-inset-bottom, 16px) + 90px);
+      bottom: calc(env(safe-area-inset-bottom, 16px) + 150px);
       right: clamp(20px, 4vw, 36px);
       display: flex;
       flex-direction: column;
       align-items: flex-end;
-      gap: 14px;
+      gap: 12px;
       z-index: 95;
       pointer-events: none;
     }
-    .speeddial-menu.active {
-      pointer-events: auto;
-    }
+    .speeddial-menu.active { pointer-events: auto; }
 
     .speeddial-item {
       display: inline-flex;
@@ -356,7 +349,7 @@
       background: var(--card-bg);
       color: var(--text);
       border: 1px solid var(--border);
-      padding: 12px 18px 12px 16px;
+      padding: 12px 18px;
       border-radius: 30px;
       box-shadow: 0 8px 24px rgba(0,0,0,0.18);
       font-size: 14px;
@@ -364,58 +357,21 @@
       cursor: pointer;
       opacity: 0;
       transform: translateY(18px) scale(0.92);
-      transition: opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1), transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-      user-select: none;
-      -webkit-user-select: none;
-      -webkit-touch-callout: none;
+      transition: opacity 0.2s ease, transform 0.2s ease;
     }
-    .speeddial-item:active { transform: scale(0.95); }
-    .speeddial-menu.active .speeddial-item {
-      opacity: 1;
-      transform: translateY(0) scale(1);
-    }
-    .speeddial-menu.active .speeddial-item:nth-child(1) { transition-delay: 0.04s; }
-    .speeddial-menu.active .speeddial-item:nth-child(2) { transition-delay: 0.08s; }
+    .speeddial-menu.active .speeddial-item { opacity: 1; transform: translateY(0) scale(1); }
 
     .speeddial-icon-badge {
-      width: 32px;
-      height: 32px;
+      width: 30px;
+      height: 30px;
       border-radius: 50%;
       background: var(--pill-bg);
       display: flex;
       align-items: center;
       justify-content: center;
-      color: var(--text);
-      flex-shrink: 0;
-      pointer-events: none;
     }
 
-    .bulk-delete-bar { 
-      display: none; 
-      position: fixed; 
-      bottom: calc(env(safe-area-inset-bottom, 16px) + 20px); 
-      left: 50%; 
-      transform: translateX(-50%); 
-      width: calc(100% - 32px); 
-      max-width: 440px; 
-      background: var(--out-border); 
-      color: #fff; 
-      border: none; 
-      border-radius: 16px; 
-      padding: 15px; 
-      font-size: 15px; 
-      font-weight: 800; 
-      cursor: pointer; 
-      box-shadow: 0 6px 20px rgba(220, 38, 38, 0.4); 
-      text-align: center; 
-      z-index: 10; 
-    }
-    body.selection-active .fab-bottom,
-    body.selection-active .speeddial-menu,
-    body.selection-active .speeddial-overlay { display: none !important; }
-    body.selection-active .bulk-delete-bar { display: block; }
-
-    /* Modals */
+    /* Modals & Sheets */
     .modal-overlay { 
       display: none; 
       position: fixed; 
@@ -426,229 +382,173 @@
       justify-content: center; 
     }
     .modal-overlay.open { display: flex; }
-    
     .modal { 
       background: var(--card-bg); 
       width: 100%; 
       max-width: 520px; 
       border-radius: 28px 28px 0 0; 
       padding: 24px 20px calc(env(safe-area-inset-bottom, 20px) + 32px) 20px; 
-      box-shadow: 0 -10px 40px rgba(0,0,0,0.3);
       max-height: 90vh;
       overflow-y: auto;
-      animation: slideUp 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-
-    @media (min-width: 640px) {
-      .modal-overlay { align-items: center; padding: 20px; }
-      .modal {
-        border-radius: 24px;
-        padding: 26px;
-        max-height: 80vh;
-        animation: modalScaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-      }
-      @keyframes modalScaleIn {
-        from { opacity: 0; transform: scale(0.96); }
-        to { opacity: 1; transform: scale(1); }
-      }
     }
 
-    .modal-top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+    .modal-top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
     .modal-cancel-btn { background: none; border: none; font-size: 15px; font-weight: 700; color: var(--text-muted); cursor: pointer; }
     .modal-title-header { font-size: 16px; font-weight: 800; }
     .modal-save-btn { background: var(--fab-bg); color: var(--fab-text); border: none; padding: 6px 16px; border-radius: 14px; font-size: 14px; font-weight: 800; cursor: pointer; }
 
-    .form-group { margin-bottom: 20px; }
+    .form-group { margin-bottom: 18px; }
     .form-label { font-size: 11px; font-weight: 800; letter-spacing: 0.6px; color: var(--text-muted); margin-bottom: 8px; display: block; text-transform: uppercase; }
-    
     .input-field { width: 100%; padding: 14px; border: 1px solid var(--border); border-radius: 14px; font-size: 15px; background: var(--bg); color: var(--text); outline: none; }
 
     .modal-cat-grid { display: flex; flex-wrap: wrap; gap: 8px; }
-    .modal-cat-pill { padding: 8px 14px; border-radius: 14px; font-size: 13px; font-weight: 700; border: 1px solid var(--border); background: var(--bg); color: var(--text-muted); cursor: pointer; transition: background 0.15s ease, color 0.15s ease; }
+    .modal-cat-pill { padding: 8px 14px; border-radius: 14px; font-size: 13px; font-weight: 700; border: 1px solid var(--border); background: var(--bg); color: var(--text-muted); cursor: pointer; }
     .modal-cat-pill.active { background: var(--fab-bg); color: var(--fab-text); border-color: var(--fab-bg); }
-    .modal-cat-pill.new-pill { border-style: dashed; color: var(--text); }
 
     .modal-stepper { display: flex; align-items: center; justify-content: space-between; background: var(--bg); border: 1px solid var(--border); border-radius: 14px; padding: 8px 16px; }
     .modal-step-btn { background: var(--card-bg); border: 1px solid var(--border); font-size: 20px; font-weight: 800; color: var(--text); width: 40px; height: 40px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-    .modal-step-btn:active { background: var(--border); }
     .modal-step-val { font-size: 20px; font-weight: 800; }
 
-    /* Barcode Scanner Viewport & Steppers */
-    #scannerRegion {
-      position: relative;
-      width: 100%;
-      min-height: 260px;
-      background: #000;
-      border-radius: 18px;
-      overflow: hidden;
-      border: 1px solid var(--border);
-    }
-    #scannerRegion video { object-fit: cover !important; border-radius: 18px; }
+    #scannerRegion { position: relative; width: 100%; min-height: 260px; background: #000; border-radius: 18px; overflow: hidden; }
+    .scan-reticle { position: absolute; inset: 20px; pointer-events: none; border: 2px dashed rgba(56, 189, 248, 0.7); border-radius: 12px; }
+    .scanner-result-box { margin-top: 14px; background: var(--bg); border: 1px solid var(--border); border-radius: 16px; padding: 14px; display: none; }
 
-    .scan-reticle {
-      position: absolute;
-      inset: 20px;
-      pointer-events: none;
-      border: 2px dashed rgba(56, 189, 248, 0.7);
-      border-radius: 12px;
-      box-shadow: inset 0 0 0 9999px rgba(0, 0, 0, 0.25);
-    }
+    .shopping-item-row { display: flex; align-items: center; justify-content: space-between; padding: 14px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; margin-bottom: 8px; cursor: pointer; }
+    .shopping-chk { width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; flex-shrink: 0; }
+    .shopping-item-row.is-bought .shopping-chk { background: var(--synced-color); border-color: var(--synced-color); color: white; }
+    .shopping-item-row.is-bought .shopping-title { text-decoration: line-through; opacity: 0.6; }
 
-    .scanner-result-box {
-      margin-top: 14px;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 14px;
-      display: none;
-      animation: cardSlideIn 0.2s ease forwards;
-    }
-
-    .scanner-stepper-btn {
-      transition: transform 0.08s ease, opacity 0.08s ease !important;
-      cursor: pointer;
-    }
-    .scanner-stepper-btn:active {
-      transform: scale(0.95) !important;
-      opacity: 0.75 !important;
-    }
-
-    .bulk-list-preview { max-height: 180px; overflow-y: auto; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 10px 14px; margin: 14px 0; }
-    .bulk-item-line { font-size: 13px; font-weight: 600; padding: 4px 0; color: var(--text); }
-    .btn-danger { width: 100%; padding: 15px; background: var(--out-border); color: white; border: none; border-radius: 14px; font-size: 15px; font-weight: 800; cursor: pointer; margin-bottom: 10px; }
-    .btn-bring { width: 100%; padding: 15px; background: var(--bring-color); color: white; border: none; border-radius: 14px; font-size: 15px; font-weight: 800; cursor: pointer; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; }
-    .btn-cancel { width: 100%; padding: 12px; background: var(--pill-bg); color: var(--text); border: 1px solid var(--border); border-radius: 14px; font-size: 14px; font-weight: 700; cursor: pointer; }
-
-    .cat-manage-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; }
-    .cat-del-btn { background: none; border: none; color: var(--out-border); font-size: 16px; cursor: pointer; padding: 4px; }
-
-    .confirm-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
-    .confirm-overlay.open { display: flex; }
-    .confirm-box { background: var(--card-bg); width: 100%; max-width: 360px; border-radius: 24px; padding: 24px 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); text-align: center; animation: popIn 0.18s cubic-bezier(0.16, 1, 0.3, 1); }
-    @keyframes popIn { from { transform: scale(0.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-    .confirm-icon { font-size: 32px; margin-bottom: 12px; }
-    .confirm-title { font-size: 18px; font-weight: 800; margin-bottom: 8px; }
-    .confirm-desc { font-size: 13px; color: var(--text-muted); line-height: 1.4; margin-bottom: 20px; }
+    .cat-manage-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px; margin-bottom: 8px; }
+    .cat-del-btn { background: none; border: none; color: var(--out-border); font-size: 16px; cursor: pointer; }
+    .btn-action-primary { width: 100%; padding: 15px; background: var(--fab-bg); color: var(--fab-text); border: none; border-radius: 16px; font-size: 15px; font-weight: 800; cursor: pointer; margin-top: 12px; }
   </style>
 </head>
 <body>
   <div class="container">
+    <!-- Minimalist Header -->
     <header>
-      <div class="title-row">
-        <div class="brand-icon" id="brandIcon"></div>
-        <h1 id="appHeaderTitle">Garage List</h1>
-        <div class="sync-pill" id="syncStatus">
-          <span class="sync-dot"></span>
-          <span id="syncText">Connecting...</span>
-        </div>
-      </div>
-      <div class="header-actions">
-        <button class="action-btn" id="exportBtn" onclick="openExportModal()" title="Export Out-of-Stock List">🛒</button>
-        <button class="action-btn" id="bellBtn" onclick="enableLockscreenAlerts()" title="Enable Lock Screen Alerts">🔔</button>
-        <button class="action-btn" id="headerCogBtn" onclick="toggleCategoryModal(true)" title="Manage Categories">⚙️</button>
-        <button class="action-btn" id="binBtn" onclick="toggleSelectionMode()" title="Toggle Delete / Selection Mode">🗑️</button>
-        <div class="theme-switch">
-          <button class="theme-btn" id="btnLight" onclick="setTheme('light')">☀️</button>
-          <button class="theme-btn" id="btnDark" onclick="setTheme('dark')">🌙</button>
+      <div class="header-top">
+        <button class="circle-icon-btn" onclick="toggleSelectionMode()" title="Selection / Bin Mode">🗑️</button>
+        <div class="theme-switch" style="display: flex; gap: 6px;">
+          <button class="circle-icon-btn" id="btnLight" onclick="setTheme('light')">☀️</button>
+          <button class="circle-icon-btn" id="btnDark" onclick="setTheme('dark')">🌙</button>
         </div>
       </div>
     </header>
-    <div class="subtitle" id="summaryText">Connecting to real-time inventory...</div>
 
-    <div class="selection-bar" id="selectionBar">
-      <div class="sel-count" id="selectionCount">0 Selected</div>
-      <div class="sel-actions">
-        <button class="sel-btn-text" onclick="toggleSelectAll()">Select All</button>
-        <button class="sel-btn-exit" onclick="exitSelectionMode()">Exit</button>
+    <div class="title-area">
+      <h1 id="appHeaderTitle">Garage List</h1>
+      <div class="sync-pill" id="syncStatus">
+        <span class="sync-dot"></span>
+        <span id="syncText">Connecting...</span>
       </div>
     </div>
 
-    <!-- Summary Widgets -->
-    <div class="bento-stats">
-      <div class="stat-card out" id="statCardOut" onclick="toggleQuickFilter('out')">
-        <div class="stat-label">OUT OF STOCK</div>
-        <div class="stat-value" id="outCount">0 items</div>
+    <!-- ========================================================= -->
+    <!-- TAB 1: INVENTORY VIEW -->
+    <!-- ========================================================= -->
+    <div class="tab-content active-tab" id="tab-inventory">
+      <!-- TickTick-Style Search Bar -->
+      <div class="search-bar-container">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="searchInput" class="search-input" placeholder="Search garage items..." oninput="handleSearchInput()" autocomplete="off" />
       </div>
-      <div class="stat-card low" id="statCardLow" onclick="toggleQuickFilter('low')">
-        <div class="stat-label">LOW STOCK</div>
-        <div class="stat-value" id="lowCount">0 items</div>
+
+      <!-- Quick Stats Widgets -->
+      <div class="bento-stats">
+        <div class="stat-card out" id="statCardOut" onclick="toggleQuickFilter('out')">
+          <div class="stat-label">OUT OF STOCK</div>
+          <div class="stat-value" id="outCount">0 items</div>
+        </div>
+        <div class="stat-card low" id="statCardLow" onclick="toggleQuickFilter('low')">
+          <div class="stat-label">LOW STOCK</div>
+          <div class="stat-value" id="lowCount">0 items</div>
+        </div>
       </div>
+
+      <div class="filters" id="categoryFilters"></div>
+      <div class="bento-grid" id="bentoGrid"></div>
     </div>
 
-    <div class="filters" id="categoryFilters"></div>
-    <div class="bento-grid" id="bentoGrid"></div>
+    <!-- ========================================================= -->
+    <!-- TAB 2: IN-APP SHOPPING VIEW -->
+    <!-- ========================================================= -->
+    <div class="tab-content" id="tab-shopping">
+      <div style="margin-bottom: 16px;">
+        <h2 style="font-size: 22px; font-weight: 800;">Shopping List</h2>
+        <p style="font-size: 13px; color: var(--text-muted); margin-top: 2px;">Tap items to mark them as in-cart during your shopping run.</p>
+      </div>
+
+      <div id="shoppingListContainer"></div>
+
+      <button class="btn-action-primary" onclick="completeShoppingSession()">
+        ✓ Finish Shopping & Restock
+      </button>
+
+      <button class="btn-action-primary" style="background: var(--bring-color); color: white; margin-top: 8px;" onclick="exportToBringApp()">
+        🛒 Open Out-of-Stock in Bring! App
+      </button>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- TAB 3: SETTINGS VIEW -->
+    <!-- ========================================================= -->
+    <div class="tab-content" id="tab-settings">
+      <div style="margin-bottom: 20px;">
+        <h2 style="font-size: 22px; font-weight: 800;">App Settings</h2>
+        <p style="font-size: 13px; color: var(--text-muted); margin-top: 2px;">Manage categories and alerts</p>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Manage Categories</label>
+        <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+          <input type="text" id="newCatInput" class="input-field" placeholder="New category name..." />
+          <button class="circle-icon-btn" style="border-radius: 14px; width: 50px; flex-shrink: 0; background: var(--fab-bg); color: var(--fab-text);" onclick="addNewCategoryFromSettings()">+</button>
+        </div>
+        <div id="categoryManageList"></div>
+      </div>
+
+      <div class="form-group" style="margin-top: 24px;">
+        <label class="form-label">Lock Screen Alerts</label>
+        <button class="btn-action-primary" style="background: var(--card-bg); color: var(--text); border: 1px solid var(--border);" onclick="enableLockscreenAlerts()">
+          🔔 Enable Push Notifications
+        </button>
+      </div>
+    </div>
   </div>
 
-  <!-- SPEED DIAL BLURRED BACKDROP -->
+  <!-- TICKTICK-STYLE FLOATING ISLAND TAB BAR -->
+  <nav class="floating-tab-bar">
+    <button class="tab-btn active" id="btn-tab-inventory" onclick="switchTab('inventory')">
+      <span>📦</span> Inventory
+    </button>
+    <button class="tab-btn" id="btn-tab-shopping" onclick="switchTab('shopping')">
+      <span>🛒</span> Shopping <span class="tab-badge" id="shoppingBadge" style="display:none;">0</span>
+    </button>
+    <button class="tab-btn" id="btn-tab-settings" onclick="switchTab('settings')">
+      <span>⚙️</span> Settings
+    </button>
+  </nav>
+
+  <!-- SPEED DIAL OVERLAY & FAB -->
   <div class="speeddial-overlay" id="speedDialOverlay" onclick="closeSpeedDialMenu()"></div>
 
-  <!-- SPEED DIAL ACTION PILLS -->
   <div class="speeddial-menu" id="speedDialMenu">
-    <!-- Viewfinder Barcode Option -->
     <div class="speeddial-item" onclick="selectSpeedDialAction('scan')">
-      <div class="speeddial-icon-badge">
-        <svg viewBox="0 0 32 32" width="19" height="19" fill="currentColor">
-          <path d="M 4 11 V 4 H 11" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="square"/>
-          <path d="M 21 4 H 28 V 11" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="square"/>
-          <path d="M 4 21 V 28 H 11" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="square"/>
-          <path d="M 21 28 H 28 V 21" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="square"/>
-          <rect x="7" y="8" width="1.8" height="16"/>
-          <rect x="10.2" y="8" width="2.8" height="16"/>
-          <rect x="14.4" y="8" width="1.2" height="16"/>
-          <rect x="17" y="8" width="1.8" height="16"/>
-          <rect x="20.2" y="8" width="3" height="16"/>
-          <rect x="24.4" y="8" width="1.6" height="16"/>
-        </svg>
-      </div>
+      <div class="speeddial-icon-badge">📷</div>
       <span>Scan Barcode</span>
     </div>
-
-    <!-- Manual Add Option -->
     <div class="speeddial-item" onclick="selectSpeedDialAction('manual')">
-      <div class="speeddial-icon-badge">
-        <span style="font-size: 18px; line-height: 1; font-weight: 800;">✎</span>
-      </div>
+      <div class="speeddial-icon-badge">✎</div>
       <span>Add Manually</span>
     </div>
   </div>
 
-  <!-- FLOATING ACTION BUTTON -->
-  <button class="fab-bottom" id="fabAdd" title="Add or Scan Item">
-    <span style="pointer-events: none; -webkit-user-select: none; user-select: none; line-height: 1;">+</span>
+  <button class="fab-bottom" id="fabAdd" title="Add Item">
+    <span style="pointer-events: none; line-height: 1;">+</span>
   </button>
 
-  <button class="bulk-delete-bar" id="bulkDeleteBar" onclick="openBulkDeleteSheet()">🗑️ Delete Selected Items</button>
-
-  <!-- Export Shopping List Modal Sheet -->
-  <div class="modal-overlay" id="exportModalOverlay" onclick="if(event.target===this) closeExportModal()">
-    <div class="modal">
-      <div class="modal-top-bar">
-        <button class="modal-cancel-btn" onclick="closeExportModal()">Close</button>
-        <div class="modal-title-header">Export Shopping List</div>
-        <div style="width: 50px;"></div>
-      </div>
-      <div style="text-align: center; margin-bottom: 12px;">
-        <div style="font-size: 32px; margin-bottom: 6px;">🛒</div>
-        <div style="font-size: 16px; font-weight: 800;" id="exportModalTitle">Out-of-Stock Items</div>
-        <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Generates a restock list with interactive checkboxes</p>
-      </div>
-
-      <div class="bulk-list-preview" id="exportListPreview"></div>
-
-      <!-- Cloudflare Worker Dynamic Share Trigger -->
-      <button class="btn-bring" id="exportBringBtn" onclick="exportToBringApp()">
-        🛒 Open in Bring! App
-      </button>
-
-      <!-- Clean Apple Notes & Reminders export with interactive checkboxes -->
-      <button class="btn-cancel" style="padding: 14px; font-weight: 800; margin-bottom: 8px;" onclick="exportToShareSheet()">
-        📝 Save to Apple Notes / Reminders
-      </button>
-    </div>
-  </div>
-
-  <!-- Live Barcode Scanner Modal Sheet -->
+  <!-- Live Barcode Scanner Modal -->
   <div class="modal-overlay" id="scannerModalOverlay" onclick="if(event.target===this) toggleScannerModal(false)">
     <div class="modal">
       <div class="modal-top-bar">
@@ -656,15 +556,8 @@
         <div class="modal-title-header">Barcode Scanner</div>
         <div style="width: 48px;"></div>
       </div>
-
-      <div id="scannerRegion">
-        <div class="scan-reticle"></div>
-      </div>
-
-      <div id="scannerStatusText" style="margin-top: 12px; font-size: 13px; color: var(--text-muted); text-align: center;">
-        Point camera at product barcode
-      </div>
-
+      <div id="scannerRegion"><div class="scan-reticle"></div></div>
+      <div id="scannerStatusText" style="margin-top: 12px; font-size: 13px; color: var(--text-muted); text-align: center;">Point camera at barcode</div>
       <div class="scanner-result-box" id="scannerResultBox"></div>
     </div>
   </div>
@@ -682,13 +575,11 @@
         <label class="form-label">What's the item?</label>
         <input type="text" id="newItemName" class="input-field" placeholder="e.g. WD-40 Lubricant" autocomplete="off" />
       </div>
-
       <input type="hidden" id="newItemBarcode" value="" />
 
       <div class="form-group">
-        <label class="form-label">Choose Category</label>
+        <label class="form-label">Category</label>
         <div class="modal-cat-grid" id="modalCatGrid"></div>
-        <input type="text" id="inlineNewCategory" class="input-field" style="display: none; margin-top: 8px;" placeholder="Type new category name... (Press Return)" onkeydown="handleNewCategoryKeydown(event)" autocomplete="off" />
       </div>
 
       <div class="form-group">
@@ -698,16 +589,6 @@
           <span class="modal-step-val" id="modalQtyVal">1</span>
           <button class="modal-step-btn" onclick="adjustModalQty(1)">+</button>
         </div>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">Low Stock Alert Threshold</label>
-        <div class="modal-stepper">
-          <button class="modal-step-btn" onclick="adjustNewItemMinStock(-1)">—</button>
-          <span class="modal-step-val" id="newModalMinStockVal" style="font-size: 16px;">≤ 1 item</span>
-          <button class="modal-step-btn" onclick="adjustNewItemMinStock(1)">+</button>
-        </div>
-        <div style="font-size: 11px; color: var(--text-muted); margin-top: 6px;" id="newModalMinStockDesc">Alerts when stock drops to 1 or lower.</div>
       </div>
     </div>
   </div>
@@ -720,84 +601,27 @@
         <div class="modal-title-header">Item Settings</div>
         <div style="width: 50px;"></div>
       </div>
-      <div style="font-size: 15px; font-weight: 800; margin-bottom: 16px;" id="editCatItemName">Item Settings</div>
-
+      <div style="font-size: 16px; font-weight: 800; margin-bottom: 16px;" id="editCatItemName">Settings</div>
       <div class="form-group">
         <label class="form-label">Category</label>
         <div class="modal-cat-grid" id="editCatPickerGrid"></div>
-        <input type="text" id="inlineEditNewCategory" class="input-field" style="display: none; margin-top: 12px;" placeholder="Type new category name... (Press Return)" onkeydown="handleEditNewCategoryKeydown(event)" autocomplete="off" />
       </div>
-
-      <div class="form-group" style="margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--border);">
-        <label class="form-label">Low Stock Alert Threshold</label>
+      <div class="form-group">
+        <label class="form-label">Low Stock Threshold</label>
         <div class="modal-stepper">
           <button class="modal-step-btn" onclick="adjustEditingItemMinStock(-1)">—</button>
-          <span class="modal-step-val" id="editModalMinStockVal" style="font-size: 16px;">≤ 1 item</span>
+          <span class="modal-step-val" id="editModalMinStockVal">≤ 1 item</span>
           <button class="modal-step-btn" onclick="adjustEditingItemMinStock(1)">+</button>
         </div>
-        <div style="font-size: 11px; color: var(--text-muted); margin-top: 6px;" id="editModalMinStockDesc">Alerts when stock drops to 1 or lower.</div>
       </div>
-    </div>
-  </div>
-
-  <!-- Manage Categories Modal -->
-  <div class="modal-overlay" id="categoryModalOverlay" onclick="if(event.target===this) toggleCategoryModal(false)">
-    <div class="modal">
-      <div class="modal-top-bar">
-        <button class="modal-cancel-btn" onclick="toggleCategoryModal(false)">Close</button>
-        <div class="modal-title-header">Manage Categories</div>
-        <div style="width: 50px;"></div>
-      </div>
-      <div style="display: flex; gap: 8px; margin-bottom: 16px;">
-        <input type="text" id="newCatInput" class="input-field" style="margin-bottom: 0;" placeholder="New category name..." />
-        <button class="action-btn" style="padding: 0 16px; font-weight: 700; background: var(--fab-bg); color: var(--fab-text);" onclick="addNewCategoryFromModal()">Add</button>
-      </div>
-      <div id="categoryManageList" style="display: flex; flex-direction: column; gap: 8px; max-height: 240px; overflow-y: auto;"></div>
-    </div>
-  </div>
-
-  <div class="modal-overlay" id="bulkDeleteOverlay" onclick="if(event.target===this) closeBulkDeleteSheet()">
-    <div class="modal">
-      <div style="text-align: center; margin-bottom: 12px;">
-        <div style="font-size: 36px; margin-bottom: 8px;">🗑️</div>
-        <h3 id="bulkDeleteTitle" style="font-size: 19px; font-weight: 800;">Delete Selected Items?</h3>
-        <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">These items will be permanently removed from your garage database across all devices.</p>
-      </div>
-      <div class="bulk-list-preview" id="bulkListPreview"></div>
-      <button class="btn-danger" id="confirmBulkDeleteBtn" onclick="confirmBulkDelete()">Confirm Delete</button>
-      <button class="btn-cancel" onclick="closeBulkDeleteSheet()">Cancel (Keep All Items)</button>
-    </div>
-  </div>
-
-  <div class="confirm-overlay" id="catDeleteDialogOverlay" onclick="if(event.target===this) closeCategoryDeleteDialog()">
-    <div class="confirm-box">
-      <div class="confirm-icon">⚠️</div>
-      <div class="confirm-title">Are you sure you want to delete this?</div>
-      <div class="confirm-desc" id="catDeleteDialogDesc">This category will be permanently removed.</div>
-      <button class="btn-danger" id="confirmCatDeleteBtn" onclick="executeCategoryDelete()">Delete Category</button>
-      <button class="btn-cancel" onclick="closeCategoryDeleteDialog()">Cancel</button>
     </div>
   </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { 
-      getFirestore, 
-      collection, 
-      doc, 
-      onSnapshot, 
-      setDoc, 
-      addDoc, 
-      updateDoc, 
-      writeBatch, 
-      increment, 
-      serverTimestamp
-    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, collection, doc, onSnapshot, setDoc, addDoc, updateDoc, writeBatch, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    const APP_VERSION = "4.16.0";
-
-    const isDev = window.location.pathname.toLowerCase().includes('dev');
-
+    const APP_VERSION = "5.0.0";
     const firebaseConfig = {
       apiKey: "AIzaSyAMznXG0OXHqMdfrmOGHK-g08TugsYfWw8",
       authDomain: "garage-stock-747e8.firebaseapp.com",
@@ -812,182 +636,68 @@
 
     const itemsCol = collection(db, "garage_items");
     const metaDoc = doc(db, "garage_meta", "categories");
-
     const defaultCategories = ["Cereal", "Gluten Free Cereal", "Cleaning", "Household", "Condiments", "Spreads", "Kitchenware"];
 
     let items = [];
     let categories = defaultCategories;
     let currentFilter = "All";
     let quickFilter = null; 
+    let searchQuery = "";
     let selectionMode = false;
     let selectedIds = new Set();
     let selectedModalCategory = "";
     let modalInitialQty = 1;
-    let newItemMinStock = 1;
     let editingItemId = null;
     let editingItemMinStock = 1;
-    let pendingDeleteCategory = null;
+    let shoppingCart = new Set(); // Local session bought items
 
     let html5QrScanner = null;
     let isScannerRunning = false;
-    let lastScannedBarcode = null;
-    let lastScanTime = 0;
     let activeScannedItemId = null;
-
     let isSpeedDialOpen = false;
 
     const dom = {
       body: document.body,
-      brandIcon: document.getElementById('brandIcon'),
-      appHeaderTitle: document.getElementById('appHeaderTitle'),
       grid: document.getElementById('bentoGrid'),
       filterBar: document.getElementById('categoryFilters'),
-      selBar: document.getElementById('selectionBar'),
-      selCount: document.getElementById('selectionCount'),
-      bulkDeleteBar: document.getElementById('bulkDeleteBar'),
-      statCardOut: document.getElementById('statCardOut'),
-      statCardLow: document.getElementById('statCardLow'),
       outCount: document.getElementById('outCount'),
       lowCount: document.getElementById('lowCount'),
-      summaryText: document.getElementById('summaryText'),
       syncStatus: document.getElementById('syncStatus'),
       syncText: document.getElementById('syncText'),
-      bellBtn: document.getElementById('bellBtn'),
-      binBtn: document.getElementById('binBtn'),
-      btnLight: document.getElementById('btnLight'),
-      btnDark: document.getElementById('btnDark'),
-      addModalOverlay: document.getElementById('addModalOverlay'),
-      modalCatGrid: document.getElementById('modalCatGrid'),
-      inlineNewCategory: document.getElementById('inlineNewCategory'),
-      modalQtyVal: document.getElementById('modalQtyVal'),
-      newItemName: document.getElementById('newItemName'),
-      newItemBarcode: document.getElementById('newItemBarcode'),
-      categoryModalOverlay: document.getElementById('categoryModalOverlay'),
+      searchInput: document.getElementById('searchInput'),
+      shoppingListContainer: document.getElementById('shoppingListContainer'),
+      shoppingBadge: document.getElementById('shoppingBadge'),
       categoryManageList: document.getElementById('categoryManageList'),
-      newCatInput: document.getElementById('newCatInput'),
-      bulkDeleteOverlay: document.getElementById('bulkDeleteOverlay'),
-      bulkDeleteTitle: document.getElementById('bulkDeleteTitle'),
-      confirmBulkDeleteBtn: document.getElementById('confirmBulkDeleteBtn'),
-      bulkListPreview: document.getElementById('bulkListPreview'),
-      catDeleteDialogOverlay: document.getElementById('catDeleteDialogOverlay'),
-      catDeleteDialogDesc: document.getElementById('catDeleteDialogDesc'),
-      scannerModalOverlay: document.getElementById('scannerModalOverlay'),
-      scannerStatusText: document.getElementById('scannerStatusText'),
-      scannerResultBox: document.getElementById('scannerResultBox'),
       fabAdd: document.getElementById('fabAdd'),
       speedDialOverlay: document.getElementById('speedDialOverlay'),
       speedDialMenu: document.getElementById('speedDialMenu'),
+      addModalOverlay: document.getElementById('addModalOverlay'),
+      newItemName: document.getElementById('newItemName'),
+      newItemBarcode: document.getElementById('newItemBarcode'),
+      modalCatGrid: document.getElementById('modalCatGrid'),
+      modalQtyVal: document.getElementById('modalQtyVal'),
+      scannerModalOverlay: document.getElementById('scannerModalOverlay'),
+      scannerStatusText: document.getElementById('scannerStatusText'),
+      scannerResultBox: document.getElementById('scannerResultBox'),
       editCatModalOverlay: document.getElementById('editCatModalOverlay'),
       editCatPickerGrid: document.getElementById('editCatPickerGrid'),
-      editCatItemName: document.getElementById('editCatItemName'),
-      inlineEditNewCategory: document.getElementById('inlineEditNewCategory'),
-      exportModalOverlay: document.getElementById('exportModalOverlay'),
-      exportModalTitle: document.getElementById('exportModalTitle'),
-      exportListPreview: document.getElementById('exportListPreview'),
-      exportBringBtn: document.getElementById('exportBringBtn')
+      editCatItemName: document.getElementById('editCatItemName')
     };
 
-    if (dom.appHeaderTitle) {
-      dom.appHeaderTitle.innerText = isDev ? "Garage DEV" : "Garage List";
-    }
+    window.switchTab = function(tabId) {
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active-tab'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
 
-    const logoSVGs = {
-      blueprint: {
-        dark: `<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <linearGradient id="bpGradDark" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#075985"/>
-              <stop offset="100%" stop-color="#0c2d48"/>
-            </linearGradient>
-            <pattern id="bpGridDark" width="32" height="32" patternUnits="userSpaceOnUse">
-              <path d="M 32 0 L 0 0 0 32" fill="none" stroke="#38bdf8" stroke-width="1" stroke-opacity="0.18"/>
-            </pattern>
-          </defs>
-          <rect width="512" height="512" rx="120" fill="url(#bpGradDark)"/>
-          <rect width="512" height="512" rx="120" fill="url(#bpGridDark)"/>
-          <rect x="56" y="56" width="400" height="400" rx="32" fill="none" stroke="#38bdf8" stroke-width="6" stroke-dasharray="16 10" stroke-opacity="0.6"/>
-          <g transform="translate(256, 175)">
-            <circle cx="0" cy="0" r="46" fill="none" stroke="#facc15" stroke-width="16" stroke-dasharray="14 10"/>
-            <circle cx="0" cy="0" r="22" fill="#facc15"/>
-          </g>
-          <line x1="160" y1="260" x2="160" y2="380" stroke="#0284c7" stroke-width="8"/>
-          <line x1="352" y1="260" x2="352" y2="380" stroke="#0284c7" stroke-width="8"/>
-          <polygon points="256,215 384,275 256,335 128,275" fill="#0369a1" fill-opacity="0.35" stroke="#38bdf8" stroke-width="10" stroke-linejoin="round"/>
-          <polygon points="128,275 256,335 256,415 128,355" fill="#075985" fill-opacity="0.5" stroke="#38bdf8" stroke-width="10" stroke-linejoin="round"/>
-          <polygon points="256,335 384,275 384,355 256,415" fill="#0c4a6e" fill-opacity="0.5" stroke="#38bdf8" stroke-width="10" stroke-linejoin="round"/>
-          <circle cx="256" cy="215" r="7" fill="#facc15"/>
-          <circle cx="384" cy="275" r="7" fill="#facc15"/>
-          <circle cx="128" cy="275" r="7" fill="#facc15"/>
-          <circle cx="256" cy="415" r="7" fill="#facc15"/>
-        </svg>`,
-        light: `<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <linearGradient id="bpGradLight" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#f0f9ff"/>
-              <stop offset="100%" stop-color="#e0f2fe"/>
-            </linearGradient>
-            <pattern id="bpGridLight" width="32" height="32" patternUnits="userSpaceOnUse">
-              <path d="M 32 0 L 0 0 0 32" fill="none" stroke="#0284c7" stroke-width="1" stroke-opacity="0.2"/>
-            </pattern>
-          </defs>
-          <rect width="512" height="512" rx="120" fill="url(#bpGradLight)" stroke="#bae6fd" stroke-width="12"/>
-          <rect width="512" height="512" rx="120" fill="url(#bpGridLight)"/>
-          <rect x="56" y="56" width="400" height="400" rx="32" fill="none" stroke="#0284c7" stroke-width="6" stroke-dasharray="16 10" stroke-opacity="0.7"/>
-          <g transform="translate(256, 175)">
-            <circle cx="0" cy="0" r="46" fill="none" stroke="#d97706" stroke-width="16" stroke-dasharray="14 10"/>
-            <circle cx="0" cy="0" r="22" fill="#d97706"/>
-          </g>
-          <line x1="160" y1="260" x2="160" y2="380" stroke="#93c5fd" stroke-width="8"/>
-          <line x1="352" y1="260" x2="352" y2="380" stroke="#93c5fd" stroke-width="8"/>
-          <polygon points="256,215 384,275 256,335 128,275" fill="#e0f2fe" fill-opacity="0.7" stroke="#0284c7" stroke-width="10" stroke-linejoin="round"/>
-          <polygon points="128,275 256,335 256,415 128,355" fill="#bae6fd" fill-opacity="0.6" stroke="#0284c7" stroke-width="10" stroke-linejoin="round"/>
-          <polygon points="256,335 384,275 384,355 256,415" fill="#7dd3fc" fill-opacity="0.6" stroke="#0284c7" stroke-width="10" stroke-linejoin="round"/>
-          <circle cx="256" cy="215" r="7" fill="#d97706"/>
-          <circle cx="384" cy="275" r="7" fill="#d97706"/>
-          <circle cx="128" cy="275" r="7" fill="#d97706"/>
-          <circle cx="256" cy="415" r="7" fill="#d97706"/>
-        </svg>`
-      },
-      shelves: {
-        dark: `<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-          <rect width="512" height="512" rx="120" fill="#0f172a"/>
-          <rect x="76" y="76" width="360" height="360" rx="28" fill="none" stroke="#334155" stroke-width="20"/>
-          <line x1="76" y1="264" x2="436" y2="264" stroke="#475569" stroke-width="20" stroke-linecap="round"/>
-          <line x1="76" y1="358" x2="436" y2="358" stroke="#475569" stroke-width="20" stroke-linecap="round"/>
-          <rect x="130" y="296" width="46" height="62" rx="8" fill="#38bdf8"/>
-          <rect x="200" y="306" width="70" height="52" rx="8" fill="#64748b"/>
-          <rect x="294" y="286" width="98" height="72" rx="10" fill="#94a3b8"/>
-          <circle cx="340" cy="220" r="22" fill="#10b981"/>
-        </svg>`,
-        light: `<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-          <rect width="512" height="512" rx="120" fill="#ffffff" stroke="#e2e8f0" stroke-width="20"/>
-          <rect x="76" y="76" width="360" height="360" rx="28" fill="none" stroke="#94a3b8" stroke-width="20"/>
-          <line x1="76" y1="264" x2="436" y2="264" stroke="#64748b" stroke-width="20" stroke-linecap="round"/>
-          <line x1="76" y1="358" x2="436" y2="358" stroke="#64748b" stroke-width="20" stroke-linecap="round"/>
-          <rect x="130" y="296" width="46" height="62" rx="8" fill="#0284c7"/>
-          <rect x="200" y="306" width="70" height="52" rx="8" fill="#94a3b8"/>
-          <rect x="294" y="286" width="98" height="72" rx="10" fill="#64748b"/>
-          <circle cx="340" cy="220" r="22" fill="#059669"/>
-        </svg>`
-      }
+      document.getElementById(`tab-${tabId}`)?.classList.add('active-tab');
+      document.getElementById(`btn-tab-${tabId}`)?.classList.add('active');
+      if (navigator.vibrate) navigator.vibrate(25);
     };
-
-    const activeLogos = isDev ? logoSVGs.blueprint : logoSVGs.shelves;
 
     window.setTheme = function(mode) {
-      const fav = document.getElementById('dynamicFavicon');
       if (mode === 'dark') {
         dom.body.classList.add('dark');
-        dom.btnDark?.classList.add('active');
-        dom.btnLight?.classList.remove('active');
-        if (dom.brandIcon) dom.brandIcon.innerHTML = activeLogos.dark;
-        if (fav) fav.href = "data:image/svg+xml," + encodeURIComponent(activeLogos.dark);
       } else {
         dom.body.classList.remove('dark');
-        dom.btnLight?.classList.add('active');
-        dom.btnDark?.classList.remove('active');
-        if (dom.brandIcon) dom.brandIcon.innerHTML = activeLogos.light;
-        if (fav) fav.href = "data:image/svg+xml," + encodeURIComponent(activeLogos.light);
       }
       localStorage.setItem('garage_theme', mode);
     };
@@ -995,180 +705,62 @@
     const savedTheme = localStorage.getItem('garage_theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
     window.setTheme(savedTheme);
 
-    function updateBellVisibility() {
-      if ('Notification' in window && Notification.permission === 'granted') {
-        dom.bellBtn?.classList.add('hidden');
-        dom.body?.classList.add('notifications-active');
-      } else {
-        dom.body?.classList.remove('notifications-active');
-      }
-    }
+    // REAL-TIME SEARCH HANDLER
+    window.handleSearchInput = function() {
+      searchQuery = dom.searchInput.value.trim().toLowerCase();
+      render();
+    };
 
-    function sanitizeCategoryName(rawInput) {
-      if (!rawInput) return "General";
-      const cleaned = rawInput.trim().replace(/\s+/g, ' ').toLowerCase();
-      const match = categories.find(c => c.trim().toLowerCase() === cleaned);
-      if (match) return match; 
-      return rawInput.trim().replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
-    }
-
-    function sanitizeItemName(rawInput) {
-      if (!rawInput) return "";
-      return rawInput.trim().replace(/\s+/g, ' ').replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
-    }
-
-    function escapeAttr(str) {
-      return (str || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-    }
-
-    function getMinStockLabel(val) {
-      if (val === 0) return "Off (Never)";
-      if (val === 1) return "≤ 1 item";
-      return `≤ ${val} items`;
-    }
-
-    function getMinStockDesc(val) {
-      if (val === 0) return "No low-stock alerts will be shown for this item.";
-      if (val === 1) return "Alerts when stock drops to 1.";
-      return `Alerts when stock drops to ${val} or lower.`;
-    }
-
-    function isItemOutOfStock(item) {
-      return item.amount === 0;
-    }
-
+    function isItemOutOfStock(item) { return item.amount === 0; }
     function isItemLowStock(item) {
       const threshold = item.minStock !== undefined ? item.minStock : 1;
       return threshold > 0 && item.amount > 0 && item.amount <= threshold;
     }
 
-    // Audio Engine
-    let sharedAudioCtx = null;
+    function initRealtimeDatabase() {
+      onSnapshot(metaDoc, (snap) => {
+        if (snap.exists() && Array.isArray(snap.data().list)) {
+          categories = snap.data().list;
+        } else {
+          categories = defaultCategories;
+        }
+        render();
+        renderCategorySettings();
+      });
 
-    function unlockAudio() {
-      try {
-        if (!sharedAudioCtx) {
-          sharedAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        }
-        if (sharedAudioCtx.state === 'suspended') {
-          sharedAudioCtx.resume();
-        }
-      } catch (e) {}
+      onSnapshot(itemsCol, (snapshot) => {
+        const loaded = [];
+        snapshot.forEach((d) => {
+          loaded.push({ id: d.id, ...d.data() });
+        });
+        loaded.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+        items = loaded;
+        render();
+        renderShoppingTab();
+      });
     }
 
-    function playScanBeep() {
-      try {
-        unlockAudio();
-        if (!sharedAudioCtx) return;
+    window.updateStock = async function(id, delta, event) {
+      if (event) event.stopPropagation();
+      const item = items.find((i) => i.id === id);
+      if (!item || (item.amount <= 0 && delta < 0)) return;
 
-        const osc = sharedAudioCtx.createOscillator();
-        const gain = sharedAudioCtx.createGain();
+      item.amount += delta;
+      render();
 
-        osc.connect(gain);
-        gain.connect(sharedAudioCtx.destination);
-
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(1760, sharedAudioCtx.currentTime); 
-        gain.gain.setValueAtTime(0.3, sharedAudioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.0001, sharedAudioCtx.currentTime + 0.12);
-
-        osc.start(sharedAudioCtx.currentTime);
-        osc.stop(sharedAudioCtx.currentTime + 0.12);
-      } catch (e) {
-        console.warn("Scan beep error:", e);
-      }
-    }
-
-    // ==========================================
-    // SHOPPING LIST EXPORT LOGIC
-    // ==========================================
-    function getOutOfStockItems() {
-      return items.filter(isItemOutOfStock);
-    }
-
-    window.openExportModal = function() {
-      const outItems = getOutOfStockItems();
-      if (dom.exportModalTitle) {
-        dom.exportModalTitle.innerText = `${outItems.length} Out-of-Stock ${outItems.length === 1 ? 'Item' : 'Items'}`;
-      }
-
-      if (outItems.length === 0) {
-        dom.exportListPreview.innerHTML = `<div style="text-align:center; padding: 12px 0; color:var(--synced-color); font-size:14px; font-weight:700;">🎉 All garage items are currently in stock!</div>`;
-        if (dom.exportBringBtn) dom.exportBringBtn.style.opacity = '0.5';
-      } else {
-        dom.exportListPreview.innerHTML = outItems.map(i => `
-          <div class="bulk-item-line">⚠️ <b>${i.name}</b> <span style="color:var(--text-muted); font-size:11px;">(${i.category})</span></div>
-        `).join('');
-        if (dom.exportBringBtn) dom.exportBringBtn.style.opacity = '1';
-      }
-
-      dom.exportModalOverlay?.classList.add('open');
+      await updateDoc(doc(db, "garage_items", id), {
+        amount: increment(delta),
+        updatedAt: serverTimestamp()
+      }).catch(console.error);
     };
 
-    window.closeExportModal = function() {
-      dom.exportModalOverlay?.classList.remove('open');
-    };
-
-    window.exportToBringApp = async function() {
-      const outItems = getOutOfStockItems();
-      if (outItems.length === 0) return alert("No out-of-stock items to export!");
-
-      const itemNames = outItems.map(i => i.name).join(',');
-      
-      // Cloudflare Worker dynamic schema endpoint
-      const workerUrl = `https://billowing-forest-5301.swanson-ronan.workers.dev/?items=${encodeURIComponent(itemNames)}`;
-
-      if (navigator.share) {
-        try {
-          await navigator.share({
-            title: "Garage Restock List",
-            url: workerUrl
-          });
-          closeExportModal();
-        } catch (e) {}
-      } else {
-        window.location.href = `bring://import?url=${encodeURIComponent(workerUrl)}`;
-      }
-    };
-
-    window.exportToShareSheet = async function() {
-      const outItems = getOutOfStockItems();
-      if (outItems.length === 0) return alert("No out-of-stock items to export!");
-
-      // Use literal UTF-8 checkbox square symbol: ☐
-      const lines = outItems.map(i => `☐ ${i.name} (${i.category})`).join('\n');
-      const shareData = {
-        title: 'Garage Out-of-Stock List',
-        text: `🛒 Garage Out-of-Stock Items:\n\n${lines}`
-      };
-
-      if (navigator.share) {
-        try {
-          await navigator.share(shareData);
-          closeExportModal();
-        } catch (e) {
-          console.warn("Export canceled:", e);
-        }
-      } else {
-        try {
-          await navigator.clipboard.writeText(shareData.text);
-          alert("Shopping list with checkboxes copied to clipboard!");
-          closeExportModal();
-        } catch (err) {
-          alert("Failed to copy list.");
-        }
-      }
-    };
-
-    // ==========================================
-    // PRESS & HOLD SPEED DIAL (POINTER EVENTS)
-    // ==========================================
+    // SPEED DIAL / FAB LOGIC
     window.openSpeedDialMenu = function() {
       isSpeedDialOpen = true;
       dom.fabAdd.classList.add('is-open');
       dom.speedDialOverlay.classList.add('active');
       dom.speedDialMenu.classList.add('active');
-      if (navigator.vibrate) navigator.vibrate(60);
+      if (navigator.vibrate) navigator.vibrate(50);
     };
 
     window.closeSpeedDialMenu = function() {
@@ -1178,883 +770,198 @@
       dom.speedDialMenu.classList.remove('active');
     };
 
-    window.toggleSpeedDialMenu = function() {
-      if (isSpeedDialOpen) closeSpeedDialMenu();
-      else openSpeedDialMenu();
-    };
-
     window.selectSpeedDialAction = function(action) {
       closeSpeedDialMenu();
-      if (action === 'scan') {
-        toggleScannerModal(true);
-      } else if (action === 'manual') {
-        toggleAddModal(true);
-      }
+      if (action === 'scan') toggleScannerModal(true);
+      else if (action === 'manual') toggleAddModal(true);
     };
 
     function setupFabPressAndHold() {
       const btn = dom.fabAdd;
-      if (!btn) return;
+      let timer = null;
 
-      let startX = 0;
-      let startY = 0;
-      let longPressTimer = null;
-      let isLongPressTriggered = false;
-      let speedDialJustOpened = false;
-
-      btn.addEventListener('contextmenu', (e) => {
-        e.preventDefault();
-        return false;
-      });
-
-      const handlePointerDown = (e) => {
-        if (e.button !== undefined && e.button !== 0) return;
-        startX = e.clientX;
-        startY = e.clientY;
-        isLongPressTriggered = false;
-
-        if (isSpeedDialOpen) return;
-
-        clearTimeout(longPressTimer);
-        longPressTimer = setTimeout(() => {
-          isLongPressTriggered = true;
-          speedDialJustOpened = true;
-
-          if (window.getSelection) {
-            window.getSelection().removeAllRanges();
-          }
-
+      btn.addEventListener('pointerdown', () => {
+        timer = setTimeout(() => {
           openSpeedDialMenu();
-
-          setTimeout(() => {
-            speedDialJustOpened = false;
-          }, 450);
         }, 350);
-      };
-
-      const handlePointerUp = (e) => {
-        clearTimeout(longPressTimer);
-
-        if (isLongPressTriggered || speedDialJustOpened) {
-          if (e && e.cancelable) e.preventDefault();
-          isLongPressTriggered = false;
-          return;
-        }
-
-        if (isSpeedDialOpen) {
-          if (e && e.cancelable) e.preventDefault();
-          closeSpeedDialMenu();
-          return;
-        }
-
-        toggleAddModal(true);
-      };
-
-      const handlePointerMove = (e) => {
-        const deltaX = Math.abs(e.clientX - startX);
-        const deltaY = Math.abs(e.clientY - startY);
-        if (deltaX > 15 || deltaY > 15) {
-          clearTimeout(longPressTimer);
-        }
-      };
-
-      const handlePointerCancel = () => {
-        clearTimeout(longPressTimer);
-        isLongPressTriggered = false;
-        speedDialJustOpened = false;
-      };
-
-      btn.addEventListener('pointerdown', handlePointerDown);
-      btn.addEventListener('pointermove', handlePointerMove);
-      btn.addEventListener('pointerup', handlePointerUp);
-      btn.addEventListener('pointercancel', handlePointerCancel);
-
+      });
+      btn.addEventListener('pointerup', () => clearTimeout(timer));
+      btn.addEventListener('pointercancel', () => clearTimeout(timer));
       btn.addEventListener('click', (e) => {
         e.preventDefault();
+        if (!isSpeedDialOpen) toggleAddModal(true);
       });
     }
 
-    // ==========================================
-    // FIRESTORE SYNC & INVENTORY LOGIC
-    // ==========================================
-    function initRealtimeDatabase() {
-      onSnapshot(metaDoc, (snap) => {
-        if (snap.exists() && Array.isArray(snap.data().list)) {
-          const uniqueSet = new Set();
-          snap.data().list.forEach(c => {
-            if (c && typeof c === 'string') uniqueSet.add(sanitizeCategoryName(c));
-          });
-          categories = Array.from(uniqueSet);
-        } else {
-          categories = defaultCategories;
-          setDoc(metaDoc, { list: defaultCategories }).catch(console.error);
-        }
-        render();
-      }, (err) => {
-        console.error("Categories snapshot error:", err);
-        if (dom.summaryText) dom.summaryText.innerText = "Error: " + (err.message || err.code);
-        updateSyncStatus(false);
-      });
-
-      onSnapshot(itemsCol, async (snapshot) => {
-        const map = new Map();
-        const duplicatesToDelete = [];
-        const updatesToApply = [];
-
-        snapshot.forEach((d) => {
-          const data = d.data();
-          const rawName = (data.name || '').trim();
-          const normalizedKey = rawName.toLowerCase();
-          const sanitizedCat = sanitizeCategoryName(data.category);
-          const amount = Number(data.amount) || 0;
-          const barcode = (data.barcode || '').trim();
-          const minStock = data.minStock !== undefined && data.minStock !== null ? Number(data.minStock) : 1;
-
-          if (!map.has(normalizedKey)) {
-            map.set(normalizedKey, { 
-              id: d.id, 
-              name: sanitizeItemName(rawName),
-              amount: amount,
-              category: sanitizedCat,
-              barcode: barcode,
-              minStock: minStock,
-              updatedAt: data.updatedAt
-            });
-          } else {
-            const primary = map.get(normalizedKey);
-            primary.amount += amount;
-            if (!primary.barcode && barcode) primary.barcode = barcode;
-            if (data.minStock !== undefined && primary.minStock === undefined) primary.minStock = minStock;
-            duplicatesToDelete.push(d.id);
-            updatesToApply.push({ 
-              id: primary.id, 
-              amount: primary.amount, 
-              name: primary.name, 
-              barcode: primary.barcode,
-              minStock: primary.minStock
-            });
-          }
-        });
-
-        if (duplicatesToDelete.length > 0) {
-          try {
-            const batch = writeBatch(db);
-            duplicatesToDelete.forEach((dupId) => {
-              batch.delete(doc(db, "garage_items", dupId));
-            });
-            updatesToApply.forEach((upd) => {
-              batch.update(doc(db, "garage_items", upd.id), {
-                amount: upd.amount,
-                name: upd.name,
-                barcode: upd.barcode || "",
-                minStock: upd.minStock,
-                updatedAt: serverTimestamp()
-              });
-            });
-            await batch.commit();
-          } catch (err) {
-            console.error("Auto-merge cleanup error:", err);
-          }
-        }
-
-        const loaded = Array.from(map.values());
-        loaded.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-
-        loaded.forEach((newItem) => {
-          const oldItem = items.find((i) => i.id === newItem.id);
-          if (oldItem && oldItem.amount > 0 && newItem.amount === 0) {
-            showLocalNotification(newItem.name);
-          }
-        });
-
-        items = loaded;
-        render();
-        updateSyncStatus(true);
-      }, (err) => {
-        console.error("Inventory snapshot error:", err);
-        if (dom.summaryText) dom.summaryText.innerText = "Error: " + (err.message || err.code);
-        updateSyncStatus(false);
-      });
-    }
-
-    function updateSyncStatus(isLive) {
-      if (isLive && navigator.onLine) {
-        dom.syncStatus?.classList.remove('offline');
-        if (dom.syncText) dom.syncText.innerText = "Live";
+    // SHOPPING TAB LOGIC
+    function renderShoppingTab() {
+      const neededItems = items.filter(i => isItemOutOfStock(i) || isItemLowStock(i));
+      
+      if (neededItems.length > 0) {
+        dom.shoppingBadge.style.display = 'inline-block';
+        dom.shoppingBadge.innerText = neededItems.length;
       } else {
-        dom.syncStatus?.classList.add('offline');
-        if (dom.syncText) dom.syncText.innerText = "Offline";
+        dom.shoppingBadge.style.display = 'none';
       }
+
+      if (neededItems.length === 0) {
+        dom.shoppingListContainer.innerHTML = `<div style="text-align:center; padding: 40px 0; color:var(--synced-color); font-size:15px; font-weight:700;">🎉 All garage items are fully stocked!</div>`;
+        return;
+      }
+
+      dom.shoppingListContainer.innerHTML = neededItems.map(i => {
+        const isBought = shoppingCart.has(i.id);
+        return `
+          <div class="shopping-item-row ${isBought ? 'is-bought' : ''}" onclick="toggleShoppingItem('${i.id}')">
+            <div style="display:flex; align-items:center; gap:12px;">
+              <div class="shopping-chk">${isBought ? '✓' : ''}</div>
+              <div>
+                <div class="shopping-title" style="font-weight:700; font-size:15px;">${i.name}</div>
+                <div style="font-size:11px; color:var(--text-muted);">${i.category} • Needed</div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
     }
 
-    window.addEventListener('online', () => updateSyncStatus(true), { passive: true });
-    window.addEventListener('offline', () => updateSyncStatus(false), { passive: true });
+    window.toggleShoppingItem = function(id) {
+      if (shoppingCart.has(id)) shoppingCart.delete(id);
+      else shoppingCart.add(id);
+      if (navigator.vibrate) navigator.vibrate(30);
+      renderShoppingTab();
+    };
 
-    window.updateStock = async function(id, delta, event) {
-      if (event) event.stopPropagation();
-      if (selectionMode) return;
-
-      const item = items.find((i) => i.id === id);
-      if (!item || (item.amount <= 0 && delta < 0)) return;
-
-      item.amount += delta;
-      render();
-
-      const itemRef = doc(db, "garage_items", id);
-      await updateDoc(itemRef, {
-        amount: increment(delta),
-        updatedAt: serverTimestamp()
-      }).catch((err) => {
-        console.error("Update failed:", err);
-        item.amount -= delta;
-        render();
+    window.completeShoppingSession = async function() {
+      if (shoppingCart.size === 0) return alert("Select at least one item marked as in-cart to restock.");
+      
+      const batch = writeBatch(db);
+      shoppingCart.forEach(id => {
+        batch.update(doc(db, "garage_items", id), {
+          amount: increment(1),
+          updatedAt: serverTimestamp()
+        });
       });
+
+      await batch.commit();
+      shoppingCart.clear();
+      renderShoppingTab();
+      alert("Selected items restocked successfully!");
     };
 
-    window.adjustModalQty = function(delta) {
-      modalInitialQty = Math.max(0, modalInitialQty + delta);
-      dom.modalQtyVal.innerText = modalInitialQty;
+    window.exportToBringApp = function() {
+      const outItems = items.filter(isItemOutOfStock).map(i => i.name).join(',');
+      const workerUrl = `https://billowing-forest-5301.swanson-ronan.workers.dev/?items=${encodeURIComponent(outItems)}`;
+      window.location.href = `bring://import?url=${encodeURIComponent(workerUrl)}`;
     };
 
-    window.adjustNewItemMinStock = function(delta) {
-      newItemMinStock = Math.max(0, newItemMinStock + delta);
-      const valEl = document.getElementById('newModalMinStockVal');
-      const descEl = document.getElementById('newModalMinStockDesc');
-      if (valEl) valEl.innerText = getMinStockLabel(newItemMinStock);
-      if (descEl) descEl.innerText = getMinStockDesc(newItemMinStock);
+    // ITEM SETTINGS SHEET
+    window.openItemSettings = function(id) {
+      const item = items.find(i => i.id === id);
+      if (!item) return;
+      editingItemId = id;
+      editingItemMinStock = item.minStock || 1;
+      dom.editCatItemName.innerText = `Settings for "${item.name}"`;
+      document.getElementById('editModalMinStockVal').innerText = `≤ ${editingItemMinStock} items`;
+
+      dom.editCatPickerGrid.innerHTML = categories.map(c => `
+        <div class="modal-cat-pill ${item.category === c ? 'active' : ''}" onclick="applyItemCategory('${c}')">${c}</div>
+      `).join('');
+
+      dom.editCatModalOverlay.classList.add('open');
+    };
+
+    window.closeItemCategoryPicker = function() {
+      dom.editCatModalOverlay.classList.remove('open');
+    };
+
+    window.applyItemCategory = async function(cat) {
+      if (!editingItemId) return;
+      await updateDoc(doc(db, "garage_items", editingItemId), { category: cat });
+      closeItemCategoryPicker();
     };
 
     window.adjustEditingItemMinStock = async function(delta) {
       if (!editingItemId) return;
       editingItemMinStock = Math.max(0, editingItemMinStock + delta);
-      const valEl = document.getElementById('editModalMinStockVal');
-      const descEl = document.getElementById('editModalMinStockDesc');
-      if (valEl) valEl.innerText = getMinStockLabel(editingItemMinStock);
-      if (descEl) descEl.innerText = getMinStockDesc(editingItemMinStock);
-
-      const item = items.find(i => i.id === editingItemId);
-      if (item) {
-        item.minStock = editingItemMinStock;
-        render();
-      }
-
-      await updateDoc(doc(db, "garage_items", editingItemId), {
-        minStock: editingItemMinStock,
-        updatedAt: serverTimestamp()
-      }).catch(console.error);
+      document.getElementById('editModalMinStockVal').innerText = `≤ ${editingItemMinStock} items`;
+      await updateDoc(doc(db, "garage_items", editingItemId), { minStock: editingItemMinStock });
     };
 
-    window.handleNewCategoryKeydown = function(event) {
-      if (event.key === 'Enter') {
-        event.preventDefault();
-        const val = dom.inlineNewCategory.value.trim();
-        if (!val) return;
-
-        const resolvedCategory = sanitizeCategoryName(val);
-        if (!categories.includes(resolvedCategory)) {
-          categories.push(resolvedCategory);
-          setDoc(metaDoc, { list: categories }).catch(console.error);
-        }
-
-        selectedModalCategory = resolvedCategory;
-        dom.inlineNewCategory.value = '';
-        dom.inlineNewCategory.style.display = 'none';
-        renderModalCategoryPills();
-      }
-    };
-
-    window.addNewItem = async function() {
-      const rawName = dom.newItemName.value.trim();
-      if (!rawName) return alert('Please enter an item name');
-
-      const name = sanitizeItemName(rawName);
-      const barcode = dom.newItemBarcode.value.trim();
-      let category = selectedModalCategory;
-      
-      if (category === '__new__') {
-        const val = dom.inlineNewCategory.value.trim();
-        if (!val) return alert('Please enter a category name');
-        category = sanitizeCategoryName(val);
-        if (!categories.includes(category)) {
-          categories.push(category);
-          setDoc(metaDoc, { list: categories }).catch(console.error);
-        }
-      } else {
-        category = sanitizeCategoryName(category);
-      }
-
-      if (!category) return alert('Please select a category');
-
-      const existing = items.find(i => i.name.trim().toLowerCase() === rawName.toLowerCase());
-      if (existing) {
-        await updateDoc(doc(db, "garage_items", existing.id), {
-          amount: increment(modalInitialQty),
-          barcode: barcode || existing.barcode || "",
-          minStock: newItemMinStock,
-          updatedAt: serverTimestamp()
-        }).catch(console.error);
-      } else {
-        await addDoc(itemsCol, {
-          name,
-          category,
-          barcode: barcode || "",
-          amount: modalInitialQty,
-          minStock: newItemMinStock,
-          updatedAt: serverTimestamp()
-        }).catch(console.error);
-      }
-
-      dom.newItemName.value = '';
-      dom.newItemBarcode.value = '';
-      dom.inlineNewCategory.value = '';
-      dom.inlineNewCategory.style.display = 'none';
-      toggleAddModal(false);
-    };
-
-    function renderModalCategoryPills() {
-      if (!selectedModalCategory && categories.length > 0) {
-        selectedModalCategory = categories[0];
-      }
-
-      let html = categories.map((c) => {
-        const esc = escapeAttr(c);
-        return `<div class="modal-cat-pill ${selectedModalCategory === c ? 'active' : ''}" onclick="selectModalCategory('${esc}')">${c}</div>`;
-      }).join('');
-
-      html += `<div class="modal-cat-pill new-pill ${selectedModalCategory === '__new__' ? 'active' : ''}" onclick="selectModalCategory('__new__')">+ New Category...</div>`;
-      dom.modalCatGrid.innerHTML = html;
-    }
-
-    window.selectModalCategory = function(cat) {
-      selectedModalCategory = cat;
-      dom.inlineNewCategory.style.display = cat === '__new__' ? 'block' : 'none';
-      if (cat === '__new__' && dom.inlineNewCategory) dom.inlineNewCategory.focus();
-      renderModalCategoryPills();
-    };
-
-    window.toggleAddModal = function(open, prefillName = "", prefillBarcode = "") {
-      if (open) {
-        modalInitialQty = 1;
-        newItemMinStock = 1;
-        dom.modalQtyVal.innerText = modalInitialQty;
-
-        const valEl = document.getElementById('newModalMinStockVal');
-        const descEl = document.getElementById('newModalMinStockDesc');
-        if (valEl) valEl.innerText = getMinStockLabel(newItemMinStock);
-        if (descEl) descEl.innerText = getMinStockDesc(newItemMinStock);
-
-        if (categories.length > 0) selectedModalCategory = categories[0];
-        renderModalCategoryPills();
-        if (prefillName) dom.newItemName.value = prefillName;
-        dom.newItemBarcode.value = prefillBarcode || "";
-        dom.addModalOverlay.classList.add('open');
-        setTimeout(() => dom.newItemName.focus(), 120);
-      } else {
-        dom.addModalOverlay.classList.remove('open');
-      }
-    };
-
-    window.openItemSettings = function(id, event) {
-      if (event) event.stopPropagation();
-
-      const item = items.find(i => i.id === id);
-      if (!item) return;
-
-      editingItemId = id;
-      editingItemMinStock = item.minStock !== undefined ? item.minStock : 1;
-
-      if (dom.editCatItemName) {
-        dom.editCatItemName.innerText = `Settings for "${item.name}"`;
-      }
-
-      renderEditCategoryPills(item.category);
-
-      const valEl = document.getElementById('editModalMinStockVal');
-      const descEl = document.getElementById('editModalMinStockDesc');
-      if (valEl) valEl.innerText = getMinStockLabel(editingItemMinStock);
-      if (descEl) descEl.innerText = getMinStockDesc(editingItemMinStock);
-
-      if (dom.inlineEditNewCategory) {
-        dom.inlineEditNewCategory.value = '';
-        dom.inlineEditNewCategory.style.display = 'none';
-      }
-
-      dom.editCatModalOverlay?.classList.add('open');
-    };
-
-    window.closeItemCategoryPicker = function() {
-      editingItemId = null;
-      dom.editCatModalOverlay?.classList.remove('open');
-    };
-
-    function renderEditCategoryPills(currentCat) {
-      if (!dom.editCatPickerGrid) return;
-
-      let html = categories.map((c) => {
-        const esc = escapeAttr(c);
-        const isActive = (c.toLowerCase() === (currentCat || '').toLowerCase());
-        return `<div class="modal-cat-pill ${isActive ? 'active' : ''}" onclick="applyItemCategory('${esc}')">${c}</div>`;
-      }).join('');
-
-      html += `<div class="modal-cat-pill new-pill" onclick="showInlineEditNewCategory()">+ New Category...</div>`;
-      dom.editCatPickerGrid.innerHTML = html;
-    }
-
-    window.showInlineEditNewCategory = function() {
-      if (dom.inlineEditNewCategory) {
-        dom.inlineEditNewCategory.style.display = 'block';
-        dom.inlineEditNewCategory.focus();
-      }
-    };
-
-    window.handleEditNewCategoryKeydown = async function(event) {
-      if (event.key === 'Enter') {
-        event.preventDefault();
-        const val = dom.inlineEditNewCategory.value.trim();
-        if (!val) return;
-
-        const resolvedCategory = sanitizeCategoryName(val);
-        if (!categories.includes(resolvedCategory)) {
-          categories.push(resolvedCategory);
-          await setDoc(metaDoc, { list: categories }).catch(console.error);
-        }
-        await applyItemCategory(resolvedCategory);
-      }
-    };
-
-    window.applyItemCategory = async function(newCat) {
-      if (!editingItemId) return;
-      const targetId = editingItemId;
-
-      const item = items.find(i => i.id === targetId);
-      if (item) {
-        item.category = newCat;
-        render();
-      }
-
-      renderEditCategoryPills(newCat);
-
-      await updateDoc(doc(db, "garage_items", targetId), {
-        category: newCat,
-        updatedAt: serverTimestamp()
-      }).catch((err) => {
-        console.error("Failed to update item category:", err);
-      });
-    };
-
-    window.toggleScannerModal = async function(open) {
-      if (open) {
-        unlockAudio();
-        dom.scannerModalOverlay.classList.add('open');
-        dom.scannerResultBox.style.display = 'none';
-        dom.scannerStatusText.innerText = "Starting camera...";
-        startCameraScanner();
-      } else {
-        activeScannedItemId = null;
-        stopCameraScanner();
-        dom.scannerModalOverlay.classList.remove('open');
-      }
-    };
-
-    async function startCameraScanner() {
-      if (isScannerRunning) return;
-      try {
-        if (!html5QrScanner) {
-          html5QrScanner = new Html5Qrcode("scannerRegion");
-        }
-        const config = { 
-          fps: 15, 
-          qrbox: { width: 260, height: 160 },
-          aspectRatio: 1.0
-        };
-
-        await html5QrScanner.start(
-          { facingMode: "environment" },
-          config,
-          onBarcodeScanned,
-          (err) => { /* frame misses */ }
-        );
-        isScannerRunning = true;
-        dom.scannerStatusText.innerText = "Point camera at a product barcode";
-      } catch (err) {
-        console.error("Camera start error:", err);
-        dom.scannerStatusText.innerText = "Camera access denied or unavailable.";
-      }
-    }
-
-    async function stopCameraScanner() {
-      if (html5QrScanner && isScannerRunning) {
-        try {
-          await html5QrScanner.stop();
-          isScannerRunning = false;
-        } catch (e) {
-          console.warn("Scanner stop issue:", e);
-        }
-      }
-    }
-
-    async function onBarcodeScanned(decodedText) {
-      const now = Date.now();
-      if (decodedText === lastScannedBarcode && now - lastScanTime < 2500) {
-        return; 
-      }
-      lastScannedBarcode = decodedText;
-      lastScanTime = now;
-      playScanBeep();
-
-      dom.scannerStatusText.innerText = "Barcode recognized";
-
-      const match = items.find(i => (i.barcode && i.barcode === decodedText) || i.id === decodedText);
-
-      if (match) {
-        renderMatchedScannerItem(match);
-      } else {
-        dom.scannerStatusText.innerText = "Looking up product details...";
-        
-        const endpoints = [
-          `https://world.openfoodfacts.org/api/v0/product/${decodedText}.json`,
-          `https://world.openproductsfacts.org/api/v0/product/${decodedText}.json`,
-          `https://world.openbeautyfacts.org/api/v0/product/${decodedText}.json`
-        ];
-
-        let discoveredTitle = "";
-
-        for (const url of endpoints) {
-          try {
-            const res = await fetch(url);
-            const data = await res.json();
-            if (data && data.status === 1 && data.product) {
-              const p = data.product;
-              discoveredTitle = p.product_name || p.generic_name || p.brands || "";
-              if (discoveredTitle) break;
-            }
-          } catch (e) {}
-        }
-
-        renderUnknownScannerProduct(decodedText, discoveredTitle);
-      }
-    }
-
-    function renderMatchedScannerItem(item) {
-      if (!item) return;
-      activeScannedItemId = item.id;
-      const box = dom.scannerResultBox;
-      box.style.display = 'block';
-      const isOut = item.amount === 0;
-
-      box.innerHTML = `
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-          <div>
-            <span class="category-chip">${item.category}</span>
-            <div style="font-size: 16px; font-weight: 800; margin-top: 4px;">${item.name}</div>
-          </div>
-          <div style="text-align: right;">
-            <div id="scannerStockQty" style="font-size: 22px; font-weight: 800; color: ${isOut ? 'var(--out-border)' : 'inherit'};">
-              ${item.amount} in stock
-            </div>
-          </div>
-        </div>
-        <div style="display: flex; gap: 8px; margin-top: 10px;">
-          <button class="action-btn scanner-stepper-btn" style="flex: 1; padding: 12px; font-weight: 800; background: var(--pill-bg);" onclick="handleScannerStock('${item.id}', -1, event)">— Decrease</button>
-          <button class="action-btn scanner-stepper-btn" style="flex: 1; padding: 12px; font-weight: 800; background: var(--fab-bg); color: var(--fab-text);" onclick="handleScannerStock('${item.id}', 1, event)">+ Add 1</button>
-        </div>
-      `;
-    }
-
-    window.handleScannerStock = async function(id, delta, event) {
-      if (event) event.stopPropagation();
-      await window.updateStock(id, delta, event);
-      
-      const updated = items.find(i => i.id === id);
-      const label = document.getElementById('scannerStockQty');
-      if (updated && label) {
-        label.innerText = `${updated.amount} in stock`;
-        label.style.color = updated.amount === 0 ? 'var(--out-border)' : 'inherit';
-      }
-    };
-
-    function renderUnknownScannerProduct(barcode, suggestedTitle) {
-      activeScannedItemId = null;
-      const box = dom.scannerResultBox;
-      box.style.display = 'block';
-      const titleEsc = escapeAttr(suggestedTitle);
-      box.innerHTML = `
-        <div style="text-align: center; padding: 6px 0;">
-          <div style="font-size: 12px; font-weight: 800; color: var(--low-border); text-transform: uppercase;">Unregistered Product</div>
-          <div style="font-size: 15px; font-weight: 700; margin: 4px 0;">${suggestedTitle || 'New Scanned Item'}</div>
-          <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">This item is not yet in your Garage List.</p>
-          <button class="action-btn" style="width: 100%; padding: 12px; background: var(--fab-bg); color: var(--fab-text); font-weight: 800; border-radius: 12px;" onclick="addScannedNewItem('${titleEsc}', '${barcode}')">
-            + Add to Garage Inventory
-          </button>
-        </div>
-      `;
-    }
-
-    window.addScannedNewItem = function(name, barcode) {
-      toggleScannerModal(false);
-      toggleAddModal(true, name, barcode);
-    };
-
-    window.toggleCategoryModal = function(open) {
-      if (open) {
-        renderCategoryManageList();
-        dom.categoryModalOverlay.classList.add('open');
-      } else {
-        dom.categoryModalOverlay.classList.remove('open');
-      }
-    };
-
-    function renderCategoryManageList() {
-      dom.categoryManageList.innerHTML = categories.map((cat) => {
-        const count = items.filter((i) => i.category === cat).length;
-        const esc = escapeAttr(cat);
-        return `
-          <div class="cat-manage-row">
-            <div>
-              <span style="font-weight:700; font-size:14px;">${cat}</span>
-              <span style="font-size:11px; color:var(--text-muted); margin-left:6px;">(${count} items)</span>
-            </div>
-            <button class="cat-del-btn" onclick="openCategoryDeleteDialog('${esc}')" title="Delete Category">✕</button>
-          </div>
-        `;
-      }).join('');
-    }
-
-    window.addNewCategoryFromModal = function() {
-      const val = dom.newCatInput.value.trim();
-      if (!val) return;
-      const resolved = sanitizeCategoryName(val);
-      if (!categories.includes(resolved)) {
-        categories.push(resolved);
-        setDoc(metaDoc, { list: categories }).catch(console.error);
-        dom.newCatInput.value = '';
-        renderCategoryManageList();
-        render();
-      }
-    };
-
-    window.openCategoryDeleteDialog = function(cat) {
-      pendingDeleteCategory = cat;
-      const count = items.filter((i) => i.category === cat).length;
-      dom.catDeleteDialogDesc.innerHTML = count > 0 
-        ? `Deleting <b>"${cat}"</b> will automatically move <b>${count} items</b> to <b>"General"</b>.`
-        : `Are you sure you want to delete the <b>"${cat}"</b> category?`;
-      dom.catDeleteDialogOverlay.classList.add('open');
-    };
-
-    window.closeCategoryDeleteDialog = function() {
-      pendingDeleteCategory = null;
-      dom.catDeleteDialogOverlay.classList.remove('open');
-    };
-
-    window.executeCategoryDelete = async function() {
-      if (!pendingDeleteCategory) return;
-      const cat = pendingDeleteCategory;
-      const count = items.filter((i) => i.category === cat).length;
-
-      if (count > 0) {
-        const batch = writeBatch(db);
-        items.filter((i) => i.category === cat).forEach((i) => {
-          batch.update(doc(db, "garage_items", i.id), { category: "General" });
-        });
-        await batch.commit().catch(console.error);
-      }
-
-      categories = categories.filter((c) => c !== cat);
-      if (currentFilter === cat) currentFilter = "All";
-      await setDoc(metaDoc, { list: categories }).catch(console.error);
-
-      closeCategoryDeleteDialog();
-      renderCategoryManageList();
-      render();
-    };
-
-    window.toggleSelectionMode = function() {
-      selectionMode = !selectionMode;
-      selectedIds.clear();
-      dom.body.classList.toggle('selection-active', selectionMode);
-      dom.binBtn.classList.toggle('active-bin', selectionMode);
-      render();
-    };
-
-    window.exitSelectionMode = function() {
-      selectionMode = false;
-      selectedIds.clear();
-      dom.body.classList.remove('selection-active');
-      dom.binBtn.classList.remove('active-bin');
-      render();
-    };
-
-    window.handleCardClick = function(id) {
-      if (selectionMode) {
-        if (selectedIds.has(id)) selectedIds.delete(id);
-        else selectedIds.add(id);
-        render();
-      } else {
-        openItemSettings(id);
-      }
-    };
-
-    window.toggleSelectAll = function() {
-      if (selectedIds.size === items.length) selectedIds.clear();
-      else items.forEach((i) => selectedIds.add(i.id));
-      render();
-    };
-
-    window.openBulkDeleteSheet = function() {
-      if (selectedIds.size === 0) return alert("Tap to select at least one item to delete.");
-      const count = selectedIds.size;
-      dom.bulkDeleteTitle.innerText = `Delete ${count} Selected ${count === 1 ? 'Item' : 'Items'}?`;
-      dom.confirmBulkDeleteBtn.innerText = `Confirm Delete (${count})`;
-
-      dom.bulkListPreview.innerHTML = Array.from(selectedIds).map((id) => {
-        const itm = items.find((i) => i.id === id);
-        return `<div class="bulk-item-line">• ${itm ? itm.name : ''} <span style="color:var(--text-muted); font-size:11px;">(${itm ? itm.category : ''})</span></div>`;
-      }).join('');
-
-      dom.bulkDeleteOverlay.classList.add('open');
-    };
-
-    window.closeBulkDeleteSheet = function() {
-      dom.bulkDeleteOverlay.classList.remove('open');
-    };
-
-    window.confirmBulkDelete = async function() {
-      const batch = writeBatch(db);
-      selectedIds.forEach((id) => {
-        batch.delete(doc(db, "garage_items", id));
-      });
-      await batch.commit().catch(console.error);
-
-      closeBulkDeleteSheet();
-      exitSelectionMode();
-    };
-
-    window.enableLockscreenAlerts = function() {
-      if (!('Notification' in window)) return alert('Notifications not supported on this browser.');
-      Notification.requestPermission().then((perm) => {
-        if (perm === 'granted') {
-          updateBellVisibility();
-          showLocalNotification("Garage Alerts Enabled");
-        }
-      });
-    };
-
-    function showLocalNotification(itemName) {
-      if ('Notification' in window && Notification.permission === 'granted') {
-        const appTitle = isDev ? "Garage DEV" : "Garage List";
-        const touchIcon = isDev ? "blueprint-icon.png" : "apple-touch-icon.png";
-        new Notification(itemName === "Garage Alerts Enabled" ? `${appTitle} Active` : "Out of Stock ⚠️", {
-          body: itemName === "Garage Alerts Enabled" ? "You will receive alerts here when items run out." : `${itemName} has run out in the garage!`,
-          icon: touchIcon,
-          badge: touchIcon
-        });
-      }
-    }
-
-    window.setFilter = function(cat) {
-      currentFilter = cat;
-      quickFilter = null; 
-      render();
-    };
-
-    window.toggleQuickFilter = function(type) {
-      quickFilter = quickFilter === type ? null : type;
-      render();
-    };
-
+    // RENDER MAIN INVENTORY GRID
     function render() {
-      if (activeScannedItemId) {
-        const liveItem = items.find(i => i.id === activeScannedItemId);
-        const modalQty = document.getElementById('scannerStockQty');
-        if (liveItem && modalQty) {
-          modalQty.innerText = `${liveItem.amount} in stock`;
-          modalQty.style.color = liveItem.amount === 0 ? 'var(--out-border)' : 'inherit';
-        }
-      }
-
       const outCount = items.filter(isItemOutOfStock).length;
       const lowCount = items.filter(isItemLowStock).length;
-      if (dom.outCount) dom.outCount.innerText = `${outCount} items`;
-      if (dom.lowCount) dom.lowCount.innerText = `${lowCount} items`;
-      if (dom.summaryText) dom.summaryText.innerText = `${items.length} items total • ${outCount} empty • ${lowCount} low`;
+      dom.outCount.innerText = `${outCount} items`;
+      dom.lowCount.innerText = `${lowCount} items`;
 
-      dom.statCardOut?.classList.toggle('active-filter-card', quickFilter === 'out');
-      dom.statCardLow?.classList.toggle('active-filter-card', quickFilter === 'low');
-
-      if (selectionMode) {
-        dom.selBar?.classList.add('active');
-        if (dom.selCount) dom.selCount.innerText = `✓ ${selectedIds.size} Selected`;
-        if (dom.bulkDeleteBar) dom.bulkDeleteBar.innerText = `🗑️ Delete ${selectedIds.size} Selected Items`;
-      } else {
-        dom.selBar?.classList.remove('active');
-      }
-
-      const allFilterCategories = ["All", ...categories];
-      if (dom.filterBar) {
-        dom.filterBar.innerHTML = allFilterCategories.map((cat) => {
-          const count = cat === "All" ? items.length : items.filter((i) => i.category === cat).length;
-          const esc = escapeAttr(cat);
-          return `<div class="chip ${currentFilter === cat && !quickFilter ? 'active' : ''}" onclick="setFilter('${esc}')">${cat} (${count})</div>`;
-        }).join('');
-      }
-
-      let filtered = items.filter((i) => currentFilter === "All" || i.category === currentFilter);
-      if (quickFilter === 'out') {
-        filtered = filtered.filter(isItemOutOfStock);
-      } else if (quickFilter === 'low') {
-        filtered = filtered.filter(isItemLowStock);
-      }
-
-      const fragment = document.createDocumentFragment();
-      filtered.forEach((item) => {
-        const isOut = isItemOutOfStock(item);
-        const isLow = isItemLowStock(item);
-        const isSelected = selectedIds.has(item.id);
-
-        const card = document.createElement('div');
-        card.className = `bento-card ${isSelected ? 'is-selected' : (isOut ? 'is-out' : (isLow ? 'is-low' : ''))}`;
-        card.onclick = () => window.handleCardClick(item.id);
-
-        const badgeHtml = isOut ? '<span class="status-badge badge-out">OUT OF STOCK</span>' :
-                          (isLow ? '<span class="status-badge badge-low">LOW STOCK</span>' : '');
-
-        const catLabel = item.category || 'General';
-
-        card.innerHTML = `
-          <div>
-            <div class="card-top">
-              <span class="category-chip">${catLabel}</span>
-              ${badgeHtml}
-              <div class="chk-circle">${isSelected ? '✓' : ''}</div>
-            </div>
-            <div class="card-title">${item.name}</div>
-          </div>
-          <div class="stepper-pill" onclick="event.stopPropagation()">
-            <button class="stepper-btn" onclick="updateStock('${item.id}', -1, event)">—</button>
-            <span class="stepper-count ${isOut ? 'count-out' : (isLow ? 'count-low' : '')}">${item.amount}</span>
-            <button class="stepper-btn" onclick="updateStock('${item.id}', 1, event)">+</button>
-          </div>
-        `;
-        fragment.appendChild(card);
+      // Filter logic (Category + Quick Filter + Realtime Search)
+      let filtered = items.filter(i => {
+        const matchesCategory = (currentFilter === "All" || i.category === currentFilter);
+        const matchesSearch = !searchQuery || i.name.toLowerCase().includes(searchQuery) || (i.category && i.category.toLowerCase().includes(searchQuery));
+        return matchesCategory && matchesSearch;
       });
 
-      if (dom.grid) {
-        dom.grid.innerHTML = '';
-        dom.grid.appendChild(fragment);
-      }
+      if (quickFilter === 'out') filtered = filtered.filter(isItemOutOfStock);
+      if (quickFilter === 'low') filtered = filtered.filter(isItemLowStock);
+
+      dom.filterBar.innerHTML = ["All", ...categories].map(c => `
+        <div class="chip ${currentFilter === c ? 'active' : ''}" onclick="setFilter('${c}')">${c}</div>
+      `).join('');
+
+      dom.grid.innerHTML = filtered.map(item => {
+        const isOut = isItemOutOfStock(item);
+        const isLow = isItemLowStock(item);
+        return `
+          <div class="bento-card ${isOut ? 'is-out' : (isLow ? 'is-low' : '')}" onclick="openItemSettings('${item.id}')">
+            <div>
+              <div class="card-top">
+                <span class="category-chip">${item.category || 'General'}</span>
+                ${isOut ? '<span class="status-badge badge-out">OUT</span>' : (isLow ? '<span class="status-badge badge-low">LOW</span>' : '')}
+              </div>
+              <div class="card-title">${item.name}</div>
+            </div>
+            <div class="stepper-pill" onclick="event.stopPropagation()">
+              <button class="stepper-btn" onclick="updateStock('${item.id}', -1, event)">—</button>
+              <span class="stepper-count ${isOut ? 'count-out' : (isLow ? 'count-low' : '')}">${item.amount}</span>
+              <button class="stepper-btn" onclick="updateStock('${item.id}', 1, event)">+</button>
+            </div>
+          </div>
+        `;
+      }).join('');
     }
 
-    window.addEventListener('load', () => {
-      if (localStorage.getItem('app_version') !== APP_VERSION) {
-        localStorage.setItem('app_version', APP_VERSION);
-        if ('caches' in window) caches.keys().then((n) => n.forEach((k) => caches.delete(k)));
-        window.location.reload(true);
-        return;
+    window.setFilter = function(cat) { currentFilter = cat; quickFilter = null; render(); };
+    window.toggleQuickFilter = function(type) { quickFilter = quickFilter === type ? null : type; render(); };
+
+    function renderCategorySettings() {
+      dom.categoryManageList.innerHTML = categories.map(c => `
+        <div class="cat-manage-row">
+          <span style="font-weight:700;">${c}</span>
+          <button class="cat-del-btn" onclick="deleteCategory('${c}')">✕</button>
+        </div>
+      `).join('');
+    }
+
+    window.addNewCategoryFromSettings = async function() {
+      const val = document.getElementById('newCatInput').value.trim();
+      if (val && !categories.includes(val)) {
+        categories.push(val);
+        await setDoc(metaDoc, { list: categories });
+        document.getElementById('newCatInput').value = '';
       }
+    };
+
+    window.deleteCategory = async function(cat) {
+      categories = categories.filter(c => c !== cat);
+      await setDoc(metaDoc, { list: categories });
+    };
+
+    window.addEventListener('load', () => {
       setupFabPressAndHold();
-      updateBellVisibility();
       initRealtimeDatabase();
+      dom.syncStatus.classList.remove('offline');
+      dom.syncText.innerText = "Live";
     });
   </script>
 </body>

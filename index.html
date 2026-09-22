@@ -14,7 +14,7 @@
   <!-- Universal Environment Auto-Detector with Cache Versioning -->
   <script>
     (function() {
-      const APP_VER = "5.3.0";
+      const APP_VER = "5.3.1";
       const isDev = window.location.pathname.toLowerCase().includes('dev');
       const appName = isDev ? "Garage DEV" : "Garage List";
       const appIcon = isDev ? "blueprint-icon.png" : "apple-touch-icon.png";
@@ -23,7 +23,6 @@
 
       document.title = appName;
 
-      // Force service worker unregister/update if cached
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistrations().then(function(registrations) {
           for (let registration of registrations) {
@@ -270,7 +269,6 @@
       z-index: 2;
     }
 
-    /* Animated Dynamic Sliding Capsule Indicator */
     .ticktick-indicator {
       position: absolute;
       top: 4px;
@@ -336,7 +334,7 @@
       background: #dc2626 !important;
     }
 
-    /* SPEED DIAL OVERLAY & PRODUCTION ICONS */
+    /* SPEED DIAL OVERLAY */
     .speeddial-overlay {
       position: fixed;
       inset: 0;
@@ -569,7 +567,6 @@
   <!-- SPEED DIAL OVERLAY -->
   <div class="speeddial-overlay" id="speedDialOverlay" onclick="closeSpeedDialMenu()"></div>
 
-  <!-- RESTORED PRODUCTION ICONS IN SPEED DIAL -->
   <div class="speeddial-menu" id="speedDialMenu">
     <div class="speeddial-item" onclick="selectSpeedDialAction('scan')">
       <div class="speeddial-icon-badge">
@@ -664,7 +661,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, doc, onSnapshot, setDoc, addDoc, updateDoc, writeBatch, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    const APP_VERSION = "5.3.0";
+    const APP_VERSION = "5.3.1";
     const firebaseConfig = {
       apiKey: "AIzaSyAMznXG0OXHqMdfrmOGHK-g08TugsYfWw8",
       authDomain: "garage-stock-747e8.firebaseapp.com",
@@ -692,6 +689,9 @@
     let selectedModalCategory = "";
     let modalInitialQty = 1;
 
+    let html5QrCode = null;
+    let isScannerRunning = false;
+    let activeScannedItemId = null;
     let isSpeedDialOpen = false;
 
     const dom = {
@@ -722,6 +722,24 @@
       editCatItemName: document.getElementById('editCatItemName'),
       tabIndicator: document.getElementById('tabIndicator')
     };
+
+    // AUDIO BEEP ON SCAN
+    function playBeepSound() {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(880, ctx.currentTime);
+        gain.gain.setValueAtTime(0.1, ctx.currentTime);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.12);
+      } catch (e) {
+        console.warn("Audio Context audio beep blocked by browser policy:", e);
+      }
+    }
 
     // ANIMATED SLIDING TAB SWITCHER
     window.switchTab = function(tabId, index) {
@@ -798,11 +816,93 @@
       }).catch(console.error);
     };
 
-    // FAB / ADD MODAL FIXES
+    // BARCODE SCANNER CONTROLLER
+    window.toggleScannerModal = async function(show) {
+      if (show) {
+        dom.scannerResultBox.style.display = 'none';
+        dom.scannerResultBox.innerHTML = '';
+        dom.scannerStatusText.innerText = "Initializing camera...";
+        dom.scannerModalOverlay.classList.add('open');
+
+        if (!html5QrCode) {
+          html5QrCode = new Html5Qrcode("scannerRegion");
+        }
+
+        try {
+          await html5QrCode.start(
+            { facingMode: "environment" },
+            { fps: 10, qrbox: { width: 220, height: 220 } },
+            onBarcodeScanned,
+            () => {}
+          );
+          isScannerRunning = true;
+          dom.scannerStatusText.innerText = "Point camera at barcode";
+        } catch (err) {
+          console.error("Camera access failed:", err);
+          dom.scannerStatusText.innerText = "Unable to access camera.";
+        }
+      } else {
+        if (html5QrCode && isScannerRunning) {
+          try {
+            await html5QrCode.stop();
+          } catch (e) { console.warn("Scanner stop error:", e); }
+          isScannerRunning = false;
+        }
+        dom.scannerModalOverlay.classList.remove('open');
+      }
+    };
+
+    async function onBarcodeScanned(decodedText) {
+      playBeepSound();
+      if (navigator.vibrate) navigator.vibrate(60);
+
+      const existingItem = items.find(i => i.barcode === decodedText);
+
+      if (existingItem) {
+        activeScannedItemId = existingItem.id;
+        dom.scannerStatusText.innerText = `Matched item in inventory:`;
+        dom.scannerResultBox.style.display = 'block';
+        dom.scannerResultBox.innerHTML = `
+          <div style="font-weight:800; font-size:16px;">${existingItem.name}</div>
+          <div style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">Current Stock: ${existingItem.amount}</div>
+          <div style="display:flex; gap:8px;">
+            <button class="modal-save-btn" style="flex:1;" onclick="updateStock('${existingItem.id}', 1); toggleScannerModal(false);">+ Add 1 Stock</button>
+            <button class="modal-cancel-btn" style="flex:1; border:1px solid var(--border); border-radius:12px;" onclick="updateStock('${existingItem.id}', -1); toggleScannerModal(false);">- Subtract 1</button>
+          </div>
+        `;
+      } else {
+        dom.scannerStatusText.innerText = "New barcode found. Fetching product info...";
+        dom.scannerResultBox.style.display = 'block';
+        dom.scannerResultBox.innerHTML = `<div style="font-size:13px; color:var(--text-muted);">Searching product databases...</div>`;
+
+        let fetchedName = "";
+        try {
+          const res = await fetch(`https://world.openfoodfacts.org/api/v0/product/${decodedText}.json`);
+          const data = await res.json();
+          if (data.status === 1 && data.product && data.product.product_name) {
+            fetchedName = data.product.product_name;
+          } else {
+            const resProd = await fetch(`https://world.openproductsfacts.org/api/v0/product/${decodedText}.json`);
+            const dataProd = await resProd.json();
+            if (dataProd.status === 1 && dataProd.product && dataProd.product.product_name) {
+              fetchedName = dataProd.product.product_name;
+            }
+          }
+        } catch (e) {
+          console.warn("Product lookup failed:", e);
+        }
+
+        toggleScannerModal(false);
+        toggleAddModal(true);
+        dom.newItemName.value = fetchedName;
+        dom.newItemBarcode.value = decodedText;
+      }
+    }
+
+    // ADD MODAL & SPEED DIAL
     window.toggleAddModal = function(show) {
       if (show) {
-        dom.newItemName.value = '';
-        dom.newItemBarcode.value = '';
+        if (!dom.newItemBarcode.value) dom.newItemName.value = '';
         modalInitialQty = 1;
         dom.modalQtyVal.innerText = '1';
         selectedModalCategory = categories[0] || 'General';
@@ -845,7 +945,6 @@
       toggleAddModal(false);
     };
 
-    // SPEED DIAL / FAB LOGIC
     window.openSpeedDialMenu = function() {
       isSpeedDialOpen = true;
       dom.fabAdd.classList.add('is-open');

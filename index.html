@@ -14,7 +14,7 @@
   <!-- Universal Environment Auto-Detector with Cache Versioning -->
   <script>
     (function() {
-      const APP_VER = "5.7.0";
+      const APP_VER = "5.9.0";
       const isDev = window.location.pathname.toLowerCase().includes('dev');
       const appName = isDev ? "Garage DEV" : "Garage List";
       const appIcon = isDev ? "blueprint-icon.png" : "apple-touch-icon.png";
@@ -133,7 +133,6 @@
     header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
     .header-top { display: flex; align-items: center; justify-content: space-between; width: 100%; }
     
-    /* Springy Press Micro-Interactions */
     .circle-icon-btn, .bento-card, .btn-action-primary, .shopping-item-row, .chip, .speeddial-item {
       transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.15s ease, border-color 0.15s ease;
     }
@@ -181,24 +180,41 @@
     .sync-pill.offline { color: var(--out-border) !important; border-color: var(--out-border) !important; }
     .sync-pill.offline .sync-dot { background: var(--out-border) !important; }
 
-    /* Pull to Refresh Rubber-Band Indicator */
-    .ptr-element {
+    /* GMAIL iOS FLOATING PULL-TO-REFRESH CAPSULE */
+    .gmail-ptr-container {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+      position: relative;
+      z-index: 10;
+      height: 0;
+      overflow: visible;
+    }
+    .gmail-ptr-pill {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.12);
       display: flex;
       align-items: center;
       justify-content: center;
-      height: 0px;
-      overflow: hidden;
-      transition: height 0.2s ease, opacity 0.2s ease;
+      transform: translateY(-40px) scale(0.6);
       opacity: 0;
+      transition: opacity 0.15s ease;
     }
-    .ptr-element.ptr-visible { opacity: 1; }
-    .ptr-spinner {
-      width: 24px;
-      height: 24px;
-      border: 3px solid var(--border);
-      border-top-color: var(--fab-bg);
-      border-radius: 50%;
-      animation: ptr-spin 0.8s linear infinite;
+    .gmail-ptr-pill.visible {
+      opacity: 1;
+    }
+    .gmail-ptr-icon {
+      width: 20px;
+      height: 20px;
+      color: #2563eb;
+      transition: transform 0.05s linear;
+    }
+    .gmail-ptr-spinner {
+      animation: ptr-spin 0.75s linear infinite;
     }
     @keyframes ptr-spin { to { transform: rotate(360deg); } }
 
@@ -629,9 +645,13 @@
       </div>
     </div>
 
-    <!-- PULL TO REFRESH RUBBER-BAND INDICATOR -->
-    <div class="ptr-element" id="ptrIndicator">
-      <div class="ptr-spinner"></div>
+    <!-- GMAIL iOS FLOATING PULL-TO-REFRESH CAPSULE -->
+    <div class="gmail-ptr-container">
+      <div class="gmail-ptr-pill" id="gmailPtrPill">
+        <svg class="gmail-ptr-icon" id="gmailPtrIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round">
+          <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
+        </svg>
+      </div>
     </div>
 
     <!-- TAB 1: INVENTORY VIEW -->
@@ -860,7 +880,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, doc, onSnapshot, setDoc, addDoc, updateDoc, deleteDoc, writeBatch, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    const APP_VERSION = "5.7.0";
+    const APP_VERSION = "5.9.0";
     const firebaseConfig = {
       apiKey: "AIzaSyAMznXG0OXHqMdfrmOGHK-g08TugsYfWw8",
       authDomain: "garage-stock-747e8.firebaseapp.com",
@@ -898,6 +918,33 @@
     let isScannerRunning = false;
     let isSpeedDialOpen = false;
 
+    // OPTION 1: HYBRID WEB HAPTIC ENGINE (ANDROID API + iOS WEBKIT SWITCH TRICK)
+    let iosHapticLabel = null;
+
+    function initHapticEngine() {
+      const input = document.createElement('input');
+      input.type = 'checkbox';
+      input.setAttribute('switch', '');
+      input.style.display = 'none';
+
+      iosHapticLabel = document.createElement('label');
+      iosHapticLabel.style.display = 'none';
+      iosHapticLabel.appendChild(input);
+      document.body.appendChild(iosHapticLabel);
+    }
+
+    function triggerHaptic(ms = 25) {
+      // 1. Native Android & Chromium Web Vibration API
+      if ('vibrate' in navigator) {
+        try { navigator.vibrate(ms); } catch (e) {}
+      }
+
+      // 2. iOS WebKit System Taptic Engine Trigger
+      if (iosHapticLabel) {
+        try { iosHapticLabel.click(); } catch (e) {}
+      }
+    }
+
     const dom = {
       body: document.body,
       grid: document.getElementById('bentoGrid'),
@@ -930,14 +977,74 @@
       btnBinMode: document.getElementById('btnBinMode'),
       batchDeleteBar: document.getElementById('batchDeleteBar'),
       selectedCountVal: document.getElementById('selectedCountVal'),
-      ptrIndicator: document.getElementById('ptrIndicator')
+      gmailPtrPill: document.getElementById('gmailPtrPill'),
+      gmailPtrIcon: document.getElementById('gmailPtrIcon')
     };
 
-    function triggerHaptic(type = 25) {
-      if (navigator.vibrate) navigator.vibrate(type);
+    // GMAIL iOS STYLE PULL-TO-REFRESH
+    function setupGmailPullToRefresh() {
+      let startY = 0;
+      let isPulling = false;
+      let hasCrossedThreshold = false;
+      const threshold = 70;
+
+      window.addEventListener('touchstart', (e) => {
+        if (window.scrollY === 0 && activeTabIndex === 0) {
+          startY = e.touches[0].clientY;
+          isPulling = true;
+          hasCrossedThreshold = false;
+        }
+      }, { passive: true });
+
+      window.addEventListener('touchmove', (e) => {
+        if (!isPulling) return;
+        const currentY = e.touches[0].clientY;
+        const diff = currentY - startY;
+
+        if (diff > 0 && window.scrollY === 0) {
+          const pullDist = Math.min(85, diff * 0.45);
+          const rotation = Math.min(360, (pullDist / threshold) * 360);
+          const scale = Math.min(1, 0.5 + (pullDist / threshold) * 0.5);
+
+          dom.gmailPtrPill.style.transform = `translateY(${pullDist - 10}px) scale(${scale})`;
+          dom.gmailPtrIcon.style.transform = `rotate(${rotation}deg)`;
+          dom.gmailPtrPill.classList.add('visible');
+
+          if (pullDist >= threshold && !hasCrossedThreshold) {
+            hasCrossedThreshold = true;
+            triggerHaptic(40);
+          } else if (pullDist < threshold && hasCrossedThreshold) {
+            hasCrossedThreshold = false;
+          }
+        }
+      }, { passive: true });
+
+      window.addEventListener('touchend', async () => {
+        if (!isPulling) return;
+        isPulling = false;
+
+        if (hasCrossedThreshold) {
+          dom.gmailPtrIcon.classList.add('gmail-ptr-spinner');
+          dom.gmailPtrPill.style.transform = `translateY(${threshold - 10}px) scale(1)`;
+
+          if ('serviceWorker' in navigator) {
+            const regs = await navigator.serviceWorker.getRegistrations();
+            regs.forEach(r => r.update());
+          }
+
+          setTimeout(() => {
+            dom.gmailPtrIcon.classList.remove('gmail-ptr-spinner');
+            dom.gmailPtrPill.style.transform = `translateY(-40px) scale(0.6)`;
+            dom.gmailPtrPill.classList.remove('visible');
+          }, 800);
+        } else {
+          dom.gmailPtrPill.style.transform = `translateY(-40px) scale(0.6)`;
+          dom.gmailPtrPill.classList.remove('visible');
+        }
+      });
     }
 
-    // MULTI-SELECT BIN MODE CONTROLLER
+    // MULTI-SELECT BIN MODE
     window.toggleSelectionMode = function() {
       isSelectionMode = !isSelectionMode;
       selectedItemIds.clear();
@@ -978,54 +1085,8 @@
       isSelectionMode = false;
       dom.btnBinMode.classList.remove('active-bin');
       updateBatchDeleteBar();
-      triggerHaptic([30, 50, 30]);
+      triggerHaptic(50);
     };
-
-    // PULL TO REFRESH ENGINE
-    function setupPullToRefresh() {
-      let startY = 0;
-      let currentY = 0;
-      let isPulling = false;
-
-      window.addEventListener('touchstart', (e) => {
-        if (window.scrollY === 0 && activeTabIndex === 0) {
-          startY = e.touches[0].clientY;
-          isPulling = true;
-        }
-      }, { passive: true });
-
-      window.addEventListener('touchmove', (e) => {
-        if (!isPulling) return;
-        currentY = e.touches[0].clientY;
-        const diff = currentY - startY;
-
-        if (diff > 0 && window.scrollY === 0) {
-          const pullDist = Math.min(65, diff * 0.4);
-          dom.ptrIndicator.style.height = `${pullDist}px`;
-          if (pullDist > 15) dom.ptrIndicator.classList.add('ptr-visible');
-        }
-      }, { passive: true });
-
-      window.addEventListener('touchend', async () => {
-        if (!isPulling) return;
-        isPulling = false;
-
-        if (parseInt(dom.ptrIndicator.style.height || '0') >= 50) {
-          triggerHaptic(40);
-          if ('serviceWorker' in navigator) {
-            const regs = await navigator.serviceWorker.getRegistrations();
-            regs.forEach(r => r.update());
-          }
-          setTimeout(() => {
-            dom.ptrIndicator.style.height = '0px';
-            dom.ptrIndicator.classList.remove('ptr-visible');
-          }, 600);
-        } else {
-          dom.ptrIndicator.style.height = '0px';
-          dom.ptrIndicator.classList.remove('ptr-visible');
-        }
-      });
-    }
 
     function checkFirstLaunchNotificationPrompt() {
       const hasPrompted = localStorage.getItem('garage_notif_prompted');
@@ -1427,7 +1488,7 @@
       await batch.commit();
       shoppingCart.clear();
       renderShoppingTab();
-      triggerHaptic([30, 30]);
+      triggerHaptic(40);
       alert("Selected items restocked successfully!");
     };
 
@@ -1561,9 +1622,10 @@
     };
 
     window.addEventListener('load', () => {
+      initHapticEngine();
       setupFabPressAndHold();
       setupTabDragGesture();
-      setupPullToRefresh();
+      setupGmailPullToRefresh();
       initRealtimeDatabase();
       checkFirstLaunchNotificationPrompt();
       dom.syncStatus.classList.remove('offline');

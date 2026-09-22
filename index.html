@@ -14,7 +14,7 @@
   <!-- Universal Environment Auto-Detector with Cache Versioning -->
   <script>
     (function() {
-      const APP_VER = "6.1.0";
+      const APP_VER = "6.2.0";
       const isDev = window.location.pathname.toLowerCase().includes('dev');
       const appName = isDev ? "Garage DEV" : "Garage List";
       const appIcon = isDev ? "blueprint-icon.png" : "apple-touch-icon.png";
@@ -121,77 +121,61 @@
       overflow-x: hidden;
     }
 
-    /* REAL GMAIL iOS TOP PULL-TO-REFRESH FLOATING CAPSULE */
-    .gmail-ptr-fixed-wrap {
+    /* VIDEO 2: TOP-CENTERED APP LOGO PULL-TO-REFRESH */
+    .ptr-top-container {
       position: fixed;
-      top: 0;
+      top: calc(env(safe-area-inset-top, 20px) + 8px);
       left: 0;
       right: 0;
       display: flex;
       justify-content: center;
+      align-items: center;
       z-index: 1000;
       pointer-events: none;
     }
 
-    .gmail-ptr-capsule {
-      width: 42px;
-      height: 42px;
+    .ptr-logo-wrapper {
+      width: 48px;
+      height: 48px;
       border-radius: 50%;
       background: var(--card-bg);
       border: 1px solid var(--border);
-      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
       display: flex;
       align-items: center;
       justify-content: center;
-      position: absolute;
-      top: -50px;
-      transform: translateY(0) scale(0.6);
+      transform: scale(0);
       opacity: 0;
-      transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.2s ease;
+      transition: transform 0.2s ease, opacity 0.2s ease;
     }
 
-    .gmail-ptr-capsule.pulling {
-      transition: none !important;
+    .ptr-logo-img {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
     }
 
-    .gmail-ptr-spinner-svg {
-      width: 22px;
-      height: 22px;
-      transform-origin: center;
+    .ptr-logo-wrapper.spinning .ptr-logo-img {
+      animation: logo-spin 0.8s linear infinite;
     }
 
-    .gmail-ptr-path {
-      stroke: #4285F4;
-      stroke-dasharray: 60;
-      stroke-dashoffset: 50;
-      stroke-linecap: round;
-      transition: stroke-dashoffset 0.05s linear;
-    }
-
-    .gmail-ptr-capsule.refreshing .gmail-ptr-spinner-svg {
-      animation: gmail-rotate 1.2s linear infinite;
-    }
-
-    .gmail-ptr-capsule.refreshing .gmail-ptr-path {
-      animation: gmail-dash 1.4s ease-in-out infinite, gmail-colors 5.6s ease-in-out infinite;
-    }
-
-    @keyframes gmail-rotate {
+    @keyframes logo-spin {
       100% { transform: rotate(360deg); }
     }
 
-    @keyframes gmail-dash {
-      0% { stroke-dasharray: 1, 150; stroke-dashoffset: 0; }
-      50% { stroke-dasharray: 90, 150; stroke-dashoffset: -35; }
-      100% { stroke-dasharray: 90, 150; stroke-dashoffset: -124; }
+    /* VIDEO 1: COLLAPSIBLE / REVEALABLE SEARCH BAR MECHANIC */
+    .search-collapsible-wrapper {
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      transition: max-height 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.2s ease, margin 0.2s ease;
+      margin-bottom: 0;
     }
 
-    @keyframes gmail-colors {
-      0% { stroke: #4285F4; }
-      25% { stroke: #EA4335; }
-      50% { stroke: #FBBC05; }
-      75% { stroke: #34A853; }
-      100% { stroke: #4285F4; }
+    .search-collapsible-wrapper.revealed {
+      max-height: 60px;
+      opacity: 1;
+      margin-bottom: 16px;
     }
 
     .container { 
@@ -268,7 +252,7 @@
     .sync-pill.offline { color: var(--out-border) !important; border-color: var(--out-border) !important; }
     .sync-pill.offline .sync-dot { background: var(--out-border) !important; }
 
-    .search-bar-container { position: relative; margin-bottom: 16px; }
+    .search-bar-container { position: relative; }
     .search-input {
       width: 100%;
       background: var(--card-bg);
@@ -685,12 +669,10 @@
 </head>
 <body>
 
-  <!-- FIXED GMAIL iOS TOP PULL-TO-REFRESH FLOATING CAPSULE -->
-  <div class="gmail-ptr-fixed-wrap">
-    <div class="gmail-ptr-capsule" id="gmailPtrCapsule">
-      <svg class="gmail-ptr-spinner-svg" viewBox="0 0 50 50">
-        <circle class="gmail-ptr-path" cx="25" cy="25" r="20" fill="none" stroke-width="4.5"></circle>
-      </svg>
+  <!-- TOP-CENTERED LOGO PULL-TO-REFRESH CONTAINER -->
+  <div class="ptr-top-container">
+    <div class="ptr-logo-wrapper" id="ptrLogoWrapper">
+      <img src="apple-touch-icon.png" class="ptr-logo-img" id="ptrLogoImg" alt="App Logo" />
     </div>
   </div>
 
@@ -714,9 +696,12 @@
 
     <!-- TAB 1: INVENTORY VIEW -->
     <div class="tab-content active-tab" id="tab-inventory">
-      <div class="search-bar-container">
-        <span class="search-icon">🔍</span>
-        <input type="text" id="searchInput" class="search-input" placeholder="Search garage items..." oninput="handleSearchInput()" autocomplete="off" />
+      <!-- COLLAPSIBLE / REVEALABLE SEARCH BAR -->
+      <div class="search-collapsible-wrapper" id="searchCollapsibleWrap">
+        <div class="search-bar-container">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="searchInput" class="search-input" placeholder="Search garage items..." oninput="handleSearchInput()" autocomplete="off" />
+        </div>
       </div>
 
       <div class="bento-stats">
@@ -971,7 +956,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, doc, onSnapshot, setDoc, addDoc, updateDoc, deleteDoc, writeBatch, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    const APP_VERSION = "6.1.0";
+    const APP_VERSION = "6.2.0";
     const firebaseConfig = {
       apiKey: "AIzaSyAMznXG0OXHqMdfrmOGHK-g08TugsYfWw8",
       authDomain: "garage-stock-747e8.firebaseapp.com",
@@ -1009,7 +994,7 @@
     let isScannerRunning = false;
     let isSpeedDialOpen = false;
 
-    function triggerAndroidHaptic(ms = 25) {
+    function triggerAndroidHaptic(ms = 35) {
       if ('vibrate' in navigator) {
         try { navigator.vibrate(ms); } catch (e) {}
       }
@@ -1047,24 +1032,39 @@
       btnBinMode: document.getElementById('btnBinMode'),
       batchDeleteBar: document.getElementById('batchDeleteBar'),
       selectedCountVal: document.getElementById('selectedCountVal'),
-      gmailPtrCapsule: document.getElementById('gmailPtrCapsule'),
-      appMainContainer: document.getElementById('appMainContainer')
+      ptrLogoWrapper: document.getElementById('ptrLogoWrapper'),
+      appMainContainer: document.getElementById('appMainContainer'),
+      searchCollapsibleWrap: document.getElementById('searchCollapsibleWrap')
     };
 
-    // REAL GMAIL iOS TOP PULL-TO-REFRESH
-    function setupGmailPullToRefresh() {
+    // COMBINED GMAIL LOGO PULL-TO-REFRESH & COLLAPSIBLE SEARCH BAR MECHANIC
+    function setupPullToRefreshAndCollapsibleSearch() {
       let startY = 0;
+      let lastScrollY = 0;
       let isPulling = false;
       let hasCrossedThreshold = false;
-      const threshold = 85;
-      const topOffset = 60; // Top position below iOS notch
+      const threshold = 80;
+
+      // Handle scroll down to hide search, pull up to reveal
+      window.addEventListener('scroll', () => {
+        const currentScrollY = window.scrollY;
+        
+        if (currentScrollY > lastScrollY && currentScrollY > 40) {
+          // Scrolling down -> hide search bar
+          dom.searchCollapsibleWrap.classList.remove('revealed');
+        } else if (currentScrollY < lastScrollY && currentScrollY < 10) {
+          // Scrolled back to top -> reveal search bar
+          dom.searchCollapsibleWrap.classList.add('revealed');
+        }
+        
+        lastScrollY = currentScrollY;
+      }, { passive: true });
 
       window.addEventListener('touchstart', (e) => {
         if (window.scrollY === 0 && activeTabIndex === 0) {
           startY = e.touches[0].clientY;
           isPulling = true;
           hasCrossedThreshold = false;
-          dom.gmailPtrCapsule.classList.add('pulling');
         }
       }, { passive: true });
 
@@ -1074,24 +1074,25 @@
         const diff = currentY - startY;
 
         if (diff > 0 && window.scrollY === 0) {
-          const pullDist = Math.min(120, diff * 0.45);
-          const opacity = Math.min(1, pullDist / 40);
-          const scale = Math.min(1, 0.5 + (pullDist / threshold) * 0.5);
+          const pullDist = Math.min(100, diff * 0.45);
+          const opacity = Math.min(1, pullDist / 30);
+          const scale = Math.min(1, (pullDist / threshold) * 1.1);
 
-          // Position capsule right at the very top under safe area
-          dom.gmailPtrCapsule.style.transform = `translateY(${pullDist + topOffset}px) scale(${scale})`;
-          dom.gmailPtrCapsule.style.opacity = opacity;
+          // Top logo scaling & opacity
+          dom.ptrLogoWrapper.style.transform = `scale(${scale})`;
+          dom.ptrLogoWrapper.style.opacity = opacity;
 
-          // Elastic content displacement
+          // Push main content down slightly
           dom.appMainContainer.style.transform = `translateY(${pullDist * 0.35}px)`;
 
-          const dashOffset = Math.max(0, 60 - (pullDist / threshold) * 60);
-          const circlePath = dom.gmailPtrCapsule.querySelector('.gmail-ptr-path');
-          if (circlePath) circlePath.style.strokeDashoffset = dashOffset;
+          // Dynamically reveal search bar if pulled down
+          if (pullDist > 25) {
+            dom.searchCollapsibleWrap.classList.add('revealed');
+          }
 
           if (pullDist >= threshold && !hasCrossedThreshold) {
             hasCrossedThreshold = true;
-            triggerAndroidHaptic(40);
+            triggerAndroidHaptic(45); // Haptic feedback on reaching trigger point
           } else if (pullDist < threshold && hasCrossedThreshold) {
             hasCrossedThreshold = false;
           }
@@ -1101,12 +1102,15 @@
       window.addEventListener('touchend', async () => {
         if (!isPulling) return;
         isPulling = false;
-        dom.gmailPtrCapsule.classList.remove('pulling');
 
         if (hasCrossedThreshold) {
-          dom.gmailPtrCapsule.classList.add('refreshing');
-          dom.gmailPtrCapsule.style.transform = `translateY(${threshold + topOffset}px) scale(1)`;
-          dom.appMainContainer.style.transform = `translateY(40px)`;
+          // Haptic on release to refresh
+          triggerAndroidHaptic(60);
+
+          dom.ptrLogoWrapper.classList.add('spinning');
+          dom.ptrLogoWrapper.style.transform = `scale(1)`;
+          dom.ptrLogoWrapper.style.opacity = '1';
+          dom.appMainContainer.style.transform = `translateY(36px)`;
 
           if ('serviceWorker' in navigator) {
             const regs = await navigator.serviceWorker.getRegistrations();
@@ -1114,14 +1118,14 @@
           }
 
           setTimeout(() => {
-            dom.gmailPtrCapsule.classList.remove('refreshing');
-            dom.gmailPtrCapsule.style.transform = `translateY(0) scale(0.6)`;
-            dom.gmailPtrCapsule.style.opacity = '0';
+            dom.ptrLogoWrapper.classList.remove('spinning');
+            dom.ptrLogoWrapper.style.transform = `scale(0)`;
+            dom.ptrLogoWrapper.style.opacity = '0';
             dom.appMainContainer.style.transform = `translateY(0)`;
-          }, 900);
+          }, 950);
         } else {
-          dom.gmailPtrCapsule.style.transform = `translateY(0) scale(0.6)`;
-          dom.gmailPtrCapsule.style.opacity = '0';
+          dom.ptrLogoWrapper.style.transform = `scale(0)`;
+          dom.ptrLogoWrapper.style.opacity = '0';
           dom.appMainContainer.style.transform = `translateY(0)`;
         }
       });
@@ -1728,7 +1732,7 @@
     window.addEventListener('load', () => {
       setupFabPressAndHold();
       setupTabDragGesture();
-      setupGmailPullToRefresh();
+      setupPullToRefreshAndCollapsibleSearch();
       initRealtimeDatabase();
       checkFirstLaunchNotificationPrompt();
       dom.syncStatus.classList.remove('offline');

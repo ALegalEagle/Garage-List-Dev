@@ -14,7 +14,7 @@
   <!-- Universal Environment Auto-Detector with Cache Versioning -->
   <script>
     (function() {
-      const APP_VER = "6.0.0";
+      const APP_VER = "6.0.1";
       const isDev = window.location.pathname.toLowerCase().includes('dev');
       const appName = isDev ? "Garage DEV" : "Garage List";
       const appIcon = isDev ? "blueprint-icon.png" : "apple-touch-icon.png";
@@ -133,13 +133,7 @@
     header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
     .header-top { display: flex; align-items: center; justify-content: space-between; width: 100%; }
 
-    /* OPTION A: INVISIBLE HARDWARE HAPTIC TOUCH OVERLAY */
-    .haptic-wrapper {
-      position: relative;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-    }
+    /* HARDWARE HAPTIC SWITCH OVERLAY FOR BUTTONS ONLY */
     .haptic-switch {
       position: absolute;
       inset: 0;
@@ -148,6 +142,7 @@
       opacity: 0.0001;
       z-index: 5;
       cursor: pointer;
+      pointer-events: auto;
       -webkit-tap-highlight-color: transparent;
     }
     
@@ -171,6 +166,7 @@
       cursor: pointer;
       color: var(--text);
       box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+      position: relative;
     }
     .circle-icon-btn.active-bin {
       background: var(--out-badge) !important;
@@ -263,7 +259,7 @@
 
     /* Bento Grid & Cards */
     .bento-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 16px; }
-    .stat-card { border-radius: 16px; padding: 12px 16px; border-width: 2px; border-style: solid; display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; }
+    .stat-card { border-radius: 16px; padding: 12px 16px; border-width: 2px; border-style: solid; display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; position: relative; }
     .stat-card.out { background: var(--out-bg); border-color: var(--out-border); }
     .stat-card.low { background: var(--low-bg); border-color: var(--low-border); }
     .stat-card.active-filter-card { box-shadow: 0 0 0 3px var(--fab-bg); }
@@ -289,6 +285,7 @@
       min-height: 115px; 
       position: relative; 
       cursor: pointer;
+      touch-action: pan-y;
     }
     .bento-card:active { transform: scale(0.97); }
     .bento-card.is-out { border: 2.5px solid var(--out-border) !important; }
@@ -531,6 +528,7 @@
       pointer-events: none;
       transition: all 0.2s ease;
       cursor: pointer;
+      position: relative;
     }
     .batch-delete-bar.active {
       opacity: 1;
@@ -936,7 +934,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, doc, onSnapshot, setDoc, addDoc, updateDoc, deleteDoc, writeBatch, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    const APP_VERSION = "6.0.0";
+    const APP_VERSION = "6.0.1";
     const firebaseConfig = {
       apiKey: "AIzaSyAMznXG0OXHqMdfrmOGHK-g08TugsYfWw8",
       authDomain: "garage-stock-747e8.firebaseapp.com",
@@ -1622,7 +1620,6 @@
 
         return `
           <div class="bento-card ${isOut ? 'is-out' : (isLow ? 'is-low' : '')} ${isSelected ? 'selected-for-delete' : ''}" onclick="openItemSettings('${item.id}')">
-            <input type="checkbox" switch class="haptic-switch" />
             ${isSelectionMode ? `<div class="card-select-chk">${isSelected ? '✓' : ''}</div>` : ''}
             <div>
               <div class="card-top">

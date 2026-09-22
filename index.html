@@ -14,7 +14,7 @@
   <!-- Universal Environment Auto-Detector with Cache Versioning -->
   <script>
     (function() {
-      const APP_VER = "5.3.1";
+      const APP_VER = "5.4.0";
       const isDev = window.location.pathname.toLowerCase().includes('dev');
       const appName = isDev ? "Garage DEV" : "Garage List";
       const appIcon = isDev ? "blueprint-icon.png" : "apple-touch-icon.png";
@@ -236,7 +236,7 @@
     .count-out { color: var(--out-border) !important; }
     .count-low { color: var(--low-border) !important; }
 
-    /* TICKTICK SLIDING INDICATOR BAR */
+    /* TICKTICK SLIDING INTERACTIVE ISLAND BAR */
     .ticktick-island-bar {
       position: fixed;
       bottom: calc(env(safe-area-inset-bottom, 16px) + 12px);
@@ -253,6 +253,7 @@
       z-index: 90;
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
+      touch-action: none; /* Allows fluid drag gesture tracking */
     }
 
     .ticktick-tab {
@@ -280,6 +281,9 @@
       z-index: 1;
       transition: transform 0.28s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
+    .ticktick-indicator.dragging {
+      transition: none !important; /* Instant position tracking while thumb drags */
+    }
 
     .ticktick-icon {
       width: 22px;
@@ -290,6 +294,7 @@
       stroke-linecap: round;
       stroke-linejoin: round;
       transition: stroke 0.2s ease;
+      pointer-events: none;
     }
     .ticktick-tab.active .ticktick-icon {
       stroke: var(--pill-icon-active);
@@ -304,6 +309,7 @@
       border-radius: 50%;
       background: var(--out-badge);
       z-index: 3;
+      pointer-events: none;
     }
 
     /* FLOATING FAB (+) */
@@ -528,8 +534,8 @@
     </div>
   </div>
 
-  <!-- SLIDING INDICATOR TAB BAR -->
-  <nav class="ticktick-island-bar">
+  <!-- SLIDING INTERACTIVE INDICATOR TAB BAR -->
+  <nav class="ticktick-island-bar" id="islandTabBar">
     <div class="ticktick-indicator" id="tabIndicator"></div>
 
     <button class="ticktick-tab active" id="btn-tab-inventory" onclick="switchTab('inventory', 0)" title="Inventory">
@@ -661,7 +667,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, doc, onSnapshot, setDoc, addDoc, updateDoc, writeBatch, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    const APP_VERSION = "5.3.1";
+    const APP_VERSION = "5.4.0";
     const firebaseConfig = {
       apiKey: "AIzaSyAMznXG0OXHqMdfrmOGHK-g08TugsYfWw8",
       authDomain: "garage-stock-747e8.firebaseapp.com",
@@ -688,10 +694,10 @@
     let shoppingCart = new Set();
     let selectedModalCategory = "";
     let modalInitialQty = 1;
+    let activeTabIndex = 0;
 
     let html5QrCode = null;
     let isScannerRunning = false;
-    let activeScannedItemId = null;
     let isSpeedDialOpen = false;
 
     const dom = {
@@ -720,10 +726,10 @@
       editCatModalOverlay: document.getElementById('editCatModalOverlay'),
       editCatPickerGrid: document.getElementById('editCatPickerGrid'),
       editCatItemName: document.getElementById('editCatItemName'),
-      tabIndicator: document.getElementById('tabIndicator')
+      tabIndicator: document.getElementById('tabIndicator'),
+      islandTabBar: document.getElementById('islandTabBar')
     };
 
-    // AUDIO BEEP ON SCAN
     function playBeepSound() {
       try {
         const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -736,13 +742,14 @@
         gain.connect(ctx.destination);
         osc.start();
         osc.stop(ctx.currentTime + 0.12);
-      } catch (e) {
-        console.warn("Audio Context audio beep blocked by browser policy:", e);
-      }
+      } catch (e) { console.warn("Audio Context beep blocked:", e); }
     }
 
-    // ANIMATED SLIDING TAB SWITCHER
+    // TAB SWITCHER logic
+    const tabMap = ['inventory', 'shopping', 'settings'];
+
     window.switchTab = function(tabId, index) {
+      activeTabIndex = index;
       document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active-tab'));
       document.querySelectorAll('.ticktick-tab').forEach(b => b.classList.remove('active'));
 
@@ -750,18 +757,66 @@
       document.getElementById(`btn-tab-${tabId}`)?.classList.add('active');
 
       if (dom.tabIndicator) {
+        dom.tabIndicator.classList.remove('dragging');
         dom.tabIndicator.style.transform = `translateX(${index * 64}px)`;
       }
 
       if (navigator.vibrate) navigator.vibrate(25);
     };
 
-    window.setTheme = function(mode) {
-      if (mode === 'dark') {
-        dom.body.classList.add('dark');
-      } else {
-        dom.body.classList.remove('dark');
+    // TICKTICK DRAG GESTURE ENGINE FOR THE FLOATING TAB BAR
+    function setupTabDragGesture() {
+      const bar = dom.islandTabBar;
+      const indicator = dom.tabIndicator;
+      let isDragging = false;
+      let startX = 0;
+      let barRect = null;
+
+      function onPointerDown(e) {
+        isDragging = true;
+        startX = e.clientX;
+        barRect = bar.getBoundingClientRect();
+        indicator.classList.add('dragging');
+        if (bar.setPointerCapture) bar.setPointerCapture(e.pointerId);
       }
+
+      function onPointerMove(e) {
+        if (!isDragging || !barRect) return;
+        
+        // Calculate offset inside the bar relative to current thumb position
+        const relX = e.clientX - barRect.left - 4; // Account for 4px padding
+        const clampedX = Math.max(0, Math.min(128, relX - 30)); // 30px is half tab width
+        
+        indicator.style.transform = `translateX(${clampedX}px)`;
+
+        // Highlight nearest tab dynamically while dragging
+        const targetIdx = Math.max(0, Math.min(2, Math.round(clampedX / 64)));
+        document.querySelectorAll('.ticktick-tab').forEach((b, idx) => {
+          b.classList.toggle('active', idx === targetIdx);
+        });
+      }
+
+      function onPointerUp(e) {
+        if (!isDragging || !barRect) return;
+        isDragging = false;
+        indicator.classList.remove('dragging');
+
+        const relX = e.clientX - barRect.left - 4;
+        const targetIdx = Math.max(0, Math.min(2, Math.round((relX - 30) / 64)));
+
+        switchTab(tabMap[targetIdx], targetIdx);
+        if (bar.releasePointerCapture) bar.releasePointerCapture(e.pointerId);
+      }
+
+      bar.addEventListener('pointerdown', onPointerDown);
+      bar.addEventListener('pointermove', onPointerMove);
+      bar.addEventListener('pointerup', onPointerUp);
+      bar.addEventListener('pointercancel', onPointerUp);
+    }
+
+    window.setTheme = function(mode) {
+      if (mode === 'dark') dom.body.classList.add('dark');
+      else dom.body.classList.remove('dark');
       localStorage.setItem('garage_theme', mode);
     };
 
@@ -783,18 +838,14 @@
       onSnapshot(metaDoc, (snap) => {
         if (snap.exists() && Array.isArray(snap.data().list)) {
           categories = snap.data().list;
-        } else {
-          categories = defaultCategories;
-        }
+        } else { categories = defaultCategories; }
         render();
         renderCategorySettings();
       });
 
       onSnapshot(itemsCol, (snapshot) => {
         const loaded = [];
-        snapshot.forEach((d) => {
-          loaded.push({ id: d.id, ...d.data() });
-        });
+        snapshot.forEach((d) => { loaded.push({ id: d.id, ...d.data() }); });
         loaded.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
         items = loaded;
         render();
@@ -859,7 +910,6 @@
       const existingItem = items.find(i => i.barcode === decodedText);
 
       if (existingItem) {
-        activeScannedItemId = existingItem.id;
         dom.scannerStatusText.innerText = `Matched item in inventory:`;
         dom.scannerResultBox.style.display = 'block';
         dom.scannerResultBox.innerHTML = `
@@ -888,9 +938,7 @@
               fetchedName = dataProd.product.product_name;
             }
           }
-        } catch (e) {
-          console.warn("Product lookup failed:", e);
-        }
+        } catch (e) { console.warn("Product lookup failed:", e); }
 
         toggleScannerModal(false);
         toggleAddModal(true);
@@ -992,11 +1040,8 @@
     function renderShoppingTab() {
       const neededItems = items.filter(i => isItemOutOfStock(i) || isItemLowStock(i));
       
-      if (neededItems.length > 0) {
-        dom.shoppingBadge.style.display = 'block';
-      } else {
-        dom.shoppingBadge.style.display = 'none';
-      }
+      if (neededItems.length > 0) dom.shoppingBadge.style.display = 'block';
+      else dom.shoppingBadge.style.display = 'none';
 
       if (neededItems.length === 0) {
         dom.shoppingListContainer.innerHTML = `<div style="text-align:center; padding: 40px 0; color:var(--synced-color); font-size:15px; font-weight:700;">🎉 All garage items are fully stocked!</div>`;
@@ -1150,6 +1195,7 @@
 
     window.addEventListener('load', () => {
       setupFabPressAndHold();
+      setupTabDragGesture();
       initRealtimeDatabase();
       dom.syncStatus.classList.remove('offline');
       dom.syncText.innerText = "Live";

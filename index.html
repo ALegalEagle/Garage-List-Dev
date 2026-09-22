@@ -42,12 +42,15 @@
       --border: #e2e8f0;
       --pill-bg: #e2e8f0;
       --stepper-bg: #f8fafc;
-      --fab-bg: #64748b;
+      --fab-bg: #5c6b73;
       --fab-text: #ffffff;
-      --tab-bar-bg: #e2e8f0;
-      --tab-active-bg: #ffffff;
-      --tab-icon: #64748b;
-      --tab-icon-active: #0f172a;
+      
+      /* TickTick Island Pill Tokens */
+      --pill-bar-bg: #f8fafc;
+      --pill-bar-border: #e2e8f0;
+      --pill-active-bg: #e2e8f0;
+      --pill-icon: #64748b;
+      --pill-icon-active: #0f172a;
 
       --out-border: #dc2626;
       --out-badge: #ef4444;
@@ -70,10 +73,12 @@
       --stepper-bg: #0f172a;
       --fab-bg: #475569;
       --fab-text: #ffffff;
-      --tab-bar-bg: #1e293b;
-      --tab-active-bg: #334155;
-      --tab-icon: #94a3b8;
-      --tab-icon-active: #ffffff;
+
+      --pill-bar-bg: #1e293b;
+      --pill-bar-border: #334155;
+      --pill-active-bg: #334155;
+      --pill-icon: #94a3b8;
+      --pill-icon-active: #ffffff;
 
       --out-border: #ef4444;
       --out-badge: #ef4444;
@@ -110,7 +115,7 @@
       padding-top: calc(env(safe-area-inset-top, 20px) + 12px);
       padding-left: clamp(16px, 4vw, 32px);
       padding-right: clamp(16px, 4vw, 32px);
-      padding-bottom: calc(env(safe-area-inset-bottom, 20px) + 120px);
+      padding-bottom: calc(env(safe-area-inset-bottom, 20px) + 110px);
     }
 
     header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
@@ -207,18 +212,12 @@
     }
     .bento-card.is-out { border: 2.5px solid var(--out-border) !important; }
     .bento-card.is-low { border: 2px solid var(--low-border) !important; }
-    .bento-card.is-selected { border: 3px solid var(--out-border) !important; }
 
     .card-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; }
     .category-chip { font-size: 10px; font-weight: 700; padding: 2.5px 7px; border-radius: 6px; background: var(--pill-bg); color: var(--text-muted); text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 58%; }
     .status-badge { font-size: 9px; font-weight: 800; padding: 3px 6px; border-radius: 5px; color: #fff; white-space: nowrap; }
     .badge-out { background: var(--out-badge); }
     .badge-low { background: var(--low-badge); }
-
-    .chk-circle { display: none; width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid var(--text-muted); align-items: center; justify-content: center; font-size: 11px; font-weight: 800; }
-    body.selection-active .chk-circle { display: flex; }
-    body.selection-active .status-badge { display: none; }
-    .bento-card.is-selected .chk-circle { background: var(--out-border); border-color: var(--out-border); color: #fff; }
 
     .card-title { font-size: 14px; font-weight: 700; line-height: 1.25; margin-bottom: 10px; word-break: break-word; }
 
@@ -228,39 +227,30 @@
     .count-out { color: var(--out-border) !important; }
     .count-low { color: var(--low-border) !important; }
 
-    /* EXACT SCREENSHOT-STYLE BOTTOM FLOATING CAPSULE */
-    .bottom-floating-wrapper {
+    /* EXACT TICKTICK FLOATING ISLAND TAB PILL */
+    .ticktick-island-bar {
       position: fixed;
       bottom: calc(env(safe-area-inset-bottom, 16px) + 12px);
-      left: 0;
-      right: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--pill-bar-bg);
+      border: 1px solid var(--pill-bar-border);
+      padding: 6px 8px;
+      border-radius: 36px;
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      padding: 0 clamp(20px, 5vw, 40px);
+      gap: 6px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.12);
       z-index: 90;
-      pointer-events: none;
-    }
-
-    .island-tab-bar {
-      background: var(--tab-bar-bg);
-      border: 1px solid var(--border);
-      padding: 4px;
-      border-radius: 30px;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-      pointer-events: auto;
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
     }
 
-    .tab-btn {
+    .ticktick-tab {
       background: transparent;
       border: none;
-      width: 52px;
-      height: 44px;
+      width: 64px;
+      height: 42px;
       border-radius: 22px;
       cursor: pointer;
       display: flex;
@@ -269,55 +259,57 @@
       transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
       position: relative;
     }
-    .tab-btn.active {
-      background: var(--tab-active-bg);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    .ticktick-tab.active {
+      background: var(--pill-active-bg);
     }
 
-    .tab-svg-icon {
+    .ticktick-icon {
       width: 22px;
       height: 22px;
       fill: none;
-      stroke: var(--tab-icon);
+      stroke: var(--pill-icon);
       stroke-width: 2.2;
       stroke-linecap: round;
       stroke-linejoin: round;
       transition: stroke 0.15s ease;
     }
-    .tab-btn.active .tab-svg-icon {
-      stroke: var(--tab-icon-active);
+    .ticktick-tab.active .ticktick-icon {
+      stroke: var(--pill-icon-active);
     }
 
-    .tab-dot-badge {
+    .ticktick-dot-badge {
       position: absolute;
-      top: 9px;
-      right: 12px;
-      width: 8px;
-      height: 8px;
+      top: 10px;
+      right: 18px;
+      width: 7px;
+      height: 7px;
       border-radius: 50%;
       background: var(--out-badge);
     }
 
-    /* INTEGRATED FAB RIGHT ALIGNED LIKE TICKTICK SCREENSHOT */
-    .fab-floating-btn {
-      width: 52px;
-      height: 52px;
+    /* SEPARATE FLOATING FAB (MATCHING TICKTICK POSITION) */
+    .ticktick-fab {
+      position: fixed;
+      bottom: calc(env(safe-area-inset-bottom, 16px) + 12px);
+      right: clamp(16px, 5vw, 32px);
+      width: 56px;
+      height: 56px;
       border-radius: 50%;
-      background: #64748b;
+      background: #5c6b73;
       color: #ffffff;
       border: none;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.22);
-      pointer-events: auto;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.22);
+      z-index: 91;
       transition: transform 0.2s ease, background 0.2s ease;
     }
-    body.dark .fab-floating-btn {
+    body.dark .ticktick-fab {
       background: #475569;
     }
-    .fab-floating-btn.is-open {
+    .ticktick-fab.is-open {
       transform: rotate(45deg);
       background: #dc2626 !important;
     }
@@ -339,7 +331,7 @@
     .speeddial-menu {
       position: fixed;
       bottom: calc(env(safe-area-inset-bottom, 16px) + 80px);
-      right: clamp(20px, 5vw, 40px);
+      right: clamp(16px, 5vw, 32px);
       display: flex;
       flex-direction: column;
       align-items: flex-end;
@@ -515,45 +507,42 @@
     </div>
   </div>
 
-  <!-- EXACT SCREENSHOT-STYLE BOTTOM FLOATING WRAPPER -->
-  <div class="bottom-floating-wrapper">
-    <!-- Centered Tab Pill -->
-    <nav class="island-tab-bar">
-      <!-- Custom Inventory Checklist SVG Icon -->
-      <button class="tab-btn active" id="btn-tab-inventory" onclick="switchTab('inventory')" title="Inventory">
-        <svg class="tab-svg-icon" viewBox="0 0 24 24">
-          <path d="M9 11l3 3L22 4" />
-          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
-        </svg>
-      </button>
-
-      <!-- Custom Shopping Basket SVG Icon -->
-      <button class="tab-btn" id="btn-tab-shopping" onclick="switchTab('shopping')" title="Shopping">
-        <svg class="tab-svg-icon" viewBox="0 0 24 24">
-          <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
-          <line x1="3" y1="6" x2="21" y2="6" />
-          <path d="M16 10a4 4 0 0 1-8 0" />
-        </svg>
-        <span class="tab-dot-badge" id="shoppingBadge" style="display:none;"></span>
-      </button>
-
-      <!-- Custom Settings Gear SVG Icon -->
-      <button class="tab-btn" id="btn-tab-settings" onclick="switchTab('settings')" title="Settings">
-        <svg class="tab-svg-icon" viewBox="0 0 24 24">
-          <circle cx="12" cy="12" r="3" />
-          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
-        </svg>
-      </button>
-    </nav>
-
-    <!-- Floating Action Button (+), exact right alignment as TickTick -->
-    <button class="fab-floating-btn" id="fabAdd" title="Add Item">
-      <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round">
-        <line x1="12" y1="5" x2="12" y2="19"></line>
-        <line x1="5" y1="12" x2="19" y2="12"></line>
+  <!-- EXACT TICKTICK FLOATING ISLAND TAB PILL -->
+  <nav class="ticktick-island-bar">
+    <!-- Checklist Icon (Inventory) -->
+    <button class="ticktick-tab active" id="btn-tab-inventory" onclick="switchTab('inventory')" title="Inventory">
+      <svg class="ticktick-icon" viewBox="0 0 24 24">
+        <rect x="3" y="3" width="18" height="18" rx="5" stroke-width="2.2" />
+        <path d="M9 12l2 2 4-4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
       </svg>
     </button>
-  </div>
+
+    <!-- Shopping Cart Icon -->
+    <button class="ticktick-tab" id="btn-tab-shopping" onclick="switchTab('shopping')" title="Shopping">
+      <svg class="ticktick-icon" viewBox="0 0 24 24">
+        <circle cx="9" cy="20" r="1.5" />
+        <circle cx="18" cy="20" r="1.5" />
+        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+      </svg>
+      <span class="ticktick-dot-badge" id="shoppingBadge" style="display:none;"></span>
+    </button>
+
+    <!-- Settings Gear Icon -->
+    <button class="ticktick-tab" id="btn-tab-settings" onclick="switchTab('settings')" title="Settings">
+      <svg class="ticktick-icon" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="3.2" />
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+      </svg>
+    </button>
+  </nav>
+
+  <!-- SEPARATE FLOATING ACTION BUTTON (+) -->
+  <button class="ticktick-fab" id="fabAdd" title="Add Item">
+    <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round">
+      <line x1="12" y1="5" x2="12" y2="19"></line>
+      <line x1="5" y1="12" x2="19" y2="12"></line>
+    </svg>
+  </button>
 
   <!-- SPEED DIAL OVERLAY -->
   <div class="speeddial-overlay" id="speedDialOverlay" onclick="closeSpeedDialMenu()"></div>
@@ -642,7 +631,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, doc, onSnapshot, setDoc, addDoc, updateDoc, writeBatch, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    const APP_VERSION = "5.1.0";
+    const APP_VERSION = "5.2.0";
     const firebaseConfig = {
       apiKey: "AIzaSyAMznXG0OXHqMdfrmOGHK-g08TugsYfWw8",
       authDomain: "garage-stock-747e8.firebaseapp.com",
@@ -700,7 +689,7 @@
 
     window.switchTab = function(tabId) {
       document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active-tab'));
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.ticktick-tab').forEach(b => b.classList.remove('active'));
 
       document.getElementById(`tab-${tabId}`)?.classList.add('active-tab');
       document.getElementById(`btn-tab-${tabId}`)?.classList.add('active');

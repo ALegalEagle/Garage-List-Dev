@@ -14,7 +14,7 @@
   <!-- Universal Environment Auto-Detector with Cache Versioning -->
   <script>
     (function() {
-      const APP_VER = "5.6.0";
+      const APP_VER = "5.7.0";
       const isDev = window.location.pathname.toLowerCase().includes('dev');
       const appName = isDev ? "Garage DEV" : "Garage List";
       const appIcon = isDev ? "blueprint-icon.png" : "apple-touch-icon.png";
@@ -70,6 +70,7 @@
       --synced-color: #10b981;
       --bring-color: #e52e41;
       --speeddial-blur-bg: rgba(255, 255, 255, 0.72);
+      --skeleton-bg: #e2e8f0;
     }
 
     body.dark {
@@ -98,6 +99,7 @@
       --synced-color: #34d399;
       --bring-color: #ef4444;
       --speeddial-blur-bg: rgba(15, 23, 42, 0.76);
+      --skeleton-bg: #334155;
     }
 
     * { 
@@ -116,6 +118,7 @@
       -webkit-user-select: none;
       min-height: 100vh;
       -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
     }
 
     .container { 
@@ -130,6 +133,14 @@
     header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
     .header-top { display: flex; align-items: center; justify-content: space-between; width: 100%; }
     
+    /* Springy Press Micro-Interactions */
+    .circle-icon-btn, .bento-card, .btn-action-primary, .shopping-item-row, .chip, .speeddial-item {
+      transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.15s ease, border-color 0.15s ease;
+    }
+    .circle-icon-btn:active, .btn-action-primary:active, .shopping-item-row:active, .chip:active {
+      transform: scale(0.95);
+    }
+
     .circle-icon-btn {
       width: 42px;
       height: 42px;
@@ -143,6 +154,11 @@
       cursor: pointer;
       color: var(--text);
       box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+    }
+    .circle-icon-btn.active-bin {
+      background: var(--out-badge) !important;
+      color: white !important;
+      border-color: var(--out-badge) !important;
     }
 
     .title-area { margin-bottom: 12px; }
@@ -164,6 +180,27 @@
     .sync-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--synced-color); display: inline-block; }
     .sync-pill.offline { color: var(--out-border) !important; border-color: var(--out-border) !important; }
     .sync-pill.offline .sync-dot { background: var(--out-border) !important; }
+
+    /* Pull to Refresh Rubber-Band Indicator */
+    .ptr-element {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 0px;
+      overflow: hidden;
+      transition: height 0.2s ease, opacity 0.2s ease;
+      opacity: 0;
+    }
+    .ptr-element.ptr-visible { opacity: 1; }
+    .ptr-spinner {
+      width: 24px;
+      height: 24px;
+      border: 3px solid var(--border);
+      border-top-color: var(--fab-bg);
+      border-radius: 50%;
+      animation: ptr-spin 0.8s linear infinite;
+    }
+    @keyframes ptr-spin { to { transform: rotate(360deg); } }
 
     .search-bar-container { position: relative; margin-bottom: 16px; }
     .search-input {
@@ -219,8 +256,31 @@
       position: relative; 
       cursor: pointer;
     }
+    .bento-card:active { transform: scale(0.97); }
     .bento-card.is-out { border: 2.5px solid var(--out-border) !important; }
     .bento-card.is-low { border: 2px solid var(--low-border) !important; }
+    .bento-card.selected-for-delete { border: 2.5px solid var(--out-badge) !important; background: var(--out-bg) !important; }
+
+    .card-select-chk {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      background: var(--card-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 800;
+      color: white;
+    }
+    .bento-card.selected-for-delete .card-select-chk {
+      background: var(--out-badge);
+      border-color: var(--out-badge);
+    }
 
     .card-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; }
     .category-chip { font-size: 10px; font-weight: 700; padding: 2.5px 7px; border-radius: 6px; background: var(--pill-bg); color: var(--text-muted); text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 58%; }
@@ -232,9 +292,32 @@
 
     .stepper-pill { background: var(--stepper-bg); border-radius: 10px; display: flex; align-items: center; justify-content: space-between; padding: 4px 6px; height: 32px; border: 1px solid var(--border); }
     .stepper-btn { background: transparent; border: none; font-size: 16px; font-weight: 700; color: var(--text-muted); width: 26px; height: 26px; cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 6px; }
+    .stepper-btn:active { transform: scale(0.85); }
     .stepper-count { font-size: 15px; font-weight: 800; }
     .count-out { color: var(--out-border) !important; }
     .count-low { color: var(--low-border) !important; }
+
+    /* Shimmer Skeleton Loader */
+    .skeleton-card {
+      background: var(--card-bg);
+      border-radius: 18px;
+      padding: 14px;
+      border: 1px solid var(--border);
+      min-height: 115px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .skeleton-line {
+      background: var(--skeleton-bg);
+      border-radius: 6px;
+      animation: shimmer 1.2s infinite ease-in-out;
+    }
+    @keyframes shimmer {
+      0% { opacity: 0.5; }
+      50% { opacity: 1; }
+      100% { opacity: 0.5; }
+    }
 
     /* GROUPED SETTINGS */
     .settings-group {
@@ -391,8 +474,34 @@
       touch-action: manipulation;
       transition: transform 0.2s ease, background 0.2s ease;
     }
+    .ticktick-fab:active { transform: scale(0.92); }
     body.dark .ticktick-fab { background: #475569; }
     .ticktick-fab.is-open { transform: rotate(45deg); background: #dc2626 !important; }
+
+    /* BATCH DELETE FAB */
+    .batch-delete-bar {
+      position: fixed;
+      bottom: calc(env(safe-area-inset-bottom, 16px) + 78px);
+      left: 50%;
+      transform: translateX(-50%) translateY(40px);
+      background: var(--out-badge);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 30px;
+      font-size: 14px;
+      font-weight: 800;
+      box-shadow: 0 10px 25px rgba(220, 38, 38, 0.35);
+      z-index: 91;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    .batch-delete-bar.active {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateX(-50%) translateY(0);
+    }
 
     /* SPEED DIAL OVERLAY */
     .speeddial-overlay {
@@ -508,7 +617,7 @@
   <div class="container">
     <header>
       <div class="header-top">
-        <button class="circle-icon-btn" onclick="toggleSelectionMode()" title="Selection / Bin Mode">🗑️</button>
+        <button class="circle-icon-btn" id="btnBinMode" onclick="toggleSelectionMode()" title="Selection / Bin Mode">🗑️</button>
       </div>
     </header>
 
@@ -518,6 +627,11 @@
         <span class="sync-dot"></span>
         <span id="syncText">Connecting...</span>
       </div>
+    </div>
+
+    <!-- PULL TO REFRESH RUBBER-BAND INDICATOR -->
+    <div class="ptr-element" id="ptrIndicator">
+      <div class="ptr-spinner"></div>
     </div>
 
     <!-- TAB 1: INVENTORY VIEW -->
@@ -606,6 +720,11 @@
         Not Now
       </button>
     </div>
+  </div>
+
+  <!-- BATCH DELETE BUTTON FLOATER -->
+  <div class="batch-delete-bar" id="batchDeleteBar" onclick="executeBatchDelete()">
+    Delete Selected Items (<span id="selectedCountVal">0</span>)
   </div>
 
   <!-- SLIDING INTERACTIVE INDICATOR TAB BAR -->
@@ -739,9 +858,9 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, doc, onSnapshot, setDoc, addDoc, updateDoc, writeBatch, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, collection, doc, onSnapshot, setDoc, addDoc, updateDoc, deleteDoc, writeBatch, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    const APP_VERSION = "5.6.0";
+    const APP_VERSION = "5.7.0";
     const firebaseConfig = {
       apiKey: "AIzaSyAMznXG0OXHqMdfrmOGHK-g08TugsYfWw8",
       authDomain: "garage-stock-747e8.firebaseapp.com",
@@ -769,6 +888,11 @@
     let selectedModalCategory = "";
     let modalInitialQty = 1;
     let activeTabIndex = 0;
+    let isLoadingData = true;
+
+    // Multi-Select Bin Mode
+    let isSelectionMode = false;
+    let selectedItemIds = new Set();
 
     let html5QrCode = null;
     let isScannerRunning = false;
@@ -802,8 +926,106 @@
       editCatItemName: document.getElementById('editCatItemName'),
       tabIndicator: document.getElementById('tabIndicator'),
       islandTabBar: document.getElementById('islandTabBar'),
-      notifPromptOverlay: document.getElementById('notifPromptOverlay')
+      notifPromptOverlay: document.getElementById('notifPromptOverlay'),
+      btnBinMode: document.getElementById('btnBinMode'),
+      batchDeleteBar: document.getElementById('batchDeleteBar'),
+      selectedCountVal: document.getElementById('selectedCountVal'),
+      ptrIndicator: document.getElementById('ptrIndicator')
     };
+
+    function triggerHaptic(type = 25) {
+      if (navigator.vibrate) navigator.vibrate(type);
+    }
+
+    // MULTI-SELECT BIN MODE CONTROLLER
+    window.toggleSelectionMode = function() {
+      isSelectionMode = !isSelectionMode;
+      selectedItemIds.clear();
+      dom.btnBinMode.classList.toggle('active-bin', isSelectionMode);
+      updateBatchDeleteBar();
+      triggerHaptic(40);
+      render();
+    };
+
+    function toggleSelectItemForDelete(id) {
+      if (selectedItemIds.has(id)) selectedItemIds.delete(id);
+      else selectedItemIds.add(id);
+      triggerHaptic(20);
+      updateBatchDeleteBar();
+      render();
+    }
+
+    function updateBatchDeleteBar() {
+      if (isSelectionMode && selectedItemIds.size > 0) {
+        dom.selectedCountVal.innerText = selectedItemIds.size;
+        dom.batchDeleteBar.classList.add('active');
+      } else {
+        dom.batchDeleteBar.classList.remove('active');
+      }
+    }
+
+    window.executeBatchDelete = async function() {
+      if (selectedItemIds.size === 0) return;
+      if (!confirm(`Are you sure you want to delete ${selectedItemIds.size} selected items?`)) return;
+
+      const batch = writeBatch(db);
+      selectedItemIds.forEach(id => {
+        batch.delete(doc(db, "garage_items", id));
+      });
+
+      await batch.commit();
+      selectedItemIds.clear();
+      isSelectionMode = false;
+      dom.btnBinMode.classList.remove('active-bin');
+      updateBatchDeleteBar();
+      triggerHaptic([30, 50, 30]);
+    };
+
+    // PULL TO REFRESH ENGINE
+    function setupPullToRefresh() {
+      let startY = 0;
+      let currentY = 0;
+      let isPulling = false;
+
+      window.addEventListener('touchstart', (e) => {
+        if (window.scrollY === 0 && activeTabIndex === 0) {
+          startY = e.touches[0].clientY;
+          isPulling = true;
+        }
+      }, { passive: true });
+
+      window.addEventListener('touchmove', (e) => {
+        if (!isPulling) return;
+        currentY = e.touches[0].clientY;
+        const diff = currentY - startY;
+
+        if (diff > 0 && window.scrollY === 0) {
+          const pullDist = Math.min(65, diff * 0.4);
+          dom.ptrIndicator.style.height = `${pullDist}px`;
+          if (pullDist > 15) dom.ptrIndicator.classList.add('ptr-visible');
+        }
+      }, { passive: true });
+
+      window.addEventListener('touchend', async () => {
+        if (!isPulling) return;
+        isPulling = false;
+
+        if (parseInt(dom.ptrIndicator.style.height || '0') >= 50) {
+          triggerHaptic(40);
+          if ('serviceWorker' in navigator) {
+            const regs = await navigator.serviceWorker.getRegistrations();
+            regs.forEach(r => r.update());
+          }
+          setTimeout(() => {
+            dom.ptrIndicator.style.height = '0px';
+            dom.ptrIndicator.classList.remove('ptr-visible');
+          }, 600);
+        } else {
+          dom.ptrIndicator.style.height = '0px';
+          dom.ptrIndicator.classList.remove('ptr-visible');
+        }
+      });
+    }
 
     function checkFirstLaunchNotificationPrompt() {
       const hasPrompted = localStorage.getItem('garage_notif_prompted');
@@ -821,12 +1043,8 @@
       if ('Notification' in window) {
         try {
           const permission = await Notification.requestPermission();
-          if (permission === 'granted') {
-            console.log('Notification permission granted.');
-          }
-        } catch (e) {
-          console.warn('Error requesting permission:', e);
-        }
+          if (permission === 'granted') console.log('Notification permission granted.');
+        } catch (e) { console.warn('Error requesting permission:', e); }
       }
     };
 
@@ -865,7 +1083,7 @@
         dom.tabIndicator.style.transform = `translateX(${index * 64}px)`;
       }
 
-      if (navigator.vibrate) navigator.vibrate(25);
+      triggerHaptic(20);
     };
 
     function setupTabDragGesture() {
@@ -940,6 +1158,8 @@
     }
 
     function initRealtimeDatabase() {
+      renderSkeletonGrid();
+
       onSnapshot(metaDoc, (snap) => {
         if (snap.exists() && Array.isArray(snap.data().list)) {
           categories = snap.data().list;
@@ -953,9 +1173,23 @@
         snapshot.forEach((d) => { loaded.push({ id: d.id, ...d.data() }); });
         loaded.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
         items = loaded;
+        isLoadingData = false;
         render();
         renderShoppingTab();
       });
+    }
+
+    function renderSkeletonGrid() {
+      dom.grid.innerHTML = Array(6).fill(0).map(() => `
+        <div class="skeleton-card">
+          <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
+            <div class="skeleton-line" style="width:50px; height:14px;"></div>
+            <div class="skeleton-line" style="width:30px; height:14px;"></div>
+          </div>
+          <div class="skeleton-line" style="width:80%; height:18px; margin-bottom:16px;"></div>
+          <div class="skeleton-line" style="width:100%; height:32px; border-radius:10px;"></div>
+        </div>
+      `).join('');
     }
 
     window.updateStock = async function(id, delta, event) {
@@ -963,6 +1197,7 @@
       const item = items.find((i) => i.id === id);
       if (!item || (item.amount <= 0 && delta < 0)) return;
 
+      triggerHaptic(20);
       item.amount += delta;
       render();
 
@@ -1010,7 +1245,7 @@
 
     async function onBarcodeScanned(decodedText) {
       playBeepSound();
-      if (navigator.vibrate) navigator.vibrate(60);
+      triggerHaptic(60);
 
       const existingItem = items.find(i => i.barcode === decodedText);
 
@@ -1080,6 +1315,7 @@
     window.adjustModalQty = function(delta) {
       modalInitialQty = Math.max(0, modalInitialQty + delta);
       dom.modalQtyVal.innerText = modalInitialQty;
+      triggerHaptic(15);
     };
 
     window.addNewItem = async function() {
@@ -1096,6 +1332,7 @@
       });
 
       toggleAddModal(false);
+      triggerHaptic(30);
     };
 
     window.openSpeedDialMenu = function() {
@@ -1103,7 +1340,7 @@
       dom.fabAdd.classList.add('is-open');
       dom.speedDialOverlay.classList.add('active');
       dom.speedDialMenu.classList.add('active');
-      if (navigator.vibrate) navigator.vibrate(50);
+      triggerHaptic(50);
     };
 
     window.closeSpeedDialMenu = function() {
@@ -1132,7 +1369,7 @@
         }, 350);
       });
 
-      btn.addEventListener('pointerup', (e) => {
+      btn.addEventListener('pointerup', () => {
         clearTimeout(timer);
         if (!isLongPress && !isSpeedDialOpen) {
           toggleAddModal(true);
@@ -1172,7 +1409,7 @@
     window.toggleShoppingItem = function(id) {
       if (shoppingCart.has(id)) shoppingCart.delete(id);
       else shoppingCart.add(id);
-      if (navigator.vibrate) navigator.vibrate(30);
+      triggerHaptic(30);
       renderShoppingTab();
     };
 
@@ -1190,6 +1427,7 @@
       await batch.commit();
       shoppingCart.clear();
       renderShoppingTab();
+      triggerHaptic([30, 30]);
       alert("Selected items restocked successfully!");
     };
 
@@ -1200,6 +1438,11 @@
     };
 
     window.openItemSettings = function(id) {
+      if (isSelectionMode) {
+        toggleSelectItemForDelete(id);
+        return;
+      }
+
       const item = items.find(i => i.id === id);
       if (!item) return;
       editingItemId = id;
@@ -1232,6 +1475,8 @@
     };
 
     function render() {
+      if (isLoadingData) return;
+
       const outCount = items.filter(isItemOutOfStock).length;
       const lowCount = items.filter(isItemLowStock).length;
       dom.outCount.innerText = `${outCount} items`;
@@ -1250,11 +1495,28 @@
         <div class="chip ${currentFilter === c ? 'active' : ''}" onclick="setFilter('${c}')">${c}</div>
       `).join('');
 
+      if (filtered.length === 0) {
+        dom.grid.innerHTML = `
+          <div style="grid-column: 1 / -1; text-align:center; padding:48px 16px; background:var(--card-bg); border-radius:20px; border:1px solid var(--border);">
+            <div style="font-size:36px; margin-bottom:10px;">🔍</div>
+            <div style="font-weight:800; font-size:16px;">No items found</div>
+            <div style="font-size:13px; color:var(--text-muted); margin-top:4px; margin-bottom:16px;">
+              ${searchQuery ? `No garage items match "${searchQuery}"` : 'There are no items in this filter category.'}
+            </div>
+            <button class="modal-save-btn" style="padding:10px 20px;" onclick="toggleAddModal(true)">+ Add New Item</button>
+          </div>
+        `;
+        return;
+      }
+
       dom.grid.innerHTML = filtered.map(item => {
         const isOut = isItemOutOfStock(item);
         const isLow = isItemLowStock(item);
+        const isSelected = selectedItemIds.has(item.id);
+
         return `
-          <div class="bento-card ${isOut ? 'is-out' : (isLow ? 'is-low' : '')}" onclick="openItemSettings('${item.id}')">
+          <div class="bento-card ${isOut ? 'is-out' : (isLow ? 'is-low' : '')} ${isSelected ? 'selected-for-delete' : ''}" onclick="openItemSettings('${item.id}')">
+            ${isSelectionMode ? `<div class="card-select-chk">${isSelected ? '✓' : ''}</div>` : ''}
             <div>
               <div class="card-top">
                 <span class="category-chip">${item.category || 'General'}</span>
@@ -1301,6 +1563,7 @@
     window.addEventListener('load', () => {
       setupFabPressAndHold();
       setupTabDragGesture();
+      setupPullToRefresh();
       initRealtimeDatabase();
       checkFirstLaunchNotificationPrompt();
       dom.syncStatus.classList.remove('offline');

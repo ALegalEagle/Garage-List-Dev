@@ -14,7 +14,7 @@
   <!-- Universal Environment Auto-Detector with Cache Versioning -->
   <script>
     (function() {
-      const APP_VER = "6.2.4";
+      const APP_VER = "6.2.5";
       const isDev = window.location.pathname.toLowerCase().includes('dev');
       const appName = isDev ? "Garage DEV" : "Garage List";
       const appIcon = isDev ? "blueprint-icon.png" : "apple-touch-icon.png";
@@ -121,10 +121,10 @@
       overflow-x: hidden;
     }
 
-    /* PULL-TO-REFRESH SPINNER (EXACT MATCH FOR VIDEO 2) */
+    /* LARGER, HIGHER-CONTRAST PULL-TO-REFRESH SPINNER */
     .ptr-top-container {
       position: fixed;
-      top: calc(env(safe-area-inset-top, 20px) + 52px);
+      top: calc(env(safe-area-inset-top, 20px) + 24px);
       left: 0;
       right: 0;
       display: flex;
@@ -135,12 +135,13 @@
     }
 
     .ptr-spinner-icon {
-      width: 26px;
-      height: 26px;
-      color: var(--text-muted);
+      width: 42px;
+      height: 42px;
+      color: var(--text);
       opacity: 0;
       transform: scale(0.6) rotate(0deg);
       transition: opacity 0.15s ease, transform 0.15s ease;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
     }
 
     .ptr-spinner-icon.spinning {
@@ -659,9 +660,9 @@
 </head>
 <body>
 
-  <!-- TOP PULL-TO-REFRESH SPINNER CONTAINER (VIDEO 2 MATCH) -->
+  <!-- ENLARGED TOP PULL-TO-REFRESH SPINNER -->
   <div class="ptr-top-container">
-    <svg class="ptr-spinner-icon" id="ptrSpinnerIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <svg class="ptr-spinner-icon" id="ptrSpinnerIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
       <line x1="12" y1="2" x2="12" y2="6"></line>
       <line x1="12" y1="18" x2="12" y2="22"></line>
       <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line>
@@ -953,7 +954,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, doc, onSnapshot, setDoc, addDoc, updateDoc, deleteDoc, writeBatch, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    const APP_VERSION = "6.2.4";
+    const APP_VERSION = "6.2.5";
     const firebaseConfig = {
       apiKey: "AIzaSyAMznXG0OXHqMdfrmOGHK-g08TugsYfWw8",
       authDomain: "garage-stock-747e8.firebaseapp.com",
@@ -1034,7 +1035,7 @@
       searchCollapsibleWrap: document.getElementById('searchCollapsibleWrap')
     };
 
-    // EXACT VIDEO 2 PULL-TO-REFRESH & COLLAPSIBLE SEARCH BAR MECHANIC
+    // PULL-TO-REFRESH & COLLAPSIBLE SEARCH BAR MECHANIC
     function setupPullToRefreshAndCollapsibleSearch() {
       let startY = 0;
       let lastScrollY = 0;

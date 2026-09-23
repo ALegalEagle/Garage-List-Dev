@@ -13,7 +13,7 @@
 
   <script>
     (function() {
-      const APP_VER = "6.9.2";
+      const APP_VER = "6.9.4";
       const isDev = window.location.pathname.toLowerCase().includes('dev');
       const appName = isDev ? "Garage DEV" : "Garage List";
       const appIcon = isDev ? "blueprint-icon.png" : "apple-touch-icon.png";
@@ -207,7 +207,7 @@
     .batch-delete-bar { position: fixed; bottom: calc(env(safe-area-inset-bottom, 16px) + 78px); left: 50%; transform: translateX(-50%) translateY(40px); background: var(--out-badge); color: white; padding: 12px 24px; border-radius: 30px; font-size: 14px; font-weight: 800; box-shadow: 0 10px 25px rgba(220, 38, 38, 0.35); z-index: 91; opacity: 0; pointer-events: none; transition: all 0.2s ease; cursor: pointer; }
     .batch-delete-bar.active { opacity: 1; pointer-events: auto; transform: translateX(-50%) translateY(0); }
 
-    /* MODAL AND HUD SCANNER STYLING */
+    /* MODAL OVERLAY STYLING */
     .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 99; align-items: flex-end; justify-content: center; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
     .modal-overlay.open { display: flex; }
     #scannerModalOverlay { z-index: 105; }
@@ -234,7 +234,7 @@
     .modal-step-btn { background: var(--card-bg); border: 1px solid var(--border); font-size: 20px; font-weight: 800; color: var(--text); width: 40px; height: 40px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; position: relative; }
     .modal-step-val { font-size: 20px; font-weight: 800; }
 
-    /* FORCE HIDE HTML5-QRCODE BUILT-IN WHITE CORNER SVGs */
+    /* HIDE DEFAULT HTML5-QRCODE SVGs */
     #scannerRegion svg, 
     #scannerRegion__scan_region svg, 
     #qr-shaded-region {
@@ -257,70 +257,32 @@
       object-fit: cover !important;
     }
 
-    /* CUSTOM HUD OVERLAY VIEWFINDER */
+    /* RELIABLE ABSOLUTE HUD OVERLAY RETICLE */
     .hud-viewfinder {
       position: absolute;
       inset: 0;
       pointer-events: none;
-      z-index: 10;
+      z-index: 30;
       display: flex;
       align-items: center;
       justify-content: center;
     }
 
     .hud-box {
-      width: 230px;
-      height: 230px;
+      width: 220px;
+      height: 220px;
       border-radius: 24px;
+      border: 3px solid rgba(255, 255, 255, 0.85);
       position: relative;
       box-shadow: 0 0 0 4000px rgba(0, 0, 0, 0.52);
-      transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    .hud-corner {
-      position: absolute;
-      width: 28px;
-      height: 28px;
-      border-color: rgba(255, 255, 255, 0.9);
-      border-style: solid;
-      border-width: 0;
-      transition: border-color 0.2s ease, transform 0.2s ease;
-    }
-    .hud-corner.tl { top: 0; left: 0; border-top-width: 3.5px; border-left-width: 3.5px; border-top-left-radius: 18px; }
-    .hud-corner.tr { top: 0; right: 0; border-top-width: 3.5px; border-right-width: 3.5px; border-top-right-radius: 18px; }
-    .hud-corner.bl { bottom: 0; left: 0; border-bottom-width: 3.5px; border-left-width: 3.5px; border-bottom-left-radius: 18px; }
-    .hud-corner.br { bottom: 0; right: 0; border-bottom-width: 3.5px; border-right-width: 3.5px; border-bottom-right-radius: 18px; }
-
-    .hud-laser {
-      position: absolute;
-      left: 10px;
-      right: 10px;
-      height: 2.5px;
-      background: linear-gradient(90deg, rgba(217,119,6,0) 0%, rgba(217,119,6,1) 50%, rgba(217,119,6,0) 100%);
-      box-shadow: 0 0 12px rgba(217, 119, 6, 0.9);
-      top: 10px;
-      animation: scanLaser 2.2s ease-in-out infinite alternate;
-      border-radius: 2px;
-      z-index: 12;
-    }
-
-    @keyframes scanLaser {
-      0% { top: 12px; opacity: 0.3; }
-      50% { opacity: 1; }
-      100% { top: 216px; opacity: 0.3; }
-    }
-
-    /* SOLID GREEN VIEWFINDER SUCCESS STATE */
-    .hud-box.success-pulse {
-      border: 3.5px solid #22C55E !important;
-      box-shadow: 0 0 24px rgba(34, 197, 94, 0.7), 0 0 0 4000px rgba(34, 197, 94, 0.22) !important;
-      transform: scale(1.03);
-    }
-    .hud-box.success-pulse .hud-corner {
+    /* GREEN SUCCESS STATE */
+    .hud-box.flash-green {
       border-color: #22C55E !important;
-    }
-    .hud-box.success-pulse .hud-laser {
-      display: none !important;
+      box-shadow: 0 0 28px rgba(34, 197, 94, 0.8), 0 0 0 4000px rgba(34, 197, 94, 0.25) !important;
+      transform: scale(1.04);
     }
 
     .success-checkmark-badge {
@@ -329,14 +291,14 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 58px;
+      font-size: 64px;
       color: #22C55E;
       opacity: 0;
-      transform: scale(0.6);
-      transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-      z-index: 15;
+      transform: scale(0.5);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    .hud-box.success-pulse .success-checkmark-badge {
+
+    .hud-box.flash-green .success-checkmark-badge {
       opacity: 1 !important;
       transform: scale(1) !important;
     }
@@ -503,7 +465,7 @@
     </svg>
   </button>
 
-  <!-- REDESIGNED BARCODE SCANNER MODAL -->
+  <!-- BARCODE SCANNER MODAL -->
   <div class="modal-overlay" id="scannerModalOverlay" onclick="if(event.target===this) closeScannerModal()">
     <div class="modal">
       <div class="modal-top-bar">
@@ -515,11 +477,6 @@
       <div id="scannerRegion">
         <div class="hud-viewfinder">
           <div class="hud-box" id="hudBox">
-            <div class="hud-corner tl"></div>
-            <div class="hud-corner tr"></div>
-            <div class="hud-corner bl"></div>
-            <div class="hud-corner br"></div>
-            <div class="hud-laser" id="hudLaser"></div>
             <div class="success-checkmark-badge">✓</div>
           </div>
         </div>
@@ -634,6 +591,7 @@
 
     let html5QrCode = null;
     let isScannerRunning = false;
+    let globalAudioCtx = null;
 
     let isScrolling = false;
     let scrollTimeout = null;
@@ -648,6 +606,32 @@
       if ('vibrate' in navigator) {
         try { navigator.vibrate(ms); } catch (e) {}
       }
+    }
+
+    // UNLOCK AUDIO ENGINE DIRECTLY ON USER GESTURE
+    function unlockAudioContext() {
+      if (!globalAudioCtx) {
+        globalAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (globalAudioCtx.state === 'suspended') {
+        globalAudioCtx.resume();
+      }
+    }
+
+    function playBeepSound() {
+      try {
+        unlockAudioContext();
+        if (!globalAudioCtx) return;
+        const osc = globalAudioCtx.createOscillator();
+        const gain = globalAudioCtx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(880, globalAudioCtx.currentTime);
+        gain.gain.setValueAtTime(0.15, globalAudioCtx.currentTime);
+        osc.connect(gain);
+        gain.connect(globalAudioCtx.destination);
+        osc.start();
+        osc.stop(globalAudioCtx.currentTime + 0.12);
+      } catch (e) {}
     }
 
     const dom = {
@@ -735,21 +719,6 @@
       updateBatchDeleteBar();
       triggerAndroidHaptic(50);
     };
-
-    function playBeepSound() {
-      try {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = "sine";
-        osc.frequency.setValueAtTime(880, ctx.currentTime);
-        gain.gain.setValueAtTime(0.12, ctx.currentTime);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start();
-        osc.stop(ctx.currentTime + 0.12);
-      } catch (e) {}
-    }
 
     const tabMap = ['inventory', 'shopping', 'settings'];
 
@@ -896,15 +865,17 @@
 
     /* SCANNER CONTROLLER */
     window.openScannerFromAddModal = function() {
+      unlockAudioContext();
       if (isScrolling) return;
       dom.addModalOverlay.classList.remove('open');
       openScannerModal();
     };
 
     window.openScannerModal = async function() {
+      unlockAudioContext();
       dom.scannerStatusText.innerText = "Initializing camera...";
       dom.scannerModalOverlay.classList.add('open');
-      if (dom.hudBox) dom.hudBox.classList.remove('success-pulse');
+      if (dom.hudBox) dom.hudBox.classList.remove('flash-green');
 
       if (html5QrCode) {
         try {
@@ -920,7 +891,7 @@
       try {
         await html5QrCode.start(
           { facingMode: "environment" },
-          { fps: 15, qrbox: { width: 230, height: 230 } },
+          { fps: 15, qrbox: { width: 220, height: 220 } },
           onBarcodeScanned,
           () => {}
         );
@@ -938,7 +909,7 @@
         try { await html5QrCode.stop(); } catch (e) {}
         isScannerRunning = false;
       }
-      if (dom.hudBox) dom.hudBox.classList.remove('success-pulse');
+      if (dom.hudBox) dom.hudBox.classList.remove('flash-green');
       dom.scannerModalOverlay.classList.remove('open');
       dom.addModalOverlay.classList.add('open');
       triggerAndroidHaptic(25);
@@ -948,17 +919,17 @@
       playBeepSound();
       triggerAndroidHaptic(90);
 
-      // Turn viewfinder border green & pop checkmark badge
-      if (dom.hudBox) dom.hudBox.classList.add('success-pulse');
+      // Flash reticle border solid green
+      if (dom.hudBox) dom.hudBox.classList.add('flash-green');
       dom.scannerStatusText.innerText = "Barcode Scanned!";
 
-      setTimeout(async () => {
-        if (html5QrCode && isScannerRunning) {
-          try { await html5QrCode.stop(); } catch (e) {}
-          isScannerRunning = false;
-        }
+      if (html5QrCode && isScannerRunning) {
+        try { await html5QrCode.stop(); } catch (e) {}
+        isScannerRunning = false;
+      }
 
-        if (dom.hudBox) dom.hudBox.classList.remove('success-pulse');
+      setTimeout(async () => {
+        if (dom.hudBox) dom.hudBox.classList.remove('flash-green');
         dom.scannerModalOverlay.classList.remove('open');
 
         const existingItem = items.find(i => i.barcode === decodedText);
@@ -990,11 +961,14 @@
           dom.newItemName.value = fetchedName || "";
           dom.newItemBarcode.value = decodedText;
         }
-      }, 900);
+      }, 750);
     }
 
     // ADD MODAL
-    window.openAddModal = function() { toggleAddModal(true); };
+    window.openAddModal = function() { 
+      unlockAudioContext(); 
+      toggleAddModal(true); 
+    };
 
     window.toggleAddModal = function(show) {
       if (isScrolling) return;

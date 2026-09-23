@@ -11,10 +11,9 @@
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
 
-  <!-- Universal Environment Auto-Detector with Cache Versioning -->
   <script>
     (function() {
-      const APP_VER = "6.8.1";
+      const APP_VER = "6.9.0";
       const isDev = window.location.pathname.toLowerCase().includes('dev');
       const appName = isDev ? "Garage DEV" : "Garage List";
       const appIcon = isDev ? "blueprint-icon.png" : "apple-touch-icon.png";
@@ -75,36 +74,16 @@
       --card-radius: 22px;
     }
 
-    [data-palette="pantry"] {
-      --bg: #FDFBF7; --card-bg: #FFFFFF; --text: #2C2523; --text-muted: #786C66; --border: #EFE8DE; --pill-bg: #F5EFE6; --stepper-bg: #FAF6F0; --fab-bg: #D97706; --fab-text: #FFFFFF; --pill-bar-bg: #F5EFE6; --pill-bar-border: #EFE8DE; --pill-active-bg: #FFFFFF; --pill-icon: #786C66; --pill-icon-active: #2C2523;
-    }
-    [data-palette="earthy"] {
-      --bg: #EAE6DF; --card-bg: #F8F6F2; --text: #1C1917; --text-muted: #78716C; --border: #D8D3CA; --pill-bg: #DFDAD1; --stepper-bg: #EAE6DF; --fab-bg: #C2410C; --fab-text: #FFFFFF; --pill-bar-bg: #DFDAD1; --pill-bar-border: #D8D3CA; --pill-active-bg: #F8F6F2; --pill-icon: #78716C; --pill-icon-active: #1C1917;
-    }
-    [data-palette="botanical"] {
-      --bg: #E8EFE8; --card-bg: #F5F8F5; --text: #192019; --text-muted: #5C6E5C; --border: #D3DDD3; --pill-bg: #DBE4DB; --stepper-bg: #E8EFE8; --fab-bg: #2E7D32; --fab-text: #FFFFFF; --pill-bar-bg: #DBE4DB; --pill-bar-border: #D3DDD3; --pill-active-bg: #F5F8F5; --pill-icon: #5C6E5C; --pill-icon-active: #192019;
-    }
-    [data-palette="nordic"] {
-      --bg: #E5E7EB; --card-bg: #F9FAFB; --text: #111827; --text-muted: #6B7280; --border: #D1D5DB; --pill-bg: #DCDFE4; --stepper-bg: #E5E7EB; --fab-bg: #475569; --fab-text: #FFFFFF; --pill-bar-bg: #DCDFE4; --pill-bar-border: #D1D5DB; --pill-active-bg: #F9FAFB; --pill-icon: #6B7280; --pill-icon-active: #111827;
-    }
-    [data-palette="espresso"] {
-      --bg: #120F0E; --card-bg: #221C1A; --text: #F5EFE6; --text-muted: #A3968E; --border: #3A302C; --pill-bg: #2C2421; --stepper-bg: #171312; --fab-bg: #EAB308; --fab-text: #120F0E; --pill-bar-bg: #221C1A; --pill-bar-border: #3A302C; --pill-active-bg: #2C2421; --pill-icon: #A3968E; --pill-icon-active: #F5EFE6;
-    }
-    [data-palette="terracotta"] {
-      --bg: #F4ECE1; --card-bg: #FAF5EE; --text: #2D241E; --text-muted: #857468; --border: #E5D7C8; --pill-bg: #EADDCF; --stepper-bg: #F4ECE1; --fab-bg: #C85A32; --fab-text: #FFFFFF; --pill-bar-bg: #EADDCF; --pill-bar-border: #E5D7C8; --pill-active-bg: #FAF5EE; --pill-icon: #857468; --pill-icon-active: #2D241E;
-    }
-    [data-palette="industrial"] {
-      --bg: #DFDED9; --card-bg: #F2F1ED; --text: #1A1A1A; --text-muted: #6E6D6A; --border: #CECCC5; --pill-bg: #D5D3CC; --stepper-bg: #DFDED9; --fab-bg: #EA580C; --fab-text: #FFFFFF; --pill-bar-bg: #D5D3CC; --pill-bar-border: #CECCC5; --pill-active-bg: #F2F1ED; --pill-icon: #6E6D6A; --pill-icon-active: #1A1A1A;
-    }
-    [data-palette="muji"] {
-      --bg: #F2EFE9; --card-bg: #FAF8F5; --text: #2B2B2B; --text-muted: #7A7875; --border: #E2DDD5; --pill-bg: #E8E3DA; --stepper-bg: #F2EFE9; --fab-bg: #8C6D53; --fab-text: #FFFFFF; --pill-bar-bg: #E8E3DA; --pill-bar-border: #E2DDD5; --pill-active-bg: #FAF8F5; --pill-icon: #7A7875; --pill-icon-active: #2B2B2B;
-    }
-    [data-palette="midcentury"] {
-      --bg: #F3EEDD; --card-bg: #FAF7EE; --text: #23211E; --text-muted: #78736A; --border: #E4DCC7; --pill-bg: #EADFCA; --stepper-bg: #F3EEDD; --fab-bg: #CA8A04; --fab-text: #FFFFFF; --pill-bar-bg: #EADFCA; --pill-bar-border: #E4DCC7; --pill-active-bg: #FAF7EE; --pill-icon: #78736A; --pill-icon-active: #23211E;
-    }
-    [data-palette="moss"] {
-      --bg: #E2E8E2; --card-bg: #F2F5F2; --text: #1B241B; --text-muted: #606E60; --border: #CBD5CB; --pill-bg: #D5E0D5; --stepper-bg: #E2E8E2; --fab-bg: #3B6E44; --fab-text: #FFFFFF; --pill-bar-bg: #D5E0D5; --pill-bar-border: #CBD5CB; --pill-active-bg: #F2F5F2; --pill-icon: #606E60; --pill-icon-active: #1B241B;
-    }
+    [data-palette="pantry"] { --bg: #FDFBF7; --card-bg: #FFFFFF; --text: #2C2523; --text-muted: #786C66; --border: #EFE8DE; --pill-bg: #F5EFE6; --stepper-bg: #FAF6F0; --fab-bg: #D97706; --fab-text: #FFFFFF; --pill-bar-bg: #F5EFE6; --pill-bar-border: #EFE8DE; --pill-active-bg: #FFFFFF; --pill-icon: #786C66; --pill-icon-active: #2C2523; }
+    [data-palette="earthy"] { --bg: #EAE6DF; --card-bg: #F8F6F2; --text: #1C1917; --text-muted: #78716C; --border: #D8D3CA; --pill-bg: #DFDAD1; --stepper-bg: #EAE6DF; --fab-bg: #C2410C; --fab-text: #FFFFFF; --pill-bar-bg: #DFDAD1; --pill-bar-border: #D8D3CA; --pill-active-bg: #F8F6F2; --pill-icon: #78716C; --pill-icon-active: #1C1917; }
+    [data-palette="botanical"] { --bg: #E8EFE8; --card-bg: #F5F8F5; --text: #192019; --text-muted: #5C6E5C; --border: #D3DDD3; --pill-bg: #DBE4DB; --stepper-bg: #E8EFE8; --fab-bg: #2E7D32; --fab-text: #FFFFFF; --pill-bar-bg: #DBE4DB; --pill-bar-border: #D3DDD3; --pill-active-bg: #F5F8F5; --pill-icon: #5C6E5C; --pill-icon-active: #192019; }
+    [data-palette="nordic"] { --bg: #E5E7EB; --card-bg: #F9FAFB; --text: #111827; --text-muted: #6B7280; --border: #D1D5DB; --pill-bg: #DCDFE4; --stepper-bg: #E5E7EB; --fab-bg: #475569; --fab-text: #FFFFFF; --pill-bar-bg: #DCDFE4; --pill-bar-border: #D1D5DB; --pill-active-bg: #F9FAFB; --pill-icon: #6B7280; --pill-icon-active: #111827; }
+    [data-palette="espresso"] { --bg: #120F0E; --card-bg: #221C1A; --text: #F5EFE6; --text-muted: #A3968E; --border: #3A302C; --pill-bg: #2C2421; --stepper-bg: #171312; --fab-bg: #EAB308; --fab-text: #120F0E; --pill-bar-bg: #221C1A; --pill-bar-border: #3A302C; --pill-active-bg: #2C2421; --pill-icon: #A3968E; --pill-icon-active: #F5EFE6; }
+    [data-palette="terracotta"] { --bg: #F4ECE1; --card-bg: #FAF5EE; --text: #2D241E; --text-muted: #857468; --border: #E5D7C8; --pill-bg: #EADDCF; --stepper-bg: #F4ECE1; --fab-bg: #C85A32; --fab-text: #FFFFFF; --pill-bar-bg: #EADDCF; --pill-bar-border: #E5D7C8; --pill-active-bg: #FAF5EE; --pill-icon: #857468; --pill-icon-active: #2D241E; }
+    [data-palette="industrial"] { --bg: #DFDED9; --card-bg: #F2F1ED; --text: #1A1A1A; --text-muted: #6E6D6A; --border: #CECCC5; --pill-bg: #D5D3CC; --stepper-bg: #DFDED9; --fab-bg: #EA580C; --fab-text: #FFFFFF; --pill-bar-bg: #D5D3CC; --pill-bar-border: #CECCC5; --pill-active-bg: #F2F1ED; --pill-icon: #6E6D6A; --pill-icon-active: #1A1A1A; }
+    [data-palette="muji"] { --bg: #F2EFE9; --card-bg: #FAF8F5; --text: #2B2B2B; --text-muted: #7A7875; --border: #E2DDD5; --pill-bg: #E8E3DA; --stepper-bg: #F2EFE9; --fab-bg: #8C6D53; --fab-text: #FFFFFF; --pill-bar-bg: #E8E3DA; --pill-bar-border: #E2DDD5; --pill-active-bg: #FAF8F5; --pill-icon: #7A7875; --pill-icon-active: #2B2B2B; }
+    [data-palette="midcentury"] { --bg: #F3EEDD; --card-bg: #FAF7EE; --text: #23211E; --text-muted: #78736A; --border: #E4DCC7; --pill-bg: #EADFCA; --stepper-bg: #F3EEDD; --fab-bg: #CA8A04; --fab-text: #FFFFFF; --pill-bar-bg: #EADFCA; --pill-bar-border: #E4DCC7; --pill-active-bg: #FAF7EE; --pill-icon: #78736A; --pill-icon-active: #23211E; }
+    [data-palette="moss"] { --bg: #E2E8E2; --card-bg: #F2F5F2; --text: #1B241B; --text-muted: #606E60; --border: #CBD5CB; --pill-bg: #D5E0D5; --stepper-bg: #E2E8E2; --fab-bg: #3B6E44; --fab-text: #FFFFFF; --pill-bar-bg: #D5E0D5; --pill-bar-border: #CBD5CB; --pill-active-bg: #F2F5F2; --pill-icon: #606E60; --pill-icon-active: #1B241B; }
 
     body.dark {
       --bg: #1A1615; --card-bg: #272220; --text: #F5EFE6; --text-muted: #A3968E; --border: #3D3532; --pill-bg: #332C29; --stepper-bg: #1A1615; --fab-bg: #F59E0B; --fab-text: #1A1615; --pill-bar-bg: #272220; --pill-bar-border: #3D3532; --pill-active-bg: #332C29; --pill-icon: #A3968E; --pill-icon-active: #F5EFE6; --out-border: #EF4444; --out-badge: #EF4444; --out-bg: #3B1414; --low-border: #F59E0B; --low-badge: #F59E0B; --low-bg: #3B2A14; --synced-color: #4ADE80; --bring-color: #EF4444; --skeleton-bg: #3D3532; --card-shadow: 0 6px 22px rgba(0, 0, 0, 0.32); --card-radius: 22px;
@@ -228,8 +207,8 @@
     .batch-delete-bar { position: fixed; bottom: calc(env(safe-area-inset-bottom, 16px) + 78px); left: 50%; transform: translateX(-50%) translateY(40px); background: var(--out-badge); color: white; padding: 12px 24px; border-radius: 30px; font-size: 14px; font-weight: 800; box-shadow: 0 10px 25px rgba(220, 38, 38, 0.35); z-index: 91; opacity: 0; pointer-events: none; transition: all 0.2s ease; cursor: pointer; }
     .batch-delete-bar.active { opacity: 1; pointer-events: auto; transform: translateX(-50%) translateY(0); }
 
-    /* Modals & Reticle Animations */
-    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 99; align-items: flex-end; justify-content: center; }
+    /* REDESIGNED NATIVE SCANNER HUD & LASER ANIMATION */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 99; align-items: flex-end; justify-content: center; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
     .modal-overlay.open { display: flex; }
     #scannerModalOverlay { z-index: 105; }
 
@@ -255,59 +234,106 @@
     .modal-step-btn { background: var(--card-bg); border: 1px solid var(--border); font-size: 20px; font-weight: 800; color: var(--text); width: 40px; height: 40px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; position: relative; }
     .modal-step-val { font-size: 20px; font-weight: 800; }
 
-    /* SCANNER RETICLE & OVERLAY FLASH CONTROLS */
-    #scannerRegion { position: relative; width: 100%; min-height: 260px; background: #000; border-radius: 18px; overflow: hidden; transition: border 0.1s ease; }
-    
-    #scannerRegion.flash-green {
-      border: 4px solid #22C55E !important;
+    /* CUSTOM CAMERA HUD VIEWPORT */
+    #scannerRegion { 
+      position: relative; 
+      width: 100%; 
+      height: 320px; 
+      background: #000; 
+      border-radius: 22px; 
+      overflow: hidden; 
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
     }
 
-    .scan-reticle { 
-      position: absolute; 
-      inset: 20px; 
-      pointer-events: none; 
-      border: 2px dashed rgba(217, 119, 6, 0.85); 
-      border-radius: 16px; 
-      z-index: 2; 
+    #scannerRegion video {
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover !important;
     }
 
-    .scan-flash-overlay {
+    /* Clean Overlay Target Viewfinder */
+    .hud-viewfinder {
       position: absolute;
       inset: 0;
-      background: rgba(34, 197, 94, 0.35);
-      z-index: 999;
       pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.1s ease;
-    }
-    .scan-flash-overlay.active {
-      opacity: 1;
-    }
-
-    .torch-btn {
-      position: absolute;
-      top: 14px;
-      right: 14px;
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      background: rgba(0, 0, 0, 0.55);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      border: 1px solid rgba(255, 255, 255, 0.25);
-      color: white;
-      font-size: 18px;
+      z-index: 10;
       display: flex;
       align-items: center;
       justify-content: center;
-      cursor: pointer;
-      z-index: 10;
-      transition: background 0.2s ease, transform 0.15s ease;
     }
-    .torch-btn.torch-active {
-      background: #EAB308 !important;
-      color: #120F0E !important;
-      border-color: #EAB308 !important;
+
+    .hud-box {
+      width: 230px;
+      height: 230px;
+      border-radius: 24px;
+      position: relative;
+      box-shadow: 0 0 0 4000px rgba(0, 0, 0, 0.52);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .hud-corner {
+      position: absolute;
+      width: 28px;
+      height: 28px;
+      border-color: rgba(255, 255, 255, 0.9);
+      border-style: solid;
+      border-width: 0;
+      transition: border-color 0.2s ease, transform 0.2s ease;
+    }
+    .hud-corner.tl { top: 0; left: 0; border-top-width: 3.5px; border-left-width: 3.5px; border-top-left-radius: 18px; }
+    .hud-corner.tr { top: 0; right: 0; border-top-width: 3.5px; border-right-width: 3.5px; border-top-right-radius: 18px; }
+    .hud-corner.bl { bottom: 0; left: 0; border-bottom-width: 3.5px; border-left-width: 3.5px; border-bottom-left-radius: 18px; }
+    .hud-corner.br { bottom: 0; right: 0; border-bottom-width: 3.5px; border-right-width: 3.5px; border-bottom-right-radius: 18px; }
+
+    /* Animated Laser Scanner Line */
+    .hud-laser {
+      position: absolute;
+      left: 10px;
+      right: 10px;
+      height: 2.5px;
+      background: linear-gradient(90deg, rgba(217,119,6,0) 0%, rgba(217,119,6,1) 50%, rgba(217,119,6,0) 100%);
+      box-shadow: 0 0 12px rgba(217, 119, 6, 0.9);
+      top: 10px;
+      animation: scanLaser 2.2s ease-in-out infinite alternate;
+      border-radius: 2px;
+      z-index: 12;
+    }
+
+    @keyframes scanLaser {
+      0% { top: 12px; opacity: 0.3; }
+      50% { opacity: 1; }
+      100% { top: 216px; opacity: 0.3; }
+    }
+
+    /* Long Success Pulse State */
+    .hud-box.success-pulse {
+      box-shadow: 0 0 0 4000px rgba(34, 197, 94, 0.25) !important;
+      border: 3px solid #22C55E !important;
+      transform: scale(1.04);
+    }
+    .hud-box.success-pulse .hud-corner {
+      border-color: #22C55E !important;
+    }
+    .hud-box.success-pulse .hud-laser {
+      display: none !important;
+    }
+
+    .success-checkmark-badge {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 54px;
+      color: #22C55E;
+      opacity: 0;
+      transform: scale(0.6);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 15;
+    }
+    .hud-box.success-pulse .success-checkmark-badge {
+      opacity: 1;
+      transform: scale(1);
     }
 
     .cat-manage-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--border); }
@@ -472,7 +498,7 @@
     </svg>
   </button>
 
-  <!-- BARCODE SCANNER MODAL WITH FULL OVERLAY FLASH -->
+  <!-- REDESIGNED BARCODE SCANNER MODAL WITH NATIVE HUD -->
   <div class="modal-overlay" id="scannerModalOverlay" onclick="if(event.target===this) closeScannerModal()">
     <div class="modal">
       <div class="modal-top-bar">
@@ -480,12 +506,22 @@
         <div class="modal-title-header">Barcode Scanner</div>
         <div style="width: 48px;"></div>
       </div>
+      
       <div id="scannerRegion">
-        <div class="scan-flash-overlay" id="scanFlashOverlay"></div>
-        <button class="torch-btn" id="btnTorchToggle" onclick="toggleScannerTorch(event)" title="Toggle Flashlight" style="display:none;">🔦</button>
-        <div class="scan-reticle" id="scanReticleBox"></div>
+        <!-- Overlay Viewfinder Corners & Laser -->
+        <div class="hud-viewfinder">
+          <div class="hud-box" id="hudBox">
+            <div class="hud-corner tl"></div>
+            <div class="hud-corner tr"></div>
+            <div class="hud-corner bl"></div>
+            <div class="hud-corner br"></div>
+            <div class="hud-laser" id="hudLaser"></div>
+            <div class="success-checkmark-badge">✓</div>
+          </div>
+        </div>
       </div>
-      <div id="scannerStatusText" style="margin-top: 12px; font-size: 13px; color: var(--text-muted); text-align: center;">Point camera at barcode</div>
+      
+      <div id="scannerStatusText" style="margin-top: 14px; font-size: 13px; font-weight: 600; color: var(--text-muted); text-align: center;">Position barcode inside frame</div>
     </div>
   </div>
 
@@ -594,7 +630,6 @@
 
     let html5QrCode = null;
     let isScannerRunning = false;
-    let isTorchOn = false;
 
     let isScrolling = false;
     let scrollTimeout = null;
@@ -635,8 +670,7 @@
       modalQtyVal: document.getElementById('modalQtyVal'),
       scannerModalOverlay: document.getElementById('scannerModalOverlay'),
       scannerStatusText: document.getElementById('scannerStatusText'),
-      scanReticleBox: document.getElementById('scanReticleBox'),
-      btnTorchToggle: document.getElementById('btnTorchToggle'),
+      hudBox: document.getElementById('hudBox'),
       editCatModalOverlay: document.getElementById('editCatModalOverlay'),
       editCatPickerGrid: document.getElementById('editCatPickerGrid'),
       editCatItemName: document.getElementById('editCatItemName'),
@@ -856,7 +890,7 @@
       }).catch(console.error);
     };
 
-    /* ENHANCED SCANNER ENGINE WITH TORCH & SUCCESS OVERLAY FLASH */
+    /* REDESIGNED NATIVE HUD SCANNER CONTROLLER */
     window.openScannerFromAddModal = function() {
       if (isScrolling) return;
       dom.addModalOverlay.classList.remove('open');
@@ -866,14 +900,7 @@
     window.openScannerModal = async function() {
       dom.scannerStatusText.innerText = "Initializing camera...";
       dom.scannerModalOverlay.classList.add('open');
-
-      const overlay = document.getElementById('scanFlashOverlay');
-      const region = document.getElementById('scannerRegion');
-      if (overlay) overlay.classList.remove('active');
-      if (region) region.classList.remove('flash-green');
-
-      isTorchOn = false;
-      dom.btnTorchToggle.classList.remove('torch-active');
+      dom.hudBox.classList.remove('success-pulse');
 
       if (html5QrCode) {
         try {
@@ -889,45 +916,17 @@
       try {
         await html5QrCode.start(
           { facingMode: "environment" },
-          { fps: 12, qrbox: { width: 220, height: 220 } },
+          { fps: 15, qrbox: { width: 230, height: 230 } },
           onBarcodeScanned,
           () => {}
         );
         isScannerRunning = true;
-        dom.scannerStatusText.innerText = "Point camera at barcode";
-
-        try {
-          const capabilities = html5QrCode.getRunningTrackCapabilities();
-          if (capabilities && capabilities.torch) {
-            dom.btnTorchToggle.style.display = 'flex';
-          } else {
-            dom.btnTorchToggle.style.display = 'none';
-          }
-        } catch (e) {
-          dom.btnTorchToggle.style.display = 'none';
-        }
-
+        dom.scannerStatusText.innerText = "Position barcode inside frame";
       } catch (err) {
         console.error("Camera access failed:", err);
         dom.scannerStatusText.innerText = "Unable to access camera.";
       }
       triggerAndroidHaptic(30);
-    };
-
-    window.toggleScannerTorch = async function(event) {
-      if (event) event.stopPropagation();
-      if (!html5QrCode || !isScannerRunning) return;
-
-      try {
-        isTorchOn = !isTorchOn;
-        await html5QrCode.applyVideoConstraints({
-          advanced: [{ torch: isTorchOn }]
-        });
-        dom.btnTorchToggle.classList.toggle('torch-active', isTorchOn);
-        triggerAndroidHaptic(20);
-      } catch (e) {
-        console.warn("Torch control error:", e);
-      }
     };
 
     window.closeScannerModal = async function() {
@@ -942,23 +941,21 @@
 
     async function onBarcodeScanned(decodedText) {
       playBeepSound();
-      triggerAndroidHaptic(80);
+      triggerAndroidHaptic(90);
 
-      // Trigger high-contrast green flash overlay
-      const overlay = document.getElementById('scanFlashOverlay');
-      const region = document.getElementById('scannerRegion');
-      if (overlay) overlay.classList.add('active');
-      if (region) region.classList.add('flash-green');
+      // Trigger high-contrast green success HUD state
+      dom.hudBox.classList.add('success-pulse');
+      dom.scannerStatusText.innerText = "Barcode Detected!";
 
       if (html5QrCode && isScannerRunning) {
         try { await html5QrCode.stop(); } catch (e) {}
         isScannerRunning = false;
       }
 
+      // 850ms hold time for high visibility
       setTimeout(async () => {
-        if (overlay) overlay.classList.remove('active');
-        if (region) region.classList.remove('flash-green');
         dom.scannerModalOverlay.classList.remove('open');
+        dom.hudBox.classList.remove('success-pulse');
 
         const existingItem = items.find(i => i.barcode === decodedText);
 
@@ -989,7 +986,7 @@
           dom.newItemName.value = fetchedName || "";
           dom.newItemBarcode.value = decodedText;
         }
-      }, 350);
+      }, 850);
     }
 
     // ADD MODAL

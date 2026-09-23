@@ -13,7 +13,7 @@
 
   <script>
     (function() {
-      const APP_VER = "6.9.0";
+      const APP_VER = "6.9.1";
       const isDev = window.location.pathname.toLowerCase().includes('dev');
       const appName = isDev ? "Garage DEV" : "Garage List";
       const appIcon = isDev ? "blueprint-icon.png" : "apple-touch-icon.png";
@@ -207,7 +207,7 @@
     .batch-delete-bar { position: fixed; bottom: calc(env(safe-area-inset-bottom, 16px) + 78px); left: 50%; transform: translateX(-50%) translateY(40px); background: var(--out-badge); color: white; padding: 12px 24px; border-radius: 30px; font-size: 14px; font-weight: 800; box-shadow: 0 10px 25px rgba(220, 38, 38, 0.35); z-index: 91; opacity: 0; pointer-events: none; transition: all 0.2s ease; cursor: pointer; }
     .batch-delete-bar.active { opacity: 1; pointer-events: auto; transform: translateX(-50%) translateY(0); }
 
-    /* REDESIGNED NATIVE SCANNER HUD & LASER ANIMATION */
+    /* MODAL AND HUD SCANNER STYLING */
     .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 99; align-items: flex-end; justify-content: center; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
     .modal-overlay.open { display: flex; }
     #scannerModalOverlay { z-index: 105; }
@@ -234,7 +234,13 @@
     .modal-step-btn { background: var(--card-bg); border: 1px solid var(--border); font-size: 20px; font-weight: 800; color: var(--text); width: 40px; height: 40px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; position: relative; }
     .modal-step-val { font-size: 20px; font-weight: 800; }
 
-    /* CUSTOM CAMERA HUD VIEWPORT */
+    /* FORCE HIDE HTML5-QRCODE BUILT-IN WHITE CORNER SVGs */
+    #scannerRegion svg, 
+    #scannerRegion__scan_region svg, 
+    #qr-shaded-region {
+      display: none !important;
+    }
+
     #scannerRegion { 
       position: relative; 
       width: 100%; 
@@ -251,7 +257,7 @@
       object-fit: cover !important;
     }
 
-    /* Clean Overlay Target Viewfinder */
+    /* CUSTOM HUD OVERLAY VIEWFINDER */
     .hud-viewfinder {
       position: absolute;
       inset: 0;
@@ -285,7 +291,6 @@
     .hud-corner.bl { bottom: 0; left: 0; border-bottom-width: 3.5px; border-left-width: 3.5px; border-bottom-left-radius: 18px; }
     .hud-corner.br { bottom: 0; right: 0; border-bottom-width: 3.5px; border-right-width: 3.5px; border-bottom-right-radius: 18px; }
 
-    /* Animated Laser Scanner Line */
     .hud-laser {
       position: absolute;
       left: 10px;
@@ -305,7 +310,6 @@
       100% { top: 216px; opacity: 0.3; }
     }
 
-    /* Long Success Pulse State */
     .hud-box.success-pulse {
       box-shadow: 0 0 0 4000px rgba(34, 197, 94, 0.25) !important;
       border: 3px solid #22C55E !important;
@@ -498,7 +502,7 @@
     </svg>
   </button>
 
-  <!-- REDESIGNED BARCODE SCANNER MODAL WITH NATIVE HUD -->
+  <!-- REDESIGNED BARCODE SCANNER MODAL WITH CLEAN HUD -->
   <div class="modal-overlay" id="scannerModalOverlay" onclick="if(event.target===this) closeScannerModal()">
     <div class="modal">
       <div class="modal-top-bar">
@@ -508,7 +512,6 @@
       </div>
       
       <div id="scannerRegion">
-        <!-- Overlay Viewfinder Corners & Laser -->
         <div class="hud-viewfinder">
           <div class="hud-box" id="hudBox">
             <div class="hud-corner tl"></div>
@@ -890,7 +893,7 @@
       }).catch(console.error);
     };
 
-    /* REDESIGNED NATIVE HUD SCANNER CONTROLLER */
+    /* SCANNER CONTROLLER WITH CLEANUP */
     window.openScannerFromAddModal = function() {
       if (isScrolling) return;
       dom.addModalOverlay.classList.remove('open');
@@ -934,6 +937,7 @@
         try { await html5QrCode.stop(); } catch (e) {}
         isScannerRunning = false;
       }
+      dom.hudBox.classList.remove('success-pulse');
       dom.scannerModalOverlay.classList.remove('open');
       dom.addModalOverlay.classList.add('open');
       triggerAndroidHaptic(25);
@@ -943,7 +947,6 @@
       playBeepSound();
       triggerAndroidHaptic(90);
 
-      // Trigger high-contrast green success HUD state
       dom.hudBox.classList.add('success-pulse');
       dom.scannerStatusText.innerText = "Barcode Detected!";
 
@@ -952,10 +955,9 @@
         isScannerRunning = false;
       }
 
-      // 850ms hold time for high visibility
       setTimeout(async () => {
-        dom.scannerModalOverlay.classList.remove('open');
         dom.hudBox.classList.remove('success-pulse');
+        dom.scannerModalOverlay.classList.remove('open');
 
         const existingItem = items.find(i => i.barcode === decodedText);
 
@@ -986,7 +988,7 @@
           dom.newItemName.value = fetchedName || "";
           dom.newItemBarcode.value = decodedText;
         }
-      }, 850);
+      }, 700);
     }
 
     // ADD MODAL

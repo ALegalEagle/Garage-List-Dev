@@ -13,7 +13,7 @@
 
   <script>
     (function() {
-      const APP_VER = "6.9.5";
+      const APP_VER = "6.9.6";
       const isDev = window.location.pathname.toLowerCase().includes('dev');
       const appName = isDev ? "Garage DEV" : "Garage List";
       const appIcon = isDev ? "blueprint-icon.png" : "apple-touch-icon.png";
@@ -257,6 +257,32 @@
       object-fit: cover !important;
     }
 
+    /* FULL SCANNER CONTAINER FLASH OVERLAY */
+    #scanSuccessFlash {
+      position: absolute;
+      inset: 0;
+      background: rgba(34, 197, 94, 0.65);
+      z-index: 999;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.1s ease-in-out;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 22px;
+    }
+
+    #scanSuccessFlash.active {
+      opacity: 1 !important;
+    }
+
+    #scanSuccessFlash .flash-check {
+      font-size: 72px;
+      color: white;
+      font-weight: 800;
+      text-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
     /* HUD OVERLAY RETICLE */
     .hud-viewfinder {
       position: absolute;
@@ -274,32 +300,7 @@
       border-radius: 24px;
       border: 3px solid rgba(255, 255, 255, 0.85);
       position: relative;
-      /* DIMMED MASK OUTSIDE THE FINDER BOX */
       box-shadow: 0 0 0 4000px rgba(0, 0, 0, 0.52);
-      transition: box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    /* EVERYTHING AROUND THE VIEWFINDER FLASHES VIBRANT GREEN ON SUCCESS */
-    .hud-box.flash-green {
-      box-shadow: 0 0 0 4000px rgba(34, 197, 94, 0.55) !important;
-    }
-
-    .success-checkmark-badge {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 64px;
-      color: #22C55E;
-      opacity: 0;
-      transform: scale(0.5);
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .hud-box.flash-green .success-checkmark-badge {
-      opacity: 1 !important;
-      transform: scale(1) !important;
     }
 
     .cat-manage-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--border); }
@@ -474,10 +475,11 @@
       </div>
       
       <div id="scannerRegion">
+        <div id="scanSuccessFlash">
+          <div class="flash-check">✓</div>
+        </div>
         <div class="hud-viewfinder">
-          <div class="hud-box" id="hudBox">
-            <div class="success-checkmark-badge">✓</div>
-          </div>
+          <div class="hud-box" id="hudBox"></div>
         </div>
       </div>
       
@@ -607,7 +609,6 @@
       }
     }
 
-    // UNLOCK AUDIO ENGINE DIRECTLY ON USER GESTURE
     function unlockAudioContext() {
       if (!globalAudioCtx) {
         globalAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -874,7 +875,9 @@
       unlockAudioContext();
       dom.scannerStatusText.innerText = "Initializing camera...";
       dom.scannerModalOverlay.classList.add('open');
-      if (dom.hudBox) dom.hudBox.classList.remove('flash-green');
+      
+      const flashEl = document.getElementById('scanSuccessFlash');
+      if (flashEl) flashEl.classList.remove('active');
 
       if (html5QrCode) {
         try {
@@ -908,7 +911,9 @@
         try { await html5QrCode.stop(); } catch (e) {}
         isScannerRunning = false;
       }
-      if (dom.hudBox) dom.hudBox.classList.remove('flash-green');
+      const flashEl = document.getElementById('scanSuccessFlash');
+      if (flashEl) flashEl.classList.remove('active');
+      
       dom.scannerModalOverlay.classList.remove('open');
       dom.addModalOverlay.classList.add('open');
       triggerAndroidHaptic(25);
@@ -916,19 +921,23 @@
 
     async function onBarcodeScanned(decodedText) {
       playBeepSound();
-      triggerAndroidHaptic(90);
+      triggerAndroidHaptic(100);
 
-      // Flash area around viewfinder box solid green
-      if (dom.hudBox) dom.hudBox.classList.add('flash-green');
+      const flashEl = document.getElementById('scanSuccessFlash');
+      if (flashEl) flashEl.classList.add('active');
       dom.scannerStatusText.innerText = "Barcode Scanned!";
 
       if (html5QrCode && isScannerRunning) {
-        try { await html5QrCode.stop(); } catch (e) {}
-        isScannerRunning = false;
+        try { await html5QrCode.pause(true); } catch (e) {}
       }
 
       setTimeout(async () => {
-        if (dom.hudBox) dom.hudBox.classList.remove('flash-green');
+        if (html5QrCode) {
+          try { await html5QrCode.stop(); } catch (e) {}
+          isScannerRunning = false;
+        }
+
+        if (flashEl) flashEl.classList.remove('active');
         dom.scannerModalOverlay.classList.remove('open');
 
         const existingItem = items.find(i => i.barcode === decodedText);
@@ -960,7 +969,7 @@
           dom.newItemName.value = fetchedName || "";
           dom.newItemBarcode.value = decodedText;
         }
-      }, 750);
+      }, 600);
     }
 
     // ADD MODAL

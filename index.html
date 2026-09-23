@@ -14,7 +14,7 @@
   <!-- Universal Environment Auto-Detector with Cache Versioning -->
   <script>
     (function() {
-      const APP_VER = "6.8.0";
+      const APP_VER = "6.8.1";
       const isDev = window.location.pathname.toLowerCase().includes('dev');
       const appName = isDev ? "Garage DEV" : "Garage List";
       const appIcon = isDev ? "blueprint-icon.png" : "apple-touch-icon.png";
@@ -255,9 +255,13 @@
     .modal-step-btn { background: var(--card-bg); border: 1px solid var(--border); font-size: 20px; font-weight: 800; color: var(--text); width: 40px; height: 40px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; position: relative; }
     .modal-step-val { font-size: 20px; font-weight: 800; }
 
-    /* SCANNER RETICLE & TORCH CONTROLS */
-    #scannerRegion { position: relative; width: 100%; min-height: 260px; background: #000; border-radius: 18px; overflow: hidden; }
+    /* SCANNER RETICLE & OVERLAY FLASH CONTROLS */
+    #scannerRegion { position: relative; width: 100%; min-height: 260px; background: #000; border-radius: 18px; overflow: hidden; transition: border 0.1s ease; }
     
+    #scannerRegion.flash-green {
+      border: 4px solid #22C55E !important;
+    }
+
     .scan-reticle { 
       position: absolute; 
       inset: 20px; 
@@ -265,13 +269,19 @@
       border: 2px dashed rgba(217, 119, 6, 0.85); 
       border-radius: 16px; 
       z-index: 2; 
-      transition: border-color 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
     }
-    
-    .scan-reticle.scan-success {
-      border: 3px solid #22C55E !important;
-      background-color: rgba(34, 197, 94, 0.15) !important;
-      transform: scale(1.02);
+
+    .scan-flash-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(34, 197, 94, 0.35);
+      z-index: 999;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.1s ease;
+    }
+    .scan-flash-overlay.active {
+      opacity: 1;
     }
 
     .torch-btn {
@@ -462,7 +472,7 @@
     </svg>
   </button>
 
-  <!-- BARCODE SCANNER MODAL WITH TORCH BUTTON & RETICLE -->
+  <!-- BARCODE SCANNER MODAL WITH FULL OVERLAY FLASH -->
   <div class="modal-overlay" id="scannerModalOverlay" onclick="if(event.target===this) closeScannerModal()">
     <div class="modal">
       <div class="modal-top-bar">
@@ -471,6 +481,7 @@
         <div style="width: 48px;"></div>
       </div>
       <div id="scannerRegion">
+        <div class="scan-flash-overlay" id="scanFlashOverlay"></div>
         <button class="torch-btn" id="btnTorchToggle" onclick="toggleScannerTorch(event)" title="Toggle Flashlight" style="display:none;">🔦</button>
         <div class="scan-reticle" id="scanReticleBox"></div>
       </div>
@@ -845,7 +856,7 @@
       }).catch(console.error);
     };
 
-    /* ENHANCED SCANNER ENGINE WITH TORCH & SUCCESS RETICLE */
+    /* ENHANCED SCANNER ENGINE WITH TORCH & SUCCESS OVERLAY FLASH */
     window.openScannerFromAddModal = function() {
       if (isScrolling) return;
       dom.addModalOverlay.classList.remove('open');
@@ -855,7 +866,12 @@
     window.openScannerModal = async function() {
       dom.scannerStatusText.innerText = "Initializing camera...";
       dom.scannerModalOverlay.classList.add('open');
-      dom.scanReticleBox.classList.remove('scan-success');
+
+      const overlay = document.getElementById('scanFlashOverlay');
+      const region = document.getElementById('scannerRegion');
+      if (overlay) overlay.classList.remove('active');
+      if (region) region.classList.remove('flash-green');
+
       isTorchOn = false;
       dom.btnTorchToggle.classList.remove('torch-active');
 
@@ -880,7 +896,6 @@
         isScannerRunning = true;
         dom.scannerStatusText.innerText = "Point camera at barcode";
 
-        // Check if torch capabilities exist on stream track
         try {
           const capabilities = html5QrCode.getRunningTrackCapabilities();
           if (capabilities && capabilities.torch) {
@@ -927,10 +942,13 @@
 
     async function onBarcodeScanned(decodedText) {
       playBeepSound();
-      triggerAndroidHaptic(75);
+      triggerAndroidHaptic(80);
 
-      // Flash green success animation
-      dom.scanReticleBox.classList.add('scan-success');
+      // Trigger high-contrast green flash overlay
+      const overlay = document.getElementById('scanFlashOverlay');
+      const region = document.getElementById('scannerRegion');
+      if (overlay) overlay.classList.add('active');
+      if (region) region.classList.add('flash-green');
 
       if (html5QrCode && isScannerRunning) {
         try { await html5QrCode.stop(); } catch (e) {}
@@ -938,8 +956,9 @@
       }
 
       setTimeout(async () => {
+        if (overlay) overlay.classList.remove('active');
+        if (region) region.classList.remove('flash-green');
         dom.scannerModalOverlay.classList.remove('open');
-        dom.scanReticleBox.classList.remove('scan-success');
 
         const existingItem = items.find(i => i.barcode === decodedText);
 
@@ -970,7 +989,7 @@
           dom.newItemName.value = fetchedName || "";
           dom.newItemBarcode.value = decodedText;
         }
-      }, 300);
+      }, 350);
     }
 
     // ADD MODAL

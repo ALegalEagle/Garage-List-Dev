@@ -13,7 +13,7 @@
 
   <script>
     (function() {
-      const APP_VER = "6.9.7";
+      const APP_VER = "6.9.8";
       const isDev = window.location.pathname.toLowerCase().includes('dev');
       const appName = isDev ? "Garage DEV" : "Garage List";
       const appIcon = isDev ? "blueprint-icon.png" : "apple-touch-icon.png";
@@ -234,11 +234,16 @@
     .modal-step-btn { background: var(--card-bg); border: 1px solid var(--border); font-size: 20px; font-weight: 800; color: var(--text); width: 40px; height: 40px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; position: relative; }
     .modal-step-val { font-size: 20px; font-weight: 800; }
 
-    /* HIDE DEFAULT HTML5-QRCODE SVGs */
+    /* HIDE DEFAULT HTML5-QRCODE BUILT-IN OVERLAYS, SVGS, AND PAUSED TEXT */
     #scannerRegion svg, 
     #scannerRegion__scan_region svg, 
-    #qr-shaded-region {
+    #qr-shaded-region,
+    #scannerRegion span,
+    #scannerRegion div[style*="background"],
+    #scannerRegion__status_span {
       display: none !important;
+      opacity: 0 !important;
+      visibility: hidden !important;
     }
 
     #scannerRegion { 
@@ -846,7 +851,8 @@
 
     window.openScannerModal = async function() {
       unlockAudioContext();
-      dom.scannerStatusText.innerText = "Initializing camera...";
+      dom.scannerStatusText.innerText = "Position barcode inside frame";
+      dom.scannerStatusText.style.color = "var(--text-muted)";
       dom.scannerModalOverlay.classList.add('open');
       
       const scannerRegion = document.getElementById('scannerRegion');
@@ -898,25 +904,19 @@
       playBeepSound();
       triggerAndroidHaptic(100);
 
-      // POINT 1: Direct inline green flash + temporarily lower video element opacity
+      // Direct inline green flash + lower video opacity
       const scannerRegion = document.getElementById('scannerRegion');
-      const statusText = document.getElementById('scannerStatusText');
       const videoEl = scannerRegion ? scannerRegion.querySelector('video') : null;
 
       if (scannerRegion) scannerRegion.style.backgroundColor = '#22C55E';
       if (videoEl) videoEl.style.opacity = '0.2';
-      
-      if (statusText) {
-        statusText.innerText = "✓ Barcode Detected!";
-        statusText.style.color = "#22C55E";
-      }
 
       // Pause detection loop during frame hold
       if (html5QrCode && isScannerRunning) {
         try { await html5QrCode.pause(true); } catch (e) {}
       }
 
-      // POINT 2: 850ms Frame Hold execution timing before shutting down scanner
+      // 850ms Frame Hold before shutting down scanner
       setTimeout(async () => {
         if (html5QrCode) {
           try { await html5QrCode.stop(); } catch (e) {}
@@ -925,7 +925,6 @@
 
         if (scannerRegion) scannerRegion.style.backgroundColor = '#000000';
         if (videoEl) videoEl.style.opacity = '1';
-        if (statusText) statusText.style.color = 'var(--text-muted)';
 
         dom.scannerModalOverlay.classList.remove('open');
 
@@ -938,7 +937,9 @@
           });
           alert(`Scanned existing item: "${existingItem.name}". Added 1 to stock!`);
         } else {
-          statusText.innerText = "Fetching product details...";
+          const statusText = document.getElementById('scannerStatusText');
+          if (statusText) statusText.innerText = "Fetching product details...";
+
           let fetchedName = "";
           try {
             const res = await fetch(`https://world.openfoodfacts.org/api/v0/product/${decodedText}.json`);

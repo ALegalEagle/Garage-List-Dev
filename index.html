@@ -14,7 +14,7 @@
   <!-- Universal Environment Auto-Detector with Cache Versioning -->
   <script>
     (function() {
-      const APP_VER = "6.5.2";
+      const APP_VER = "6.6.0";
       const isDev = window.location.pathname.toLowerCase().includes('dev');
       const appName = isDev ? "Garage DEV" : "Garage List";
       const appIcon = isDev ? "blueprint-icon.png" : "apple-touch-icon.png";
@@ -140,11 +140,11 @@
     header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
     .header-top { display: flex; align-items: center; justify-content: space-between; width: 100%; }
     
-    .circle-icon-btn, .bento-card, .btn-action-primary, .shopping-item-row, .chip {
+    .circle-icon-btn, .bento-card, .btn-action-primary, .chip, .shopping-card {
       transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.15s ease, border-color 0.15s ease;
     }
-    .circle-icon-btn:active, .btn-action-primary:active, .shopping-item-row:active, .chip:active {
-      transform: scale(0.95);
+    .circle-icon-btn:active, .btn-action-primary:active, .chip:active, .shopping-card:active {
+      transform: scale(0.97);
     }
 
     .circle-icon-btn {
@@ -304,6 +304,128 @@
       0% { opacity: 0.5; }
       50% { opacity: 1; }
       100% { opacity: 0.5; }
+    }
+
+    /* IN-APP SHOPPING MODE ENHANCEMENTS */
+    .shopping-header-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+    }
+    .shopping-progress-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+    .progress-bar-bg {
+      width: 100%;
+      height: 8px;
+      background: var(--bg);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--synced-color);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    .shopping-quick-add-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .shopping-section-title {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.6px;
+      color: var(--text-muted);
+      margin: 18px 0 8px 4px;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .shopping-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 14px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+    }
+    .shopping-card.is-in-cart {
+      background: var(--bg);
+      opacity: 0.65;
+      border-style: dashed;
+    }
+    .shopping-card.is-in-cart .shopping-card-title {
+      text-decoration: line-through;
+    }
+
+    .shopping-chk-circle {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 800;
+      color: white;
+      flex-shrink: 0;
+      margin-right: 12px;
+      transition: all 0.2s ease;
+    }
+    .shopping-card.is-in-cart .shopping-chk-circle {
+      background: var(--synced-color);
+      border-color: var(--synced-color);
+    }
+
+    .shopping-card-title {
+      font-size: 15px;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+    .shopping-card-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .shopping-stepper {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 2px 4px;
+    }
+    .shopping-step-btn {
+      background: transparent;
+      border: none;
+      width: 24px;
+      height: 24px;
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--text);
+      cursor: pointer;
     }
 
     /* GROUPED SETTINGS */
@@ -502,8 +624,6 @@
       justify-content: center; 
     }
     .modal-overlay.open { display: flex; }
-    
-    /* Scanner uses higher z-index to sit cleanly above add modal */
     #scannerModalOverlay { z-index: 105; }
 
     .modal { 
@@ -559,11 +679,6 @@
     .scan-reticle { position: absolute; inset: 20px; pointer-events: none; border: 2px dashed rgba(56, 189, 248, 0.7); border-radius: 12px; z-index: 2; }
     .scanner-result-box { margin-top: 14px; background: var(--bg); border: 1px solid var(--border); border-radius: 16px; padding: 14px; display: none; }
 
-    .shopping-item-row { display: flex; align-items: center; justify-content: space-between; padding: 14px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; margin-bottom: 8px; cursor: pointer; position: relative; }
-    .shopping-chk { width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; flex-shrink: 0; }
-    .shopping-item-row.is-bought .shopping-chk { background: var(--synced-color); border-color: var(--synced-color); color: white; }
-    .shopping-item-row.is-bought .shopping-title { text-decoration: line-through; opacity: 0.6; }
-
     .cat-manage-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--border); }
     .cat-manage-row:last-child { border-bottom: none; }
     .cat-del-btn { background: none; border: none; color: var(--out-border); font-size: 16px; cursor: pointer; }
@@ -615,15 +730,31 @@
 
     <!-- TAB 2: IN-APP SHOPPING VIEW -->
     <div class="tab-content" id="tab-shopping">
-      <div style="margin-bottom: 16px;">
-        <h2 style="font-size: 22px; font-weight: 800;">Shopping List</h2>
-        <p style="font-size: 13px; color: var(--text-muted); margin-top: 2px;">Tap items to mark them as in-cart during your shopping run.</p>
+      <div class="shopping-header-card">
+        <div class="shopping-progress-title">
+          <span>Shopping Progress</span>
+          <span id="shoppingProgressText" style="color: var(--text-muted); font-size: 13px;">0 of 0 in cart</span>
+        </div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="shoppingProgressBar"></div>
+        </div>
+
+        <div class="segmented-control" style="width: 100%; justify-content: space-between;">
+          <button class="segment-btn active" id="shopFilterAll" style="flex:1; justify-content:center;" onclick="setShoppingFilter('all')">All Needed</button>
+          <button class="segment-btn" id="shopFilterOut" style="flex:1; justify-content:center;" onclick="setShoppingFilter('out')">Out Only</button>
+          <button class="segment-btn" id="shopFilterCart" style="flex:1; justify-content:center;" onclick="setShoppingFilter('cart')">In Cart</button>
+        </div>
+
+        <div class="shopping-quick-add-row">
+          <input type="text" id="oneOffInput" class="input-field" placeholder="Add extra item (e.g. Milk)..." autocomplete="off" style="padding: 10px 14px; font-size: 14px;" />
+          <button class="circle-icon-btn" style="border-radius: 12px; width: 42px; height: 42px; flex-shrink:0; background: var(--fab-bg); color: var(--fab-text);" onclick="addOneOffShoppingItem()">+</button>
+        </div>
       </div>
 
       <div id="shoppingListContainer"></div>
 
-      <button class="btn-action-primary" onclick="completeShoppingSession()">
-        ✓ Finish Shopping & Restock
+      <button class="btn-action-primary" id="btnFinishShopping" onclick="completeShoppingSession()">
+        ✓ Finish Shopping & Restock (<span id="shoppingRestockCount">0</span>)
       </button>
 
       <button class="btn-action-primary" style="background: var(--bring-color); color: white; margin-top: 8px;" onclick="exportToBringApp()">
@@ -815,7 +946,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, doc, onSnapshot, setDoc, addDoc, updateDoc, deleteDoc, writeBatch, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    const APP_VERSION = "6.5.2";
+    const APP_VERSION = "6.6.0";
     const firebaseConfig = {
       apiKey: "AIzaSyAMznXG0OXHqMdfrmOGHK-g08TugsYfWw8",
       authDomain: "garage-stock-747e8.firebaseapp.com",
@@ -839,7 +970,13 @@
     let searchQuery = "";
     let editingItemId = null;
     let editingItemMinStock = 1;
-    let shoppingCart = new Set();
+    
+    // SHOPPING MODE STATE PERSISTENCE
+    let shoppingCart = new Set(JSON.parse(localStorage.getItem('garage_shopping_cart') || '[]'));
+    let restockQuantities = JSON.parse(localStorage.getItem('garage_shopping_qtys') || '{}');
+    let oneOffItems = JSON.parse(localStorage.getItem('garage_oneoff_items') || '[]');
+    let currentShoppingFilter = 'all';
+
     let selectedModalCategory = "";
     let modalInitialQty = 1;
     let activeTabIndex = 0;
@@ -880,6 +1017,10 @@
       searchInput: document.getElementById('searchInput'),
       shoppingListContainer: document.getElementById('shoppingListContainer'),
       shoppingBadge: document.getElementById('shoppingBadge'),
+      shoppingProgressText: document.getElementById('shoppingProgressText'),
+      shoppingProgressBar: document.getElementById('shoppingProgressBar'),
+      shoppingRestockCount: document.getElementById('shoppingRestockCount'),
+      oneOffInput: document.getElementById('oneOffInput'),
       categoryManageList: document.getElementById('categoryManageList'),
       fabAdd: document.getElementById('fabAdd'),
       addModalOverlay: document.getElementById('addModalOverlay'),
@@ -1058,7 +1199,7 @@
         document.getElementById('segBtnLight')?.classList.remove('active');
       } else {
         dom.body.classList.remove('dark');
-        document.getElementById('segBtnLight')?.classList.add('active');
+        document.getElementById('segBtnLight')?.classList.remove('active');
         document.getElementById('segBtnDark')?.classList.remove('active');
       }
       localStorage.setItem('garage_theme', mode);
@@ -1133,7 +1274,6 @@
     // BARCODE SCANNER CONTROLLER
     window.openScannerFromAddModal = function() {
       if (isScrolling) return;
-      // Hide add modal temporarily to avoid overlapping modal layers
       dom.addModalOverlay.classList.remove('open');
       openScannerModal();
     };
@@ -1179,7 +1319,6 @@
         isScannerRunning = false;
       }
       dom.scannerModalOverlay.classList.remove('open');
-      // Reopen Add Modal when scanner is closed manually
       dom.addModalOverlay.classList.add('open');
       triggerAndroidHaptic(25);
     };
@@ -1197,7 +1336,6 @@
       const existingItem = items.find(i => i.barcode === decodedText);
 
       if (existingItem) {
-        // If it already exists in inventory, just add 1 and reopen list
         await updateDoc(doc(db, "garage_items", existingItem.id), {
           amount: increment(1),
           updatedAt: serverTimestamp()
@@ -1220,7 +1358,6 @@
           }
         } catch (e) { console.warn("Product lookup failed:", e); }
 
-        // Reopen Add Modal with prefilled values
         toggleAddModal(true);
         dom.newItemName.value = fetchedName || "";
         dom.newItemBarcode.value = decodedText;
@@ -1286,56 +1423,192 @@
       triggerAndroidHaptic(40);
     };
 
+    // IN-APP SHOPPING MODE ENGINE
     function renderShoppingTab() {
-      const neededItems = items.filter(i => isItemOutOfStock(i) || isItemLowStock(i));
+      let neededItems = items.filter(i => isItemOutOfStock(i) || isItemLowStock(i));
       
-      if (neededItems.length > 0) dom.shoppingBadge.style.display = 'block';
+      if (neededItems.length > 0 || oneOffItems.length > 0) dom.shoppingBadge.style.display = 'block';
       else dom.shoppingBadge.style.display = 'none';
 
-      if (neededItems.length === 0) {
-        dom.shoppingListContainer.innerHTML = `<div style="text-align:center; padding: 40px 0; color:var(--synced-color); font-size:15px; font-weight:700;">🎉 All garage items are fully stocked!</div>`;
+      const totalCount = neededItems.length + oneOffItems.length;
+      let inCartCount = 0;
+
+      neededItems.forEach(i => { if (shoppingCart.has(i.id)) inCartCount++; });
+      oneOffItems.forEach(o => { if (shoppingCart.has(o.id)) inCartCount++; });
+
+      dom.shoppingProgressText.innerText = `${inCartCount} of ${totalCount} in cart`;
+      const pct = totalCount > 0 ? (inCartCount / totalCount) * 100 : 0;
+      dom.shoppingProgressBar.style.width = `${pct}%`;
+      dom.shoppingRestockCount.innerText = inCartCount;
+
+      if (totalCount === 0) {
+        dom.shoppingListContainer.innerHTML = `
+          <div style="text-align:center; padding: 48px 16px; background:var(--card-bg); border-radius:20px; border:1px solid var(--border);">
+            <div style="font-size:36px; margin-bottom:10px;">🎉</div>
+            <div style="font-weight:800; font-size:16px;">All items fully stocked!</div>
+            <div style="font-size:13px; color:var(--text-muted); margin-top:4px;">No items are currently out of stock or low in the garage.</div>
+          </div>
+        `;
         return;
       }
 
-      dom.shoppingListContainer.innerHTML = neededItems.map(i => {
-        const isBought = shoppingCart.has(i.id);
-        return `
-          <div class="shopping-item-row ${isBought ? 'is-bought' : ''}" onclick="toggleShoppingItem('${i.id}')">
-            <div style="display:flex; align-items:center; gap:12px;">
-              <div class="shopping-chk">${isBought ? '✓' : ''}</div>
-              <div>
-                <div class="shopping-title" style="font-weight:700; font-size:15px;">${i.name}</div>
-                <div style="font-size:11px; color:var(--text-muted);">${i.category} • Needed</div>
+      // Filter logic
+      let displayedNeeded = neededItems;
+      if (currentShoppingFilter === 'out') displayedNeeded = neededItems.filter(isItemOutOfStock);
+      if (currentShoppingFilter === 'cart') displayedNeeded = neededItems.filter(i => shoppingCart.has(i.id));
+
+      // Group by Category (Aisle View)
+      const groups = {};
+      displayedNeeded.forEach(i => {
+        const cat = i.category || 'General';
+        if (!groups[cat]) groups[cat] = [];
+        groups[cat].push(i);
+      });
+
+      let html = '';
+
+      Object.keys(groups).sort().forEach(cat => {
+        html += `<div class="shopping-section-title">${cat}</div>`;
+        groups[cat].forEach(i => {
+          const inCart = shoppingCart.has(i.id);
+          const buyQty = restockQuantities[i.id] || 1;
+          const isOut = isItemOutOfStock(i);
+
+          html += `
+            <div class="shopping-card ${inCart ? 'is-in-cart' : ''}" onclick="toggleShoppingItem('${i.id}')">
+              <div style="display:flex; align-items:center; flex:1;">
+                <div class="shopping-chk-circle">${inCart ? '✓' : ''}</div>
+                <div>
+                  <div class="shopping-card-title">${i.name}</div>
+                  <div class="shopping-card-sub">${isOut ? '<span style="color:var(--out-badge); font-weight:800;">OUT OF STOCK</span>' : 'LOW STOCK (' + i.amount + ' left)'}</div>
+                </div>
+              </div>
+              <div class="shopping-stepper" onclick="event.stopPropagation()">
+                <button class="shopping-step-btn" onclick="adjustRestockQty('${i.id}', -1, event)">—</button>
+                <span style="font-size:13px; font-weight:800; padding: 0 4px;">+${buyQty}</span>
+                <button class="shopping-step-btn" onclick="adjustRestockQty('${i.id}', 1, event)">+</button>
               </div>
             </div>
-          </div>
-        `;
-      }).join('');
+          `;
+        });
+      });
+
+      // Render One-Off Items
+      if (oneOffItems.length > 0 && currentShoppingFilter !== 'out') {
+        html += `<div class="shopping-section-title">One-Off Extras</div>`;
+        oneOffItems.forEach(o => {
+          const inCart = shoppingCart.has(o.id);
+          html += `
+            <div class="shopping-card ${inCart ? 'is-in-cart' : ''}" onclick="toggleShoppingItem('${o.id}')">
+              <div style="display:flex; align-items:center; flex:1;">
+                <div class="shopping-chk-circle">${inCart ? '✓' : ''}</div>
+                <div>
+                  <div class="shopping-card-title">${o.name}</div>
+                  <div class="shopping-card-sub">Temporary item</div>
+                </div>
+              </div>
+              <button class="cat-del-btn" onclick="removeOneOffItem('${o.id}', event)">✕</button>
+            </div>
+          `;
+        });
+      }
+
+      dom.shoppingListContainer.innerHTML = html;
     }
+
+    window.setShoppingFilter = function(mode) {
+      if (isScrolling) return;
+      currentShoppingFilter = mode;
+      document.getElementById('shopFilterAll').classList.toggle('active', mode === 'all');
+      document.getElementById('shopFilterOut').classList.toggle('active', mode === 'out');
+      document.getElementById('shopFilterCart').classList.toggle('active', mode === 'cart');
+      triggerAndroidHaptic(20);
+      renderShoppingTab();
+    };
 
     window.toggleShoppingItem = function(id) {
       if (isScrolling) return;
       if (shoppingCart.has(id)) shoppingCart.delete(id);
       else shoppingCart.add(id);
+
+      saveShoppingState();
       triggerAndroidHaptic(30);
       renderShoppingTab();
     };
 
+    window.adjustRestockQty = function(id, delta, event) {
+      if (event) event.stopPropagation();
+      const current = restockQuantities[id] || 1;
+      const updated = Math.max(1, current + delta);
+      restockQuantities[id] = updated;
+
+      saveShoppingState();
+      triggerAndroidHaptic(20);
+      renderShoppingTab();
+    };
+
+    window.addOneOffShoppingItem = function() {
+      const val = dom.oneOffInput.value.trim();
+      if (!val) return;
+
+      const newItem = { id: 'oneoff_' + Date.now(), name: val };
+      oneOffItems.push(newItem);
+      dom.oneOffInput.value = '';
+
+      saveShoppingState();
+      triggerAndroidHaptic(30);
+      renderShoppingTab();
+    };
+
+    window.removeOneOffItem = function(id, event) {
+      if (event) event.stopPropagation();
+      oneOffItems = oneOffItems.filter(o => o.id !== id);
+      shoppingCart.delete(id);
+
+      saveShoppingState();
+      triggerAndroidHaptic(20);
+      renderShoppingTab();
+    };
+
+    function saveShoppingState() {
+      localStorage.setItem('garage_shopping_cart', JSON.stringify(Array.from(shoppingCart)));
+      localStorage.setItem('garage_shopping_qtys', JSON.stringify(restockQuantities));
+      localStorage.setItem('garage_oneoff_items', JSON.stringify(oneOffItems));
+    }
+
     window.completeShoppingSession = async function() {
-      if (shoppingCart.size === 0) return alert("Select at least one item marked as in-cart to restock.");
+      if (shoppingCart.size === 0) return alert("Select at least one item in your cart to restock.");
       
       const batch = writeBatch(db);
+      let restockedCount = 0;
+
       shoppingCart.forEach(id => {
-        batch.update(doc(db, "garage_items", id), {
-          amount: increment(1),
-          updatedAt: serverTimestamp()
-        });
+        const item = items.find(i => i.id === id);
+        if (item) {
+          const qtyToAdd = restockQuantities[id] || 1;
+          batch.update(doc(db, "garage_items", id), {
+            amount: increment(qtyToAdd),
+            updatedAt: serverTimestamp()
+          });
+          restockedCount++;
+        }
       });
 
-      await batch.commit();
-      shoppingCart.clear();
+      if (restockedCount > 0) {
+        await batch.commit();
+      }
+
+      // Clear checked items and one-off items that were bought
+      shoppingCart.forEach(id => {
+        shoppingCart.delete(id);
+        delete restockQuantities[id];
+      });
+
+      oneOffItems = oneOffItems.filter(o => !shoppingCart.has(o.id));
+
+      saveShoppingState();
       renderShoppingTab();
-      triggerAndroidHaptic(40);
+      triggerAndroidHaptic(50);
       alert("Selected items restocked successfully!");
     };
 

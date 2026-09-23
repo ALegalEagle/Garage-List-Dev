@@ -14,7 +14,7 @@
   <!-- Universal Environment Auto-Detector with Cache Versioning -->
   <script>
     (function() {
-      const APP_VER = "6.6.0";
+      const APP_VER = "6.6.1";
       const isDev = window.location.pathname.toLowerCase().includes('dev');
       const appName = isDev ? "Garage DEV" : "Garage List";
       const appIcon = isDev ? "blueprint-icon.png" : "apple-touch-icon.png";
@@ -306,7 +306,7 @@
       100% { opacity: 0.5; }
     }
 
-    /* IN-APP SHOPPING MODE ENHANCEMENTS */
+    /* IN-APP SHOPPING MODE CLEANUP */
     .shopping-header-card {
       background: var(--card-bg);
       border: 1px solid var(--border);
@@ -351,16 +351,13 @@
       color: var(--text-muted);
       margin: 18px 0 8px 4px;
       text-transform: uppercase;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
     }
 
     .shopping-card {
       background: var(--card-bg);
       border: 1px solid var(--border);
       border-radius: 18px;
-      padding: 14px;
+      padding: 16px 18px;
       margin-bottom: 10px;
       display: flex;
       align-items: center;
@@ -370,7 +367,7 @@
     }
     .shopping-card.is-in-cart {
       background: var(--bg);
-      opacity: 0.65;
+      opacity: 0.6;
       border-style: dashed;
     }
     .shopping-card.is-in-cart .shopping-card-title {
@@ -389,7 +386,7 @@
       font-weight: 800;
       color: white;
       flex-shrink: 0;
-      margin-right: 12px;
+      margin-right: 14px;
       transition: all 0.2s ease;
     }
     .shopping-card.is-in-cart .shopping-chk-circle {
@@ -406,26 +403,6 @@
       font-size: 11px;
       color: var(--text-muted);
       margin-top: 2px;
-    }
-
-    .shopping-stepper {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 2px 4px;
-    }
-    .shopping-step-btn {
-      background: transparent;
-      border: none;
-      width: 24px;
-      height: 24px;
-      font-size: 14px;
-      font-weight: 800;
-      color: var(--text);
-      cursor: pointer;
     }
 
     /* GROUPED SETTINGS */
@@ -582,7 +559,7 @@
       box-shadow: 0 10px 25px rgba(0,0,0,0.22);
       z-index: 91;
       touch-action: manipulation;
-      transition: transform 0.2s ease, background 0.2s ease;
+      transition: transform 0.2s ease, background 0.2s ease, opacity 0.2s ease;
     }
     .ticktick-fab:active { transform: scale(0.92); }
     body.dark .ticktick-fab { background: #475569; }
@@ -739,10 +716,9 @@
           <div class="progress-bar-fill" id="shoppingProgressBar"></div>
         </div>
 
-        <div class="segmented-control" style="width: 100%; justify-content: space-between;">
+        <div class="segmented-control" style="width: 100%;">
           <button class="segment-btn active" id="shopFilterAll" style="flex:1; justify-content:center;" onclick="setShoppingFilter('all')">All Needed</button>
           <button class="segment-btn" id="shopFilterOut" style="flex:1; justify-content:center;" onclick="setShoppingFilter('out')">Out Only</button>
-          <button class="segment-btn" id="shopFilterCart" style="flex:1; justify-content:center;" onclick="setShoppingFilter('cart')">In Cart</button>
         </div>
 
         <div class="shopping-quick-add-row">
@@ -754,7 +730,7 @@
       <div id="shoppingListContainer"></div>
 
       <button class="btn-action-primary" id="btnFinishShopping" onclick="completeShoppingSession()">
-        ✓ Finish Shopping & Restock (<span id="shoppingRestockCount">0</span>)
+        ✓ Mark Items as Bought (<span id="shoppingRestockCount">0</span>)
       </button>
 
       <button class="btn-action-primary" style="background: var(--bring-color); color: white; margin-top: 8px;" onclick="exportToBringApp()">
@@ -946,7 +922,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, doc, onSnapshot, setDoc, addDoc, updateDoc, deleteDoc, writeBatch, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    const APP_VERSION = "6.6.0";
+    const APP_VERSION = "6.6.1";
     const firebaseConfig = {
       apiKey: "AIzaSyAMznXG0OXHqMdfrmOGHK-g08TugsYfWw8",
       authDomain: "garage-stock-747e8.firebaseapp.com",
@@ -973,7 +949,6 @@
     
     // SHOPPING MODE STATE PERSISTENCE
     let shoppingCart = new Set(JSON.parse(localStorage.getItem('garage_shopping_cart') || '[]'));
-    let restockQuantities = JSON.parse(localStorage.getItem('garage_shopping_qtys') || '{}');
     let oneOffItems = JSON.parse(localStorage.getItem('garage_oneoff_items') || '[]');
     let currentShoppingFilter = 'all';
 
@@ -1142,6 +1117,15 @@
       if (dom.tabIndicator) {
         dom.tabIndicator.classList.remove('dragging');
         dom.tabIndicator.style.transform = `translateX(${index * 64}px)`;
+      }
+
+      // Hide Floating Add (+) FAB on Shopping tab to prevent obstruction
+      if (dom.fabAdd) {
+        if (tabId === 'shopping') {
+          dom.fabAdd.style.display = 'none';
+        } else {
+          dom.fabAdd.style.display = 'flex';
+        }
       }
 
       triggerAndroidHaptic(25);
@@ -1423,7 +1407,7 @@
       triggerAndroidHaptic(40);
     };
 
-    // IN-APP SHOPPING MODE ENGINE
+    // IN-APP SHOPPING MODE ENGINE (CLEANED UP)
     function renderShoppingTab() {
       let neededItems = items.filter(i => isItemOutOfStock(i) || isItemLowStock(i));
       
@@ -1455,7 +1439,6 @@
       // Filter logic
       let displayedNeeded = neededItems;
       if (currentShoppingFilter === 'out') displayedNeeded = neededItems.filter(isItemOutOfStock);
-      if (currentShoppingFilter === 'cart') displayedNeeded = neededItems.filter(i => shoppingCart.has(i.id));
 
       // Group by Category (Aisle View)
       const groups = {};
@@ -1471,7 +1454,6 @@
         html += `<div class="shopping-section-title">${cat}</div>`;
         groups[cat].forEach(i => {
           const inCart = shoppingCart.has(i.id);
-          const buyQty = restockQuantities[i.id] || 1;
           const isOut = isItemOutOfStock(i);
 
           html += `
@@ -1483,18 +1465,13 @@
                   <div class="shopping-card-sub">${isOut ? '<span style="color:var(--out-badge); font-weight:800;">OUT OF STOCK</span>' : 'LOW STOCK (' + i.amount + ' left)'}</div>
                 </div>
               </div>
-              <div class="shopping-stepper" onclick="event.stopPropagation()">
-                <button class="shopping-step-btn" onclick="adjustRestockQty('${i.id}', -1, event)">—</button>
-                <span style="font-size:13px; font-weight:800; padding: 0 4px;">+${buyQty}</span>
-                <button class="shopping-step-btn" onclick="adjustRestockQty('${i.id}', 1, event)">+</button>
-              </div>
             </div>
           `;
         });
       });
 
-      // Render One-Off Items
-      if (oneOffItems.length > 0 && currentShoppingFilter !== 'out') {
+      // Render One-Off Extras
+      if (oneOffItems.length > 0) {
         html += `<div class="shopping-section-title">One-Off Extras</div>`;
         oneOffItems.forEach(o => {
           const inCart = shoppingCart.has(o.id);
@@ -1521,7 +1498,6 @@
       currentShoppingFilter = mode;
       document.getElementById('shopFilterAll').classList.toggle('active', mode === 'all');
       document.getElementById('shopFilterOut').classList.toggle('active', mode === 'out');
-      document.getElementById('shopFilterCart').classList.toggle('active', mode === 'cart');
       triggerAndroidHaptic(20);
       renderShoppingTab();
     };
@@ -1533,17 +1509,6 @@
 
       saveShoppingState();
       triggerAndroidHaptic(30);
-      renderShoppingTab();
-    };
-
-    window.adjustRestockQty = function(id, delta, event) {
-      if (event) event.stopPropagation();
-      const current = restockQuantities[id] || 1;
-      const updated = Math.max(1, current + delta);
-      restockQuantities[id] = updated;
-
-      saveShoppingState();
-      triggerAndroidHaptic(20);
       renderShoppingTab();
     };
 
@@ -1572,12 +1537,11 @@
 
     function saveShoppingState() {
       localStorage.setItem('garage_shopping_cart', JSON.stringify(Array.from(shoppingCart)));
-      localStorage.setItem('garage_shopping_qtys', JSON.stringify(restockQuantities));
       localStorage.setItem('garage_oneoff_items', JSON.stringify(oneOffItems));
     }
 
     window.completeShoppingSession = async function() {
-      if (shoppingCart.size === 0) return alert("Select at least one item in your cart to restock.");
+      if (shoppingCart.size === 0) return alert("Select at least one item in your cart to mark as bought.");
       
       const batch = writeBatch(db);
       let restockedCount = 0;
@@ -1585,9 +1549,8 @@
       shoppingCart.forEach(id => {
         const item = items.find(i => i.id === id);
         if (item) {
-          const qtyToAdd = restockQuantities[id] || 1;
           batch.update(doc(db, "garage_items", id), {
-            amount: increment(qtyToAdd),
+            amount: increment(1),
             updatedAt: serverTimestamp()
           });
           restockedCount++;
@@ -1598,10 +1561,9 @@
         await batch.commit();
       }
 
-      // Clear checked items and one-off items that were bought
+      // Clear checked items and bought one-off extras
       shoppingCart.forEach(id => {
         shoppingCart.delete(id);
-        delete restockQuantities[id];
       });
 
       oneOffItems = oneOffItems.filter(o => !shoppingCart.has(o.id));
@@ -1609,7 +1571,7 @@
       saveShoppingState();
       renderShoppingTab();
       triggerAndroidHaptic(50);
-      alert("Selected items restocked successfully!");
+      alert("Marked selected items as bought!");
     };
 
     window.exportToBringApp = function() {
